@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ProjectZD8ForWindows (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "ProjectZD8ForWindows (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

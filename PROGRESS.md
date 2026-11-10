@@ -1,7 +1,7 @@
 # ProjectZD8ForWindows 進捗
 
 最終更新: 2026-11-11
-README 確認済みのコミット: 3cfc2eb（＋未コミットのロゴと Identity を反映済み）
+README 確認済みのコミット: 55daff9（＋未コミットの docs/USER_GUIDE.html を反映済み）
 
 ## 概要
 - iOS/macOS アプリ「RevTorque Insight」（GitHub: Ryokugyoku/ProjectZD8、Swift/SwiftUI）を Windows（WinUI 3 / .NET 10）向けに作り直す。iOS 版と CloudKit で同期する。
@@ -23,6 +23,7 @@ README 確認済みのコミット: 3cfc2eb（＋未コミットのロゴと Ide
 - 確かめていない：実機の OBD アダプター（USB シリアル・RFCOMM・BLE の接続と送受信、探索、到来の監視）、実際の CloudKit と Apple のサインイン（テストは偽の HTTP 応答だけ）、本物の車、電源断での fsync の効き目、ARM64 と x86 のビルド、狭いウインドウ（640×420）、写真の取り込み、停止確認・Raw の解放・セッション削除の各ダイアログ、Release ビルド（トリミングあり）での起動。
 
 ## 直近の作業
+- 2026-11-11: お客様向けのご利用ガイド docs/USER_GUIDE.html を作った（開発者の依頼）。準備・はじめかた・アダプターのつなぎ方・各画面・ショートカット・データとプライバシー・FAQ。画像は docs/store/screenshots/ を相対パスで参照。claude.ai の Artifact（非公開、https://claude.ai/artifact/XnjyGvo4QDDjsDPSqzf5Xg）にも公開した。お客様に見せるには共有設定が要る。
 - 2026-11-11: Microsoft Store に 1.0.0.0 を提出した（審査中）。Partner Center でプロパティ・年齢区分（3+）・パッケージ（x64、Desktop のみ）・3 言語の掲載情報・認定メモ・runFullTrust の理由・無料・プライベート対象ユーザー（既知のユーザー グループ「RevTorque Insight Beta Testers」、開発者の個人の Microsoft アカウント 1 件）を設定した。IARC の同意、パッケージとスクリーンショットのアップロード、アプリ開発者契約 8.11 への同意は開発者が行った。手元のビルドで .msixupload の中身が古い Identity のまま再利用され弾かれたので、出力を消して作り直した（docs/STORE_RELEASE.md に注意を追記）。
 - 2026-11-10: Store の最初の提出の準備（開発者の依頼）。PRIVACY.md、docs/store/listing.md（日・英・西の掲載文、認定メモ、年齢区分の答え）、docs/store/screenshots/（UI オートメーションでデモ用アダプターを操作して撮影）を作って push した。CI が GitHub で成功。Partner Center で提出の下書きを作り、プロパティを入力・保存し、年齢区分のアンケートに答えた（同意と保存は開発者）。
 - 2026-11-10: ロゴを作り、Partner Center で「RevTorque Insight」を予約した（開発者の依頼）。ロゴは iOS 版のアプリアイコンを元に scripts/GenerateAppIcons.cs で 72 ファイルを作った（タイル・ストア・スプラッシュ・ロック画面、タスクバーとスタート用の角丸）。パッケージに入ることとタスクバーの表示を確かめた。Identity を Partner Center の値にして、Store 用の .msixupload が作れることを確かめた。
@@ -79,6 +80,7 @@ README 確認済みのコミット: 3cfc2eb（＋未コミットのロゴと Ide
 - CloudKit Console で、スキーマを本番環境（Production）に反映する必要がある（開発者の作業）。
 
 ## 検討事項・未決定
+- ご利用ガイド（docs/USER_GUIDE.html）をお客様にどう届けるか未定：Artifact の共有リンク、GitHub Pages、Store の「Web サイト」欄に載せる、など → 開発者に確認。ガイドの FAQ（USB ドライバー、スリープ抑止）とガレージ・設定の説明は実機・画面で確かめていない。機能を変えたらガイドも直す。
 - Store の審査で、ログイン画面と設定画面の押せない「近日対応」ボタンが「機能が完全でない」と指摘されるかもしれない。指摘されたら、Coming Soon の間はボタンを隠すか → 開発者に確認。
 - 配布する CPU：今は x64 だけ。ARM64（Snapdragon の PC）も出すか → 開発者に確認。出すなら、ワークフローで ARM64 も作り、2 つの .msixupload を同じ提出に入れる工夫が要る（msstore publish は 1 ファイル）。
 - GitHub のリリースは、ベータの間は pre-release にしている。一般公開のあとに外すか。

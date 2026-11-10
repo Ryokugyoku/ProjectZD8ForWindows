@@ -20,6 +20,7 @@ CloudKit Web Services を通じて iOS 版とデータを同期します。
 | `scripts/ConvertXcstrings.cs` | iOS 版の `Localizable.xcstrings` と `Strings/WindowsOnly.xcstrings` から `.resw` を作る |
 | `docs/PORTING_CONVENTIONS.md` | Swift から C# に移すときの規約 |
 | `docs/CLOUD_SETUP.md`、`docs/web/` | iCloud 同期と Sign in with Apple の準備（開発者向け）と、サインイン後に戻るページの見本 |
+| `docs/USER_GUIDE.html` | お客様向けのご利用ガイド（画像は `docs/store/screenshots/` を参照） |
 | `docs/STORE_RELEASE.md`、`.github/workflows/`、`scripts/Set-PackageIdentity.ps1` | Microsoft Store への公開（プライベート対象ユーザーでのベータ配布）と、GitHub Actions のビルド・テスト・自動リリース |
 | `Design/AppIcon-1024.png`、`scripts/GenerateAppIcons.cs` | アプリアイコンの元画像（iOS 版と同じ）と、そこから `Assets/` のロゴを全サイズ作るスクリプト（`dotnet run --file scripts/GenerateAppIcons.cs -- Design/AppIcon-1024.png Assets`） |
 

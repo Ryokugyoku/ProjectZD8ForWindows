@@ -1,0 +1,469 @@
+<title>RevTorque Insight ご利用ガイド</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="RevTorque Insight for Windows の使い方。準備、はじめかた、各画面の操作、データの扱い、よくある質問。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: 計器盤のような左の目次＋本文 1 列。各機能はスクリーンショットを窓枠に入れて説明と並べる */
+:root {
+  --bg: #f4f7f9;
+  --surface: #ffffff;
+  --surface-2: #eaf0f3;
+  --fg: #0e1a22;
+  --muted: #4d5d68;
+  --line: #d5dfe5;
+  --accent: #007da6;
+  --accent-soft: #e0f1f7;
+  --caution: #b55f08;
+  --caution-soft: #fdf0e2;
+  --frame: #10171d;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1116; --surface: #121b22; --surface-2: #18232b; --fg: #e4ecf0; --muted: #98a9b4;
+    --line: #24333d; --accent: #05c7e6; --accent-soft: #0b2a33; --caution: #ff9f2e; --caution-soft: #2a1d0e;
+    --frame: #05090c; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1116; --surface: #121b22; --surface-2: #18232b; --fg: #e4ecf0; --muted: #98a9b4;
+  --line: #24333d; --accent: #05c7e6; --accent-soft: #0b2a33; --caution: #ff9f2e; --caution-soft: #2a1d0e;
+  --frame: #05090c; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.85;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+p { margin: 0; }
+kbd, .mono { font-family: var(--font-mono); }
+kbd {
+  display: inline-block; font-size: .82em; padding: 1px 7px; border-radius: 5px;
+  background: var(--surface); border: 1px solid var(--line); border-bottom-width: 2px;
+  line-height: 1.6; white-space: nowrap;
+}
+.ui { font-weight: 700; color: var(--fg); background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+
+.wrap { max-width: 1120px; margin: 0 auto; }
+
+/* ---- hero ---- */
+.hero { padding-block: 56px 40px; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 48px; align-items: center; }
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+.brand-mark { width: 44px; height: 44px; border-radius: 11px; background: var(--frame); display: grid; place-items: center; }
+.brand-name { font-family: var(--font-display); font-weight: 700; font-size: 17px; line-height: 1.2; }
+.brand-sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; color: var(--accent); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; color: var(--accent); text-transform: uppercase; }
+.hero h1 { font-size: clamp(28px, 3.8vw, 44px); font-weight: 900; margin-top: 10px; letter-spacing: .01em; }
+.hero h1 span { display: inline-block; }
+.lead { margin-top: 18px; color: var(--muted); max-width: 34em; }
+.readout { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px; }
+.readout span {
+  font-family: var(--font-mono); font-size: 13px; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); font-variant-numeric: tabular-nums;
+}
+.readout b { color: var(--accent); font-weight: 600; }
+
+.shot { margin: 0; border-radius: 12px; overflow: hidden; background: var(--frame); border: 1px solid var(--line); box-shadow: 0 18px 40px -24px rgba(0, 30, 45, .45); }
+.shot img { display: block; width: 100%; height: auto; }
+.shot figcaption { font-size: 13px; color: var(--muted); background: var(--surface); padding: 10px 14px; border-top: 1px solid var(--line); }
+
+/* ---- layout ---- */
+.layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 56px; padding-block: 24px 80px; border-top: 1px solid var(--line); }
+.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; padding-top: 24px; }
+.toc p { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; color: var(--muted); margin-bottom: 10px; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: toc; }
+.toc a { display: flex; gap: 10px; padding: 6px 10px; border-radius: 6px; color: var(--fg); text-decoration: none; font-size: 14px; }
+.toc a::before { counter-increment: toc; content: counter(toc, decimal-leading-zero); font-family: var(--font-mono); font-size: 11px; color: var(--muted); padding-top: 3px; }
+.toc a:hover { background: var(--surface-2); }
+
+main { min-width: 0; display: grid; gap: 72px; padding-top: 24px; }
+section { scroll-margin-top: 24px; display: grid; gap: 20px; min-width: 0; }
+section > h2 { font-size: clamp(24px, 3vw, 30px); font-weight: 900; }
+section > h2 small { display: block; font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: .14em; color: var(--accent); margin-bottom: 4px; }
+.prose { max-width: 40em; color: var(--fg); }
+.muted { color: var(--muted); }
+
+/* 準備 */
+.needs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.need { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: grid; gap: 6px; align-content: start; }
+.need h3 { font-size: 16px; }
+.need p { font-size: 14px; color: var(--muted); }
+.need svg { color: var(--accent); }
+
+/* 手順 */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: step; }
+.steps li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; padding-bottom: 24px; position: relative; }
+.steps li::before {
+  counter-increment: step; content: counter(step);
+  width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+  font-family: var(--font-mono); font-weight: 600; font-size: 15px;
+  background: var(--accent); color: var(--bg); position: relative; z-index: 1;
+}
+.steps li:not(:last-child)::after { content: ""; position: absolute; left: 17px; top: 36px; bottom: 0; width: 2px; background: var(--line); }
+.steps h3 { font-size: 17px; padding-top: 4px; }
+.steps p { color: var(--muted); font-size: 15px; margin-top: 4px; }
+
+/* アダプター表 */
+.table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 14px; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-weight: 700; font-size: 13px; color: var(--muted); background: var(--surface-2); }
+td:first-child { font-weight: 700; white-space: nowrap; }
+
+/* 機能 */
+.feature { display: grid; gap: 18px; }
+.feature h3 { font-size: 20px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.feature h3 .key { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--muted); }
+.feature ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; max-width: 40em; }
+.feature ul li::marker { color: var(--accent); }
+.tabs-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.tab-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.tab-card b { font-family: var(--font-display); font-size: 15px; }
+.tab-card span { font-size: 13px; color: var(--muted); line-height: 1.7; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+
+/* 注意 */
+.note { border-radius: 10px; padding: 16px 20px; display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; font-size: 15px; }
+.note.caution { background: var(--caution-soft); }
+.note.caution svg { color: var(--caution); }
+.note.info { background: var(--accent-soft); }
+.note.info svg { color: var(--accent); }
+.note b { display: block; margin-bottom: 2px; }
+.note ul { margin: 4px 0 0; padding-left: 1.1em; }
+
+/* ショートカット */
+.keys { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; margin: 0; }
+.keys div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 15px; align-items: baseline; }
+.keys dt { margin: 0; } .keys dd { margin: 0; color: var(--muted); }
+
+/* FAQ */
+.faq { display: grid; gap: 10px; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0 20px; }
+summary { cursor: pointer; padding: 16px 0; font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; font-family: var(--font-mono); color: var(--accent); font-size: 18px; line-height: 1.4; }
+details[open] summary::after { content: "−"; }
+details > div { padding-bottom: 18px; color: var(--muted); font-size: 15px; display: grid; gap: 8px; }
+
+footer { border-top: 1px solid var(--line); padding-block: 28px 48px; font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+footer .links { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-block: 32px 28px; }
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .toc { position: static; }
+  .toc ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .needs, .tabs-row { grid-template-columns: minmax(0, 1fr); }
+  .pair, .keys { grid-template-columns: minmax(0, 1fr); }
+  main { gap: 56px; }
+}
+@media (max-width: 480px) {
+  .keys div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+}
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#05c7e6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h4l2-6 4 12 2-6h6"/></svg>
+        </div>
+        <div>
+          <div class="brand-name">RevTorque Insight</div>
+          <div class="brand-sub">DRIVE INTELLIGENCE</div>
+        </div>
+      </div>
+      <div class="eyebrow">ご利用ガイド · Windows 版</div>
+      <h1><span>愛車を知り、</span><span>走りを自分のものに。</span></h1>
+      <p class="lead">RevTorque Insight は、OBD2 アダプターで車のデータを読み取り、リアルタイムに表示・記録・分析する Windows アプリです。このガイドでは、準備からふだんの使い方までをご案内します。</p>
+      <div class="readout" aria-label="表示できる値の例">
+        <span>エンジン回転数 <b>2,846</b> rpm</span>
+        <span>車速 <b>51</b> km/h</span>
+        <span>水温 <b>92</b> °C</span>
+      </div>
+    </div>
+    <figure class="shot">
+      <img src="store/screenshots/01-live-data.png" width="1904" height="1072" alt="リアルタイムログ出力の画面。エンジン回転数と車速が大きく表示され、その下に分類ごとの現在値が並んでいる">
+      <figcaption>リアルタイムログ出力：車が応答した信号を、その場で一覧表示します。</figcaption>
+    </figure>
+  </header>
+</div>
+
+<div class="wrap layout">
+  <nav class="toc" aria-label="目次">
+    <p>CONTENTS</p>
+    <ol>
+      <li><a href="#prepare">ご用意いただくもの</a></li>
+      <li><a href="#start">はじめかた</a></li>
+      <li><a href="#adapters">アダプターのつなぎ方</a></li>
+      <li><a href="#screens">画面ごとの使い方</a></li>
+      <li><a href="#shortcuts">便利な操作</a></li>
+      <li><a href="#data">データとプライバシー</a></li>
+      <li><a href="#faq">よくあるご質問</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="note caution" role="note">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+      <div>
+        <b>安全のために</b>
+        <ul>
+          <li>運転中はアプリを操作しないでください。操作や確認は、安全な場所に停車してから行ってください。</li>
+          <li>表示する値は車が返す値にもとづく参考値です。故障の診断や安全を保証するものではありません。</li>
+          <li>本アプリは現在ベータ版です。</li>
+        </ul>
+      </div>
+    </div>
+
+    <section id="prepare">
+      <h2><small>PREPARE</small>ご用意いただくもの</h2>
+      <div class="needs">
+        <div class="need">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <h3>Windows の PC</h3>
+          <p>Windows 10（バージョン 1809）以降、または Windows 11。Microsoft Store から入手します。</p>
+        </div>
+        <div class="need">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="8" rx="1.5"/><path d="M9 10v4h6v-4M12 14v8"/></svg>
+          <h3>OBD2 アダプター</h3>
+          <p>USB・Bluetooth・Bluetooth LE の ELM327 互換アダプター、OBDLink EX / MX+ など。</p>
+        </div>
+        <div class="need">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M6 17l1.5-6h9L18 17M7 17v2M17 17v2"/><circle cx="8" cy="14" r=".5"/><circle cx="16" cy="14" r=".5"/></svg>
+          <h3>OBD2 端子のある車</h3>
+          <p>運転席の足元などにある OBD2 端子にアダプターを差し込みます。</p>
+        </div>
+      </div>
+      <div class="note info" role="note">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div><b>アダプターがなくても試せます</b>アプリには「デモ用アダプター」が入っています。車やアダプターがなくても、模擬の車につないで全部の画面をお試しいただけます。</div>
+      </div>
+    </section>
+
+    <section id="start">
+      <h2><small>GET STARTED</small>はじめかた</h2>
+      <p class="prose muted">初めて起動したときの流れです。2 回目以降は、ホームで <span class="ui">接続する</span> を押すだけで始められます。</p>
+      <ol class="steps">
+        <li>
+          <div>
+            <h3>アプリを起動し、<span class="ui">この PC で続ける</span> を選ぶ</h3>
+            <p>アカウントは不要です。データはこの PC の中だけに保存されます。（Apple アカウントでのサインインは近日対応予定です）</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>重要事項と免責事項を読み、<span class="ui">同意して続ける</span> を押す</h3>
+            <p>ご利用の前に一度だけ表示されます。</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>ホームの <span class="ui">アダプターを設定</span> から、使うアダプターを選ぶ</h3>
+            <p>設定画面の「プライマリーアダプター」に、見つかったアダプターが一覧で出ます。使うものを選んで <span class="ui">このアダプターを設定</span> を押すと、次回からの既定になります。試すだけなら「DEMO USB」を選んでください。</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>車のエンジンをかけ、<span class="ui">接続する</span> を押す</h3>
+            <p>画面上部の接続バーか、ホームから接続できます。どの画面にいても接続・切断ができます。</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>はじめての車は登録する</h3>
+            <p>車両識別番号（VIN）で車を調べ、<span class="ui">この車両を登録する</span> を確認します。登録すると、その車で応答する信号（PID）の一覧が作られ、記録が始まります。</p>
+          </div>
+        </li>
+      </ol>
+      <figure class="shot">
+        <img src="store/screenshots/06-welcome.png" width="1904" height="1072" alt="起動時の画面。右側に「Appleアカウントで続ける（近日対応）」と「この PC で続ける」のボタンがある" loading="lazy">
+        <figcaption>起動時の画面。右のカードの「この PC で続ける」から始めます。</figcaption>
+      </figure>
+    </section>
+
+    <section id="adapters">
+      <h2><small>ADAPTERS</small>アダプターのつなぎ方</h2>
+      <p class="prose muted">お使いのアダプターの種類に合わせて、PC とつないでからアプリで選んでください。</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>種類</th><th>対応する機器の例</th><th>つなぎ方</th></tr></thead>
+          <tbody>
+            <tr><td>USB</td><td>ELM327 互換、OBDLink EX</td><td>USB ケーブルで PC につなぎます。COM ポートとして認識されれば一覧に出ます（115200 bps）。</td></tr>
+            <tr><td>Bluetooth</td><td>OBDLink MX+ など（SPP）</td><td>先に Windows の「設定 › Bluetooth とデバイス」でペアリングしておきます。ペアリング済みの機器が一覧に出ます。</td></tr>
+            <tr><td>Bluetooth LE</td><td>UART サービスを持つ ELM327 互換</td><td>ペアリングは不要です。アダプターの電源を入れ、PC の近くで一覧から選びます。</td></tr>
+            <tr><td>デモ</td><td>DEMO USB など</td><td>機器は不要です。模擬の車につながります。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose muted">Bluetooth LE のアダプターを既定にしておくと、そのアダプターが近くに来たときに、画面の上に「接続しますか？」というお知らせが出ます。</p>
+    </section>
+
+    <section id="screens">
+      <h2><small>SCREENS</small>画面ごとの使い方</h2>
+      <p class="prose muted">左のメニューから画面を切り替えます。設定はメニューのいちばん下にあります。</p>
+
+      <div class="feature">
+        <h3>ホーム <span class="key">Ctrl+1</span></h3>
+        <ul>
+          <li>アダプターの状態と、接続・切断のボタンがあります。</li>
+          <li>初めての方は、ここの <span class="ui">アダプターを設定</span> から始めます。</li>
+        </ul>
+      </div>
+
+      <div class="feature">
+        <h3>リアルタイムログ出力 <span class="key">Ctrl+2</span></h3>
+        <ul>
+          <li>エンジン回転数と車速を大きく表示し、その下に車が応答したすべての信号の現在値を並べます。</li>
+          <li>「エンジン」「温度」「燃料・吸排気」「走行・操作」「稼働・診断」の分類ボタンで絞り込めます。</li>
+          <li>各値の <span class="mono">ⓘ</span> を押すと、その信号の意味を確認できます。</li>
+          <li>別の画面を開いていても、接続している間は記録を続けます。</li>
+        </ul>
+      </div>
+
+      <div class="feature">
+        <h3>接続履歴と分析 <span class="key">Ctrl+3</span></h3>
+        <ul>
+          <li>接続してから切断するまでが、1 回分の「セッション」として残ります。車 › 日時 の順に開いて詳細を見ます。</li>
+          <li>上部のパンくず（例：接続履歴 › ZD8 デモ › 2026/11/10 23:49）で、ひとつ前の階層に戻れます。</li>
+          <li>セッションの詳細から「ログデータ解析」を開くと、次の 3 つのタブで振り返れます。</li>
+        </ul>
+        <div class="tabs-row">
+          <div class="tab-card"><b>走行サマリー</b><span>接続時間・走行時間・距離と、長く維持した速度帯・回転域のランキング。</span></div>
+          <div class="tab-card"><b>折れ線</b><span>選んだ信号 1 つの時間変化。最小・平均・最大も表示します。</span></div>
+          <div class="tab-card"><b>相関</b><span>2 つの信号の関係を散布図で表示（例：エンジン回転数 × 車速）。</span></div>
+        </div>
+        <div class="pair">
+          <figure class="shot">
+            <img src="store/screenshots/02-drive-summary.png" width="1904" height="1072" alt="走行サマリーのタブ。接続時間、走行時間、距離と、長く維持した速度帯・回転域のランキング" loading="lazy">
+            <figcaption>走行サマリー</figcaption>
+          </figure>
+          <figure class="shot">
+            <img src="store/screenshots/03-line-chart.png" width="1904" height="1072" alt="折れ線のタブ。計算エンジン負荷の時間変化のグラフと、最小・平均・最大" loading="lazy">
+            <figcaption>折れ線</figcaption>
+          </figure>
+        </div>
+        <figure class="shot">
+          <img src="store/screenshots/04-scatter-plot.png" width="1904" height="1072" alt="相関のタブ。エンジン回転数と車速の散布図" loading="lazy">
+          <figcaption>相関：点の広がりやまとまりから、運転状態の傾向を見比べます。因果関係や故障の診断を示すものではありません。</figcaption>
+        </figure>
+      </div>
+
+      <div class="feature">
+        <h3>整備 <span class="key">Ctrl+4</span></h3>
+        <ul>
+          <li>オイル交換などの整備を、車ごとに記録します。上の <span class="mono">＋</span> ボタンで新しい記録を作ります。</li>
+          <li>表題・走行距離・作業日時・作業の内容に加えて、部品や消耗品（製品名・規格・数量など）を項目ごとに残せます。</li>
+          <li>「すべて／軽整備／重整備」で絞り込めます。入力が終わったら <span class="ui">保存</span>（<kbd>Ctrl</kbd>+<kbd>S</kbd>）を押します。</li>
+        </ul>
+        <figure class="shot">
+          <img src="store/screenshots/05-maintenance.png" width="1904" height="1072" alt="整備の画面。左に記録の一覧、右にエンジンオイル交換の入力内容" loading="lazy">
+          <figcaption>整備記録の入力画面</figcaption>
+        </figure>
+      </div>
+
+      <div class="feature">
+        <h3>Garage <span class="key">Ctrl+5</span></h3>
+        <ul>
+          <li>登録した車の一覧です。車名やメーカーなどの情報と、写真を登録できます。</li>
+          <li>車ごとに、どの信号（PID）を記録するかを「PID 収集設定」で選べます。</li>
+        </ul>
+      </div>
+
+      <div class="feature">
+        <h3>設定 <span class="key">Ctrl+,</span></h3>
+        <ul>
+          <li>プライマリーアダプターの選択、外観（ライト／ダーク）、表示言語（日本語・English・Español）を変更できます。</li>
+          <li>「アカウントを削除」で、このアプリに保存した走行ログや設定を消去できます。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="shortcuts">
+      <h2><small>SHORTCUTS</small>便利な操作</h2>
+      <dl class="keys">
+        <div><dt><kbd>Ctrl</kbd>+<kbd>1</kbd>〜<kbd>5</kbd></dt><dd>ホーム〜Garage の各画面へ移動</dd></div>
+        <div><dt><kbd>Ctrl</kbd>+<kbd>,</kbd></dt><dd>設定を開く</dd></div>
+        <div><dt><kbd>Alt</kbd>+<kbd>←</kbd></dt><dd>ひとつ前に戻る（マウスの戻るボタンでも可）</dd></div>
+        <div><dt>右クリック</dt><dd>セッション・整備記録・車両のメニューを開く</dd></div>
+        <div><dt><kbd>Ctrl</kbd>+<kbd>S</kbd></dt><dd>整備記録・車両の編集を保存</dd></div>
+        <div><dt><kbd>F5</kbd></dt><dd>Garage と整備の一覧を更新</dd></div>
+      </dl>
+      <p class="prose muted">ウインドウを広くすると、接続履歴ではセッションの一覧と詳細が左右に並びます。</p>
+    </section>
+
+    <section id="data">
+      <h2><small>DATA &amp; PRIVACY</small>データとプライバシー</h2>
+      <div class="prose" style="display:grid;gap:12px">
+        <p>車両の情報、走行ログ、整備記録、設定は、<b>お使いの PC の中だけ</b>に保存されます。現在の版では、これらを開発者やほかのサーバーへ送信しません。広告や利用状況の分析も行いません。</p>
+        <p class="muted">iOS 版の RevTorque Insight との iCloud 同期は、近日対応予定です。対応する際は、送信する情報と送信先をプライバシーポリシーでお知らせします。</p>
+        <p class="muted">アプリをアンインストールすると、この PC に保存したデータ（整備記録を含む）はすべて削除されます。</p>
+      </div>
+    </section>
+
+    <section id="faq">
+      <h2><small>FAQ</small>よくあるご質問</h2>
+      <div class="faq">
+        <details>
+          <summary>アダプターが一覧に出てきません</summary>
+          <div>
+            <p>USB の場合は、ケーブルを挿し直し、Windows のデバイス マネージャーで「ポート (COM と LPT)」に表示されているかをご確認ください。表示されない場合は、アダプターのメーカーが配布しているドライバーが必要なことがあります。</p>
+            <p>Bluetooth（SPP）の場合は、先に Windows の設定でペアリングしてください。Bluetooth LE の場合は、アダプターの電源が入っていて PC の近くにあるかをご確認ください。</p>
+          </div>
+        </details>
+        <details>
+          <summary>接続できても値が表示されません</summary>
+          <div>
+            <p>エンジンがかかっているか（少なくともイグニッションがオンか）をご確認ください。車によって応答する信号の種類は異なり、応答しない信号は表示されません。</p>
+          </div>
+        </details>
+        <details>
+          <summary>走行中の記録は、ほかの画面を見ていても続きますか？</summary>
+          <div>
+            <p>はい。接続している間は、どの画面を開いていても記録を続けます。記録は <span class="ui">切断する</span> を押すと 1 つのセッションとして保存されます。</p>
+          </div>
+        </details>
+        <details>
+          <summary>PC のスリープで記録が止まりませんか？</summary>
+          <div>
+            <p>接続している間は、アプリが PC のスリープを抑えます。ノート PC の場合は、電源につないでのご利用をおすすめします。</p>
+          </div>
+        </details>
+        <details>
+          <summary>表示言語を変えたい</summary>
+          <div>
+            <p>設定の「言語」から、日本語・English・Español を選べます。すぐに切り替わります。</p>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="wrap">
+  <footer>
+    <span>RevTorque Insight for Windows · ベータ版</span>
+    <span class="links">
+      <a href="https://github.com/Ryokugyoku/ProjectZD8ForWindows/blob/main/PRIVACY.md">プライバシーポリシー</a>
+      <a href="https://github.com/Ryokugyoku/ProjectZD8ForWindows/issues">お問い合わせ・不具合のご報告</a>
+    </span>
+  </footer>
+</div>

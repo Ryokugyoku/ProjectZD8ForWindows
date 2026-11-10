@@ -131,8 +131,8 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
     {
         var grid = new AdaptiveGrid { MinItemWidth = 260, Spacing = 14 };
         grid.Children.Add(TextInput("maintenance.field.title", draft.Title, value => Change(current => current with { Title = value })));
-        var date = new CalendarDatePicker { Header = LocalizedText.Get("maintenance.field.performed_at"), Date = draft.PerformedAt, HorizontalAlignment = HorizontalAlignment.Stretch };
-        var time = new TimePicker { Header = " ", Time = draft.PerformedAt.ToLocalTime().TimeOfDay, HorizontalAlignment = HorizontalAlignment.Stretch, MinWidth = 0 };
+        var date = new CalendarDatePicker { Date = draft.PerformedAt, Width = 200 };
+        var time = new TimePicker { Time = draft.PerformedAt.ToLocalTime().TimeOfDay, MinWidth = 0 };
         void SendDate()
         {
             if (date.Date is { } day)
@@ -144,11 +144,16 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
 
         date.DateChanged += (_, _) => SendDate();
         time.TimeChanged += (_, _) => SendDate();
-        grid.Children.Add(date);
-        grid.Children.Add(time);
+        var performedAt = new StackPanel { Spacing = 8 };
+        performedAt.Children.Add(Typography.Text(LocalizedText.Get("maintenance.field.performed_at"), "BodyTextBlockStyle"));
+        var dateTime = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        dateTime.Children.Add(date);
+        dateTime.Children.Add(time);
+        performedAt.Children.Add(dateTime);
         grid.Children.Add(NumberInput("maintenance.field.odometer", draft.OdometerKilometers, value => Change(current => current with { OdometerKilometers = value })));
         var stack = new StackPanel { Spacing = 14 };
         stack.Children.Add(grid);
+        stack.Children.Add(performedAt);
         stack.Children.Add(TextInput("maintenance.field.notes", draft.Notes, value => Change(current => current with { Notes = value }), multiline: true));
         return Section("maintenance.section.overview", stack);
     }

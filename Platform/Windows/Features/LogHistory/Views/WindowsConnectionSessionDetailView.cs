@@ -150,7 +150,7 @@ public sealed partial class WindowsConnectionSessionDetailView : UserControl
             action.Click += (_, _) => send(new ConnectionHistoryAction.StopReviewRequested(session.Id));
             Grid.SetColumn(action, 2);
             grid.Children.Add(action);
-            return SurfaceCard.Create(grid, Tone.Caution, 17);
+            return SurfaceCard.Create(grid, Tone.Caution, 17, tinted: true);
         }
 
         if (session.StopReviewDecision == ConnectionSessionStopReviewDecision.UserInitiated)

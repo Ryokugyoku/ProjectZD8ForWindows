@@ -252,7 +252,7 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var glyph = sample.Request == PrimaryRequests[0] ? FluentSymbol.Gauge : sample.Request == PrimaryRequests[1] ? FluentSymbol.Road : FluentSymbol.Pulse;
+        var glyph = sample.Request == PrimaryRequests[0] ? FluentSymbol.Gauge : sample.Request == PrimaryRequests[1] ? FluentSymbol.Car : FluentSymbol.Pulse;
         grid.Children.Add(IconTile.Create(glyph, Tone.Accent, 58));
         var texts = new StackPanel { Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
         texts.Children.Add(Typography.Text(LocalizedText.Get(sample.NameKey), "SecondaryCaptionTextStyle"));
@@ -270,7 +270,7 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
         var help = HelpButton(sample);
         Grid.SetColumn(help, 2);
         grid.Children.Add(help);
-        return SurfaceCard.Create(grid, Tone.Accent, 20);
+        return SurfaceCard.Create(grid, Tone.Accent, 20, tinted: true);
     }
 
     /// <summary>車種専用の値の部分を作ります。</summary>
@@ -331,6 +331,7 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
                 Padding = new Thickness(14, 6, 14, 6),
             };
             var selected = category;
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(chip, LocalizedText.Get(category.NameKey()));
             chip.Click += (_, _) =>
             {
                 _selectedCategory = selected;
@@ -343,7 +344,7 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
         var grid = new AdaptiveGrid { MinItemWidth = 210, Spacing = 12 };
         foreach (var sample in SamplesIn(state, _selectedCategory))
         {
-            grid.Children.Add(SampleCard(sample, "category", sample.VehicleModelCode is null ? Tone.Accent : Tone.Accent));
+            grid.Children.Add(SampleCard(sample, "category", Tone.Accent));
         }
 
         var stack = new StackPanel { Spacing = 14 };

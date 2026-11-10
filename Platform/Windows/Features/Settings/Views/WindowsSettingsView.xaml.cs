@@ -42,6 +42,9 @@ public sealed partial class WindowsSettingsView : UserControl
     /// <summary>描いている最中かどうかです（描画中のイベントを無視するため）。</summary>
     private bool _isRendering;
 
+    /// <summary>最後にカードを描いたときの入力です（同じなら描き直さない）。</summary>
+    private object? _pageKey;
+
     /// <summary>最後に描いたアダプターのカードです。</summary>
     private FrameworkElement? _adapterCard;
 
@@ -69,6 +72,7 @@ public sealed partial class WindowsSettingsView : UserControl
         {
             if ((args.PreviousSize.Width >= 760) != (args.NewSize.Width >= 760))
             {
+                _pageKey = null;
                 Render();
             }
         };
@@ -83,6 +87,7 @@ public sealed partial class WindowsSettingsView : UserControl
         _settings.PropertyChanged += OnModelChanged;
         _accountSettings.PropertyChanged += OnModelChanged;
         _authentication.PropertyChanged += OnModelChanged;
+        _pageKey = null;
         Render();
     }
 
@@ -107,9 +112,28 @@ public sealed partial class WindowsSettingsView : UserControl
     /// <remarks>責務: 状態から各カードを作り、ダイアログとアダプターへの注意の表示を状態に合わせます。</remarks>
     private void Render()
     {
-        _isRendering = true;
         var state = _settings.State;
         var account = _accountSettings.Settings;
+        var pageKey = (state.SelectedAdapters, account, ActualWidth >= 760);
+        if (!Equals(pageKey, _pageKey))
+        {
+            _pageKey = pageKey;
+            RenderPage(state, account);
+        }
+
+        _adapterSelection.Render(state, XamlRoot);
+        var authentication = _authentication.State;
+        _accountDeletion.Render(authentication.AccountDeletionPhase, authentication.AccountDeletionFailure, XamlRoot);
+        PresentAdapterAttentionIfNeeded(state);
+    }
+
+    /// <summary>設定のカードを描き直します。</summary>
+    /// <remarks>責務: 見出し・言語・外観・アダプター・アップロード・アカウント削除のカードを幅に合わせて並べます。</remarks>
+    /// <param name="state">設定画面の状態。</param>
+    /// <param name="account">アカウント設定。</param>
+    private void RenderPage(WindowsSettingsState state, AccountSettings account)
+    {
+        _isRendering = true;
         Page.Children.Clear();
         Page.Children.Add(new ScreenHeader(
             FluentSymbol.Sliders,
@@ -146,11 +170,6 @@ public sealed partial class WindowsSettingsView : UserControl
 
         Page.Children.Add(AccountDeletionCard());
         _isRendering = false;
-
-        _adapterSelection.Render(state, XamlRoot);
-        var authentication = _authentication.State;
-        _accountDeletion.Render(authentication.AccountDeletionPhase, authentication.AccountDeletionFailure, XamlRoot);
-        PresentAdapterAttentionIfNeeded(state, adapterCard);
     }
 
     /// <summary>設定のカードを作ります。</summary>
@@ -291,6 +310,8 @@ public sealed partial class WindowsSettingsView : UserControl
         {
             Header = LocalizedText.Get("settings.upload.automatic"),
             IsOn = account.AutomaticSessionUploadEnabled,
+            OnContent = string.Empty,
+            OffContent = string.Empty,
         };
         toggle.Toggled += (_, _) =>
         {
@@ -328,7 +349,7 @@ public sealed partial class WindowsSettingsView : UserControl
         button.Click += (_, _) => _authentication.Send(AuthenticationAction.AccountDeletionRequested);
         Grid.SetColumn(button, 2);
         grid.Children.Add(button);
-        return SurfaceCard.Create(grid, Tone.Danger, 18);
+        return SurfaceCard.Create(grid, Tone.Danger, 18, tinted: true);
     }
 
     /// <summary>
@@ -336,8 +357,7 @@ public sealed partial class WindowsSettingsView : UserControl
     /// </summary>
     /// <remarks>責務: 未処理の注意要求を 1 回だけ処理し、カードを表示範囲へ入れます（視差効果を減らす設定なら揺らさない）。</remarks>
     /// <param name="state">設定画面の状態。</param>
-    /// <param name="adapterCard">アダプターのカード。</param>
-    private void PresentAdapterAttentionIfNeeded(WindowsSettingsState state, FrameworkElement adapterCard)
+    private void PresentAdapterAttentionIfNeeded(WindowsSettingsState state)
     {
         if (!state.HasPendingAdapterAttention || state.AdapterAttentionSequence == _handledAttentionSequence)
         {
@@ -349,8 +369,12 @@ public sealed partial class WindowsSettingsView : UserControl
         DispatcherQueue.TryEnqueue(() =>
         {
             _settings.Send(new WindowsSettingsAction.AdapterAttentionConsumed(sequence));
-            var card = _adapterCard ?? adapterCard;
-            card.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0.5, AnimationDesired = true });
+            if (_adapterCard is not { } card)
+            {
+                return;
+            }
+
+            card.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0.5 });
             if (new global::Windows.UI.ViewManagement.UISettings().AnimationsEnabled && card.RenderTransform is TranslateTransform transform)
             {
                 Shake(transform);

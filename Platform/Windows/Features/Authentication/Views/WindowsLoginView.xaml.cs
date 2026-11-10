@@ -91,6 +91,14 @@ public sealed partial class WindowsLoginView : UserControl
     private void Render()
     {
         var state = _model.State;
+        foreach (var child in PhaseArea.Children)
+        {
+            if (child is StackPanel { Children: [ProgressRing ring, ..] })
+            {
+                ring.IsActive = false;
+            }
+        }
+
         PhaseArea.Children.Clear();
         switch (state.Phase)
         {

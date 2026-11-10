@@ -53,6 +53,14 @@ public sealed class StateBoundDialog
 
         var dialog = make();
         dialog.XamlRoot = xamlRoot;
+        if (dialog.RequestedTheme == ElementTheme.Default)
+        {
+            // ダイアログは画面の外側（ポップアップ）に出るため、設定で上書きした外観を自分で引き継ぐ。
+            dialog.RequestedTheme = DesignTokens.EffectiveTheme;
+        }
+
+        // 一覧や詳細を並べるダイアログのため、標準の最大幅（548px）を少し広げる。
+        dialog.Resources["ContentDialogMaxWidth"] = 720.0;
         _dialog = dialog;
         _key = key;
         _closedByState = false;

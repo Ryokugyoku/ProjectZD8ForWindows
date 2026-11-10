@@ -190,6 +190,7 @@ public sealed class WindowsAdapterSelectionDialog
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
             Padding = new Thickness(12),
         };
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, adapter.DisplayName);
         button.Click += (_, _) => _send(new WindowsSettingsAction.AdapterCandidateSelected(adapter));
         return button;
     }

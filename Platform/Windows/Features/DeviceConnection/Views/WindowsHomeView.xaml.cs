@@ -120,7 +120,7 @@ public sealed partial class WindowsHomeView : UserControl
         var grid = new Grid { ColumnSpacing = 20, VerticalAlignment = VerticalAlignment.Center };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        var tile = IconTile.Create(availability.IsDetected ? FluentSymbol.Plug : FluentSymbol.Disconnected, Tone.Accent, 82);
+        var tile = IconTile.Create(FluentSymbol.Plug, availability.IsDetected ? Tone.Accent : Tone.Neutral, 82);
         tile.CornerRadius = new CornerRadius(41);
         grid.Children.Add(tile);
         var texts = new StackPanel { Spacing = 8, VerticalAlignment = VerticalAlignment.Center };

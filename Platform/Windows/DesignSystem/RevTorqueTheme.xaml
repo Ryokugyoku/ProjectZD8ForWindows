@@ -61,7 +61,7 @@
             <SolidColorBrush x:Key="RevTorqueSuccessBrush" Color="#FF3DD68C" />
             <SolidColorBrush x:Key="RevTorqueSuccessSubtleBrush" Color="#1F3DD68C" />
             <SolidColorBrush x:Key="RevTorqueDangerBrush" Color="#FFFF6B5E" />
-            <SolidColorBrush x:Key="RevTorqueDangerSubtleBrush" Color="#1FFF6B5E" />
+            <SolidColorBrush x:Key="RevTorqueDangerSubtleBrush" Color="#14FF6B5E" />
             <SolidColorBrush x:Key="RevTorqueIndigoBrush" Color="#FF8B89FF" />
             <SolidColorBrush x:Key="RevTorqueIndigoSubtleBrush" Color="#1F8B89FF" />
             <SolidColorBrush x:Key="RevTorqueBlueBrush" Color="#FF5AA2FF" />

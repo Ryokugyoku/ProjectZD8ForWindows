@@ -46,7 +46,7 @@ public sealed partial class WindowsAppShellView : UserControl
         InitializeComponent();
         BrandTagline.Text = LocalizedText.Get("sidebar.brand.tagline");
         FooterCaption.Text = LocalizedText.Get("sidebar.footer.caption");
-        Navigation.PaneTitle = LocalizedText.Get("sidebar.section.navigation");
+        Navigation.MenuItems.Add(new NavigationViewItemHeader { Content = LocalizedText.Get("sidebar.section.navigation") });
         foreach (var destination in WindowsSidebarDestinationPresentation.AllCases)
         {
             Navigation.MenuItems.Add(MakeItem(destination));

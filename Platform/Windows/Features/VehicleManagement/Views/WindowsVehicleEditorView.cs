@@ -63,6 +63,8 @@ public sealed partial class WindowsVehicleEditorView : UserControl
         saveTexts.Children.Add(Typography.Text(LocalizedText.Get("garage.editor.save_hint"), "CaptionTextBlockStyle"));
         saveContent.Children.Add(saveTexts);
         _saveButton.Content = saveContent;
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(_saveButton, LocalizedText.Get("garage.save"));
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(_saveButton, "windows-vehicle-editor-save");
         _saveButton.Click += (_, _) => _send(new VehicleManagementAction.VehicleSaved(_draft));
         _photoTitle = Typography.Text(string.Empty, "SubtitleTextBlockStyle", new SolidColorBrush(Color.FromArgb(255, 255, 255, 255)));
 

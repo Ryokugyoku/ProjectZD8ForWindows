@@ -179,6 +179,7 @@ public sealed partial class WindowsMaintenanceView : UserControl
         Grid.SetColumn(chevron, 2);
         grid.Children.Add(chevron);
         var button = new Button { Content = grid, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(12) };
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, record.Title);
         button.Click += (_, _) => _model.Send(new MaintenanceAction.EditRequested(record.Id));
         return button;
     }
@@ -214,6 +215,8 @@ public sealed partial class WindowsMaintenanceView : UserControl
                 IsEnabled = state.SelectedVehicleID is not null,
             };
             var selected = kind;
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, LocalizedText.Get(kind.LocalizationKey()));
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-maintenance-create-" + kind.ToRawValue());
             button.Click += (_, _) => _model.Send(new MaintenanceAction.CreateRequested(selected));
             buttons.Children.Add(button);
         }

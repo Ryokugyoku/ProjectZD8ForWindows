@@ -48,7 +48,7 @@ public sealed partial class MainWindow : Window
             presenter.PreferredMinimumHeight = 420;
         }
 
-        DesignTokens.EffectiveTheme = RootGrid.ActualTheme;
+        ApplyEffectiveTheme();
         RootGrid.ActualThemeChanged += OnActualThemeChanged;
         flow.Root.Authentication.PropertyChanged += OnAuthenticationChanged;
         flow.Root.AccountSettings.PropertyChanged += OnAccountSettingsChanged;
@@ -114,7 +114,7 @@ public sealed partial class MainWindow : Window
     /// <param name="args">イベントの情報。</param>
     private void OnActualThemeChanged(FrameworkElement sender, object args)
     {
-        DesignTokens.EffectiveTheme = RootGrid.ActualTheme;
+        ApplyEffectiveTheme();
         if (_showsShell == true)
         {
             ShowShell(_shell?.SelectedDestination ?? WindowsSidebarDestination.Home);
@@ -151,7 +151,7 @@ public sealed partial class MainWindow : Window
                 SettingsAppearance.Dark => ElementTheme.Dark,
                 _ => ElementTheme.Default,
             };
-            DesignTokens.EffectiveTheme = RootGrid.ActualTheme;
+            ApplyEffectiveTheme();
         }
 
         if (signedIn && (_showsShell != true || languageChanged))
@@ -162,6 +162,14 @@ public sealed partial class MainWindow : Window
         {
             ShowLogin();
         }
+    }
+
+    /// <summary>実際のテーマを、コードで組む画面の色とタイトルバーのボタンへ反映します。</summary>
+    /// <remarks>責務: 外観の設定で決まったテーマを、デザインの約束とタイトルバーへ伝えます。</remarks>
+    private void ApplyEffectiveTheme()
+    {
+        DesignTokens.EffectiveTheme = RootGrid.ActualTheme;
+        AppWindow.TitleBar.PreferredTheme = RootGrid.ActualTheme == ElementTheme.Dark ? TitleBarTheme.Dark : TitleBarTheme.Light;
     }
 
     /// <summary>シェルを表示します。</summary>

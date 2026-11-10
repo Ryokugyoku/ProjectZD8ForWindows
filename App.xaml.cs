@@ -26,6 +26,28 @@ public partial class App : Microsoft.UI.Xaml.Application
     public App()
     {
         InitializeComponent();
+        UnhandledException += OnUnhandledException;
+    }
+
+    /// <summary>
+    /// 画面の処理で捕まえられなかった例外を記録します（終了はさせたまま）。
+    /// </summary>
+    /// <remarks>責務: 原因を調べられるよう、例外の内容をデバッグ出力と一時フォルダーのログへ書きます。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">例外の情報。</param>
+    private static void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        var text = $"{DateTimeOffset.Now:O} {e.Exception}{Environment.NewLine}";
+        System.Diagnostics.Debug.WriteLine(text);
+        try
+        {
+            var directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "RevTorqueInsight");
+            System.IO.Directory.CreateDirectory(directory);
+            System.IO.File.AppendAllText(System.IO.Path.Combine(directory, "unhandled.log"), text);
+        }
+        catch (System.IO.IOException)
+        {
+        }
     }
 
     /// <summary>

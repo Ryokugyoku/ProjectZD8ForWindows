@@ -210,7 +210,7 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
             var retry = new Button { Content = LocalizedText.Get("history.error.retry"), Style = DesignTokens.Style("AccentButtonStyle"), HorizontalAlignment = HorizontalAlignment.Center };
             retry.Click += (_, _) => _model.Send(new ConnectionHistoryAction.RefreshRequested());
             failure.Children.Add(retry);
-            Page.Children.Add(SurfaceCard.Create(failure, Tone.Caution, 34));
+            Page.Children.Add(SurfaceCard.Create(failure, Tone.Caution, 34, tinted: true));
             return;
         }
 
@@ -279,7 +279,7 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         var started = new MetricBlock(DateText.DateAndMinute(session.StartedAt), LocalizedText.Get("history.started"), HorizontalAlignment.Right, valueStyleKey: "BodyStrongTextBlockStyle");
         Grid.SetColumn(started, 3);
         grid.Children.Add(started);
-        return SurfaceCard.Create(grid, Tone.Success, 20);
+        return SurfaceCard.Create(grid, Tone.Success, 20, tinted: true);
     }
 
     /// <summary>車両のまとまりのボタンを作ります。</summary>
@@ -318,6 +318,7 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
             Padding = new Thickness(18),
             CornerRadius = new CornerRadius(14),
         };
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, GroupName(group));
         button.Click += (_, _) =>
         {
             _navigation.Push(new WindowsConnectionHistoryRoute.VehicleSessions(group.Id));
@@ -505,6 +506,7 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
             Padding = new Thickness(15),
             CornerRadius = new CornerRadius(12),
         };
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(row, DateText.DateAndMinute(session.StartedAt));
         row.Click += (_, _) =>
         {
             _navigation.Push(new WindowsConnectionHistoryRoute.SessionDetail(session.Id));

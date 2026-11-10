@@ -12,6 +12,8 @@
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
+    <!-- 単一インスタンスとプロトコル起動の振り分けのため、Main は App/Lifecycle/Program.cs に自分で書く。 -->
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,13 +30,13 @@
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
-  <!-- src/ と tests/ は別プロジェクト。アプリのビルドに取り込まないよう除外する。 -->
+  <!-- src/ と tests/ は別プロジェクト。アプリのビルドに取り込まないよう除外する。.claude/ はエージェントの作業ツリー（リポジトリの複製）が入るので同じく除外する。 -->
   <ItemGroup>
-    <Compile Remove="src\**;tests\**;tools\**;scripts\**" />
-    <None Remove="src\**;tests\**;tools\**;scripts\**" />
-    <Page Remove="src\**;tests\**;tools\**;scripts\**" />
-    <Content Remove="src\**;tests\**;tools\**;scripts\**" />
-    <PRIResource Remove="src\**;tests\**;tools\**;scripts\**" />
+    <Compile Remove="src\**;tests\**;tools\**;scripts\**;.claude\**" />
+    <None Remove="src\**;tests\**;tools\**;scripts\**;.claude\**" />
+    <Page Remove="src\**;tests\**;tools\**;scripts\**;.claude\**" />
+    <Content Remove="src\**;tests\**;tools\**;scripts\**;.claude\**" />
+    <PRIResource Remove="src\**;tests\**;tools\**;scripts\**;.claude\**" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="src\ProjectZD8.Domain\ProjectZD8.Domain.csproj" />

@@ -20,6 +20,73 @@ public static partial class LocalizedText
     /// <summary>アプリの既定リソース（Strings/&lt;言語&gt;/Resources.resw）を読む読込器です。</summary>
     private static readonly Lazy<ResourceLoader?> Loader = new(CreateLoader);
 
+    /// <summary>言語を指定して引くためのリソース管理です。</summary>
+    private static readonly Lazy<ResourceManager?> Manager = new(CreateManager);
+
+    /// <summary>言語ごとのリソース文脈です（UI スレッドからだけ使う）。</summary>
+    private static readonly Dictionary<string, ResourceContext> Contexts = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// アカウント設定で選ばれた表示言語（BCP-47、例 <c>en-US</c>）。null なら OS の言語に従います。
+    /// </summary>
+    public static string? LanguageOverride { get; private set; }
+
+    /// <summary>
+    /// 表示言語を切り替えます。
+    /// </summary>
+    /// <remarks>責務: 以後の <see cref="Get(string)"/> と数値・日付の書式を、指定言語へ切り替えます。</remarks>
+    /// <param name="languageTag">BCP-47 の言語タグ。null なら OS の言語に戻す。</param>
+    public static void SetLanguage(string? languageTag)
+    {
+        LanguageOverride = string.IsNullOrEmpty(languageTag) ? null : languageTag;
+        var culture = LanguageOverride is null ? CultureInfo.InstalledUICulture : CultureInfo.GetCultureInfo(LanguageOverride);
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+    }
+
+    /// <summary>
+    /// 指定言語の文脈で 1 件のリソースを引きます。
+    /// </summary>
+    /// <remarks>責務: .resw の Name と言語タグから、その言語の値（なければ既定の値）を返します。</remarks>
+    /// <param name="name">.resw の Name。</param>
+    /// <param name="language">BCP-47 の言語タグ。</param>
+    /// <returns>値。見つからなければ null。</returns>
+    private static string? ResolveForLanguage(string name, string language)
+    {
+        if (Manager.Value is not { } manager)
+        {
+            return Loader.Value?.GetString(name);
+        }
+
+        if (!Contexts.TryGetValue(language, out var context))
+        {
+            context = manager.CreateResourceContext();
+            context.QualifierValues["Language"] = language;
+            Contexts[language] = context;
+        }
+
+        return manager.MainResourceMap.TryGetValue("Resources/" + name, context)?.ValueAsString;
+    }
+
+    /// <summary>
+    /// リソース管理を作ります。
+    /// </summary>
+    /// <remarks>責務: パッケージのリソースを読めない環境では null を返します。</remarks>
+    /// <returns>リソース管理。作れなければ null。</returns>
+    private static ResourceManager? CreateManager()
+    {
+        try
+        {
+            return new ResourceManager();
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
     /// <summary>
     /// xcstrings のキーに対応する翻訳文字列を返します。
     /// </summary>
@@ -35,7 +102,10 @@ public static partial class LocalizedText
 
         try
         {
-            var value = Loader.Value?.GetString(ResourceName(key));
+            var name = ResourceName(key);
+            var value = LanguageOverride is { } language
+                ? ResolveForLanguage(name, language)
+                : Loader.Value?.GetString(name);
             return string.IsNullOrEmpty(value) ? key : value;
         }
         catch (Exception)
@@ -101,7 +171,7 @@ public static partial class LocalizedText
     /// <summary>
     /// Swift の printf 形式の書式に値を埋め込みます。
     /// </summary>
-    /// <remarks>責務: %@・%lld・%d・%f・%%・位置指定（%1$@）を .NET の文字列化で置き換えます。</remarks>
+    /// <remarks>責務: %@・%lld・%d・%f・%X・%%・位置指定（%1$@）・幅（%02X）を .NET の文字列化で置き換えます。</remarks>
     /// <param name="format">printf 形式の書式。</param>
     /// <param name="arguments">埋め込む値。</param>
     /// <returns>埋め込み済みの文字列。</returns>
@@ -127,12 +197,26 @@ public static partial class LocalizedText
             var precision = match.Groups["precision"].Success
                 ? int.Parse(match.Groups["precision"].Value, CultureInfo.InvariantCulture)
                 : (int?)null;
-            return match.Groups["conversion"].Value switch
+            var text = match.Groups["conversion"].Value switch
             {
-                "f" when argument is IFormattable number =>
+                "f" or "F" when argument is IFormattable number =>
                     number.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.CurrentCulture),
+                "x" when argument is IConvertible integer =>
+                    Convert.ToInt64(integer, CultureInfo.InvariantCulture).ToString("x", CultureInfo.InvariantCulture),
+                "X" when argument is IConvertible integer =>
+                    Convert.ToInt64(integer, CultureInfo.InvariantCulture).ToString("X", CultureInfo.InvariantCulture),
                 _ => Convert.ToString(argument, CultureInfo.CurrentCulture) ?? string.Empty,
             };
+            if (match.Groups["width"].Success
+                && int.TryParse(match.Groups["width"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var width))
+            {
+                var flags = match.Groups["flags"].Value;
+                text = flags.Contains('-', StringComparison.Ordinal)
+                    ? text.PadRight(width)
+                    : text.PadLeft(width, flags.Contains('0', StringComparison.Ordinal) ? '0' : ' ');
+            }
+
+            return text;
         });
     }
 
@@ -154,6 +238,6 @@ public static partial class LocalizedText
     }
 
     /// <summary>printf 形式の書式指定子に一致する正規表現です。</summary>
-    [GeneratedRegex(@"%%|%(?:(?<position>\d+)\$)?(?:\.(?<precision>\d+))?(?:ll|l|h)?(?<conversion>[@dDuUifFxXsS])")]
+    [GeneratedRegex(@"%%|%(?:(?<position>\d+)\$)?(?<flags>[-0]*)(?<width>[1-9]\d*)?(?:\.(?<precision>\d+))?(?:ll|l|h)?(?<conversion>[@dDuUifFxXsS])")]
     private static partial Regex PrintfSpecifier();
 }

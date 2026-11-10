@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="ProjectZD8ForWindows.Platform.Windows.Features.Maintenance.Views.WindowsMaintenanceView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 左：整備記録の時系列、右：概要か編集。iOS 版と同じ 2 列の構成。 -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="340" MinWidth="260" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Border Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid x:Name="Timeline" Padding="20" RowSpacing="14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel x:Name="TimelineHeader" Spacing="14" />
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="RecordList" Spacing="9" />
+                </ScrollViewer>
+            </Grid>
+        </Border>
+        <Rectangle Grid.Column="1" Width="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+        <Border x:Name="DetailHost" Grid.Column="2" />
+    </Grid>
+</UserControl>

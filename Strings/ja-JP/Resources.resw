@@ -3658,9 +3658,9 @@
     <value>既定のアダプターが見つかりました</value>
     <comment>windows.adapter_prompt.title</comment>
   </data>
-  <data name="windows_cloud_local_mode" xml:space="preserve">
-    <value>ローカルモード：この PC では iCloud を設定していません。</value>
-    <comment>windows.cloud.local_mode</comment>
+  <data name="windows_cloud_coming_soon" xml:space="preserve">
+    <value>近日対応：iCloud 同期は、Apple でのサインインと同時に使えるようになります。それまでデータはこの PC の中だけに保存します。</value>
+    <comment>windows.cloud.coming_soon</comment>
   </data>
   <data name="windows_cloud_sign_in" xml:space="preserve">
     <value>iCloud にサインイン</value>
@@ -3686,6 +3686,10 @@
     <value>ブラウザーでサインインを済ませてください…</value>
     <comment>windows.cloud.signing_in</comment>
   </data>
+  <data name="windows_login_apple_coming_soon" xml:space="preserve">
+    <value>近日対応</value>
+    <comment>windows.login.apple_coming_soon</comment>
+  </data>
   <data name="windows_login_continue_local" xml:space="preserve">
     <value>この PC で続ける</value>
     <comment>windows.login.continue_local</comment>
@@ -3695,7 +3699,7 @@
     <comment>windows.login.disclaimer.accept_local</comment>
   </data>
   <data name="windows_login_local_mode_notice" xml:space="preserve">
-    <value>この PC では Apple のサインインを設定していないため、データはこの PC の中だけに保存し、iPhone とは同期しません。</value>
+    <value>Apple でのサインインは近日対応です。今はデータをこの PC の中だけに保存し、iPhone とは同期しません。初めて Apple でサインインしたときに、そのアカウントへ引き継ぎます。</value>
     <comment>windows.login.local_mode_notice</comment>
   </data>
 </root>

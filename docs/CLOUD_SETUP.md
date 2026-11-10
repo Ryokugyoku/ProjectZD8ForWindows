@@ -5,6 +5,35 @@ Windows 版が iOS 版と同じデータ（車両・整備記録・接続セッ�
 
 秘密の値（API トークンなど）はリポジトリに入れないでください。`appsettings.Local.json` は `.gitignore` 済みです。
 
+> **今は「近日対応（Coming Soon）」です。** Sign in with Apple と iCloud 同期は、機能フラグ `AppleSignIn:Enabled`（既定は `false`）で止めています。
+> ログイン画面の「Apple アカウントで続ける」と、設定画面の「iCloud にサインイン」は、押せないボタンに「近日対応」の印を付けて出し、使える入口は「この PC で続ける」（ローカルモード）だけです。
+> Services ID などの設定をそろえても、フラグを `true` にするまでは Coming Soon のままです。コード（Web 版の Sign in with Apple、CloudKit の Web 認証、CloudKit のリポジトリ）とテストは残してあるので、下のチェックリストのとおりフラグを入れるだけで動きます。
+
+## 0. Services ID が発行されたら有効にする手順（チェックリスト）
+
+- [ ] Apple Developer で Services ID を作り、Sign in with Apple を有効にして、Return URL（https）を登録した（→ 2）
+- [ ] Return URL のドメインに `docs/web/apple-callback.html` と `docs/web/cloudkit-callback.html` を置き、ブラウザーで開けることを確かめた（→ 3）
+- [ ] CloudKit Console で API トークンを作り、Sign In Callback を設定した。同期したい iOS 版と同じ環境（development / production）で作った（→ 4）
+- [ ] `AccountSettings` と `AccountSessionRevocation` のレコードの種類を用意し、Production に反映した（→ 5）
+- [ ] `appsettings.Local.example.json` を `appsettings.Local.json` にコピーし、`Apple:ServicesId`、`Apple:RedirectUri`、`CloudKit:Environment`、`CloudKit:ApiToken` を入れた（→ 6）
+- [ ] 同じファイルで **`"AppleSignIn": { "Enabled": true }`** にした（環境変数なら `PROJECTZD8_APPLE_SIGN_IN_ENABLED=true`。環境変数がファイルより優先）
+- [ ] アプリを起動し、ログイン画面のボタンが押せる「Apple アカウントで続ける」だけになり、「近日対応」の印が消えたことを確かめた
+  - 印が消えないとき：フラグは有効でも設定が足りない（Debug の出力に「AppleSignIn:Enabled は true ですが、設定が足りないため Coming Soon のままにします」と出る）。Services ID・https のリダイレクト先・API トークン・環境（development / production）を見直す
+- [ ] Apple でサインインし、iPhone と同じ車両が Garage に出ることを確かめた（sub が iOS と一致しているか。→ 8）
+- [ ] 設定画面の「iCloud 同期」で iCloud にサインインし、「iCloud にサインイン済み」になったことを確かめた
+- [ ] ローカルモードで貯めたデータが、サインインしたアカウントに引き継がれたことを確かめた（下の「ローカルモードのデータの引き継ぎ」）
+- [ ] PROGRESS.md の「決定事項」に、有効にした日と環境を書いた
+
+### ローカルモードのデータの引き継ぎ
+
+ローカルモードのアカウント（`local-…`）と Apple の `sub` は別の識別子です。そのため、**この PC で初めて Apple でサインインしたとき、1 回だけ**、ローカルモードのデータをそのアカウントへ引き継ぎます（`LocalAccountDataAdoptingAuthorizationPort`）。
+
+- 引き継ぐもの：車両（写真を含む）、接続セッション（生ログと取得の証跡はセッションに付いて移る）、整備記録。設定は、引き継ぎ先にまだ設定がなければ写します。
+- 引き継いだあとは、いつもの同期で iCloud に上がります（車両カタログと整備カタログの同期。走行ログは自動アップロードの設定に従う）。
+- 2 つ目以降の Apple アカウントには引き継ぎません。引き継ぎ済みの印は `preferences.json` の `authentication.local-account.adopted-by.v1` です。
+- 付け替え先にすでに同じ ID の車両があれば、上書きせず元のまま残します。
+- 失敗してもサインインは成功し、次のサインインでやり直します（付け替えは 1 回のトランザクションなので中途半端には残りません）。
+
 ## 1. 全体の流れ
 
 Windows ではサインインが 2 回必要です（PROGRESS.md の「同期の設計メモ」）。
@@ -82,6 +111,7 @@ ConnectionSessionMacReceipt、ConnectionSessionDeletion）は、そのまま使�
 
 ```json
 {
+  "AppleSignIn": { "Enabled": true },
   "Apple":    { "ServicesId": "Ryokugyoku.ProjectZD8.web", "RedirectUri": "https://example.com/revtorque/apple-callback.html" },
   "CloudKit": { "ContainerId": "iCloud.Ryokugyoku.ProjectZD8", "Environment": "development", "ApiToken": "<API トークン>" },
   "CallbackScheme": "revtorque-insight"
@@ -94,12 +124,13 @@ ConnectionSessionMacReceipt、ConnectionSessionDeletion）は、そのまま使�
 - 環境変数でも渡せます（ファイルより優先）：`PROJECTZD8_APPLE_SERVICES_ID`、`PROJECTZD8_APPLE_REDIRECT_URI`、`PROJECTZD8_CALLBACK_SCHEME`、
   `PROJECTZD8_CLOUDKIT_CONTAINER_ID`、`PROJECTZD8_CLOUDKIT_ENVIRONMENT`、`PROJECTZD8_CLOUDKIT_API_TOKEN`。
 - `Environment` は、同期したい iOS 版に合わせます。Xcode から実行した iOS 版は **development**、TestFlight／App Store の iOS 版は **production** です（データは環境ごとに別です）。
-- Services ID・リダイレクト先・API トークンのどれかが欠けると、アカウントなしのローカルモードになります。
+- `AppleSignIn:Enabled` が `true` でない（既定）か、Services ID・リダイレクト先・API トークンのどれかが欠けると、Coming Soon（アカウントなしのローカルモード）になります。
+- 環境変数 `PROJECTZD8_APPLE_SIGN_IN_ENABLED`（`true` / `false`）で、ファイルのフラグを上書きできます。
 
 ## 7. アプリ側の登録（組み立て・パッケージ）
 
 - 済んでいます：`Package.appxmanifest` にプロトコル `revtorque-insight` を登録済み。アプリは単一インスタンス（`App/Lifecycle/Program.cs`）で、ブラウザーからの戻りは起動中のインスタンスの `AuthorizationCallbackBroker.TryDeliver(uri)` に渡ります。
-- 設定を置いてアプリを起動すると、ログイン画面のボタンが「Apple アカウントで続ける」になります。サインインのあと、設定画面の「iCloud 同期」カードで iCloud にサインインします（ckWebAuthToken の取得）。
+- 設定を置き、`AppleSignIn:Enabled` を `true` にしてアプリを起動すると、ログイン画面のボタンが押せる「Apple アカウントで続ける」になります（「近日対応」の印が消える）。サインインのあと、設定画面の「iCloud 同期」カードで iCloud にサインインします（ckWebAuthToken の取得）。
 
 
 ## 8. 確かめられていないこと

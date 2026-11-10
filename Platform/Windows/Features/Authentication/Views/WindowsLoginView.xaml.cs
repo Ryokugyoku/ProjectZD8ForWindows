@@ -129,6 +129,11 @@ public sealed partial class WindowsLoginView : UserControl
                         new SolidColorBrush(Color.FromArgb(255, 255, 159, 46))));
                 }
 
+                if (_isLocalMode)
+                {
+                    PhaseArea.Children.Add(AppleComingSoonButton());
+                }
+
                 PhaseArea.Children.Add(ContinueButton(state.Failure is null));
                 if (_isLocalMode)
                 {
@@ -159,7 +164,55 @@ public sealed partial class WindowsLoginView : UserControl
         return row;
     }
 
-    /// <summary>「Apple アカウントで続ける」ボタンを作ります。</summary>
+    /// <summary>押せない「Apple アカウントで続ける」ボタン（近日対応）を作ります。</summary>
+    /// <remarks>
+    /// 責務: Sign in with Apple が Coming Soon の間、入口があることだけを示し、押せないボタンと「近日対応」の印を作ります。
+    /// 機能フラグ（AppleSignIn:Enabled）を有効にすると、このボタンは出ず、ふつうの「Apple アカウントで続ける」になります。
+    /// </remarks>
+    /// <returns>押せないボタン。</returns>
+    private static Button AppleComingSoonButton()
+    {
+        var content = new Grid { ColumnSpacing = 10 };
+        content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        var label = Typography.Strong(LocalizedText.Get("auth.continue_with_apple"), "BodyStrongTextBlockStyle", new SolidColorBrush(Color.FromArgb(158, 255, 255, 255)));
+        label.HorizontalAlignment = HorizontalAlignment.Center;
+        label.VerticalAlignment = VerticalAlignment.Center;
+        content.Children.Add(label);
+        var badge = new Border
+        {
+            Padding = new Thickness(8, 2, 8, 3),
+            CornerRadius = new CornerRadius(8),
+            Background = new SolidColorBrush(Color.FromArgb(46, 5, 199, 230)),
+            BorderBrush = new SolidColorBrush(Color.FromArgb(120, 5, 199, 230)),
+            BorderThickness = new Thickness(1),
+            VerticalAlignment = VerticalAlignment.Center,
+            Child = Typography.Text(LocalizedText.Get("windows.login.apple_coming_soon"), "CaptionTextBlockStyle", new SolidColorBrush(Color.FromArgb(255, 5, 199, 230)), wraps: false),
+        };
+        Grid.SetColumn(badge, 1);
+        content.Children.Add(badge);
+        var button = new Button
+        {
+            Content = content,
+            IsEnabled = false,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+            MinHeight = 46,
+            CornerRadius = new CornerRadius(12),
+            Background = new SolidColorBrush(Color.FromArgb(20, 255, 255, 255)),
+            BorderBrush = new SolidColorBrush(Color.FromArgb(46, 255, 255, 255)),
+            BorderThickness = new Thickness(1),
+        };
+        button.Resources["ButtonBackgroundDisabled"] = new SolidColorBrush(Color.FromArgb(20, 255, 255, 255));
+        button.Resources["ButtonBorderBrushDisabled"] = new SolidColorBrush(Color.FromArgb(46, 255, 255, 255));
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-login-apple-coming-soon");
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(
+            button,
+            LocalizedText.Get("auth.continue_with_apple") + " — " + LocalizedText.Get("windows.login.apple_coming_soon"));
+        return button;
+    }
+
+    /// <summary>「Apple アカウントで続ける」（ローカルモードでは「この PC で続ける」）ボタンを作ります。</summary>
     /// <remarks>責務: 初回はログイン、失敗後は再試行の操作を送るボタンを作ります。</remarks>
     /// <param name="isFirstAttempt">失敗の表示がなければ true。</param>
     /// <returns>ボタン。</returns>

@@ -38,6 +38,9 @@ public static class CloudServiceConfigurationLoader
     /// <summary>CloudKit API トークンの環境変数名です。</summary>
     public const string CloudKitApiTokenVariable = "PROJECTZD8_CLOUDKIT_API_TOKEN";
 
+    /// <summary>Sign in with Apple の機能フラグ（true で有効。既定は無効）を上書きする環境変数です。</summary>
+    public const string AppleSignInEnabledVariable = "PROJECTZD8_APPLE_SIGN_IN_ENABLED";
+
     /// <summary>
     /// 設定ファイルとプロセスの環境変数から設定を読みます。
     /// </summary>
@@ -71,6 +74,7 @@ public static class CloudServiceConfigurationLoader
             CloudKitEnvironment = Pick(CloudKitEnvironmentVariable, file.Environment)?.ToLowerInvariant()
                 ?? defaults.CloudKitEnvironment,
             CloudKitApiToken = Pick(CloudKitApiTokenVariable, file.ApiToken),
+            AppleSignInEnabled = ParseFlag(Pick(AppleSignInEnabledVariable, file.AppleSignInEnabled)),
         };
     }
 
@@ -108,6 +112,7 @@ public static class CloudServiceConfigurationLoader
                 ContainerId = Get(root, "CloudKit", "ContainerId"),
                 Environment = Get(root, "CloudKit", "Environment"),
                 ApiToken = Get(root, "CloudKit", "ApiToken"),
+                AppleSignInEnabled = GetFlag(root, "AppleSignIn", "Enabled"),
                 CallbackScheme = root.ValueKind == JsonValueKind.Object
                     && root.TryGetProperty("CallbackScheme", out var scheme)
                     && scheme.ValueKind == JsonValueKind.String
@@ -129,13 +134,52 @@ public static class CloudServiceConfigurationLoader
     /// <param name="section">節の名前。</param>
     /// <param name="key">キー。</param>
     /// <returns>文字列。</returns>
-    private static string? Get(JsonElement root, string section, string key) =>
+    private static string? Get(JsonElement root, string section, string key) => GetValue(root, section, key) is { ValueKind: JsonValueKind.String } value
+        ? value.GetString()
+        : null;
+
+    /// <summary>
+    /// JSON の <c>section.key</c> の真偽値を文字列で取り出します。
+    /// </summary>
+    /// <remarks>責務: true / false の値と "true" / "false" の文字列を、同じ形の文字列として読みます。なければ <c>null</c>。</remarks>
+    /// <param name="root">ルート要素。</param>
+    /// <param name="section">節の名前。</param>
+    /// <param name="key">キー。</param>
+    /// <returns>"true"・"false"・文字列の値。なければ null。</returns>
+    private static string? GetFlag(JsonElement root, string section, string key) => GetValue(root, section, key) switch
+    {
+        { ValueKind: JsonValueKind.True } => "true",
+        { ValueKind: JsonValueKind.False } => "false",
+        { ValueKind: JsonValueKind.String } value => value.GetString(),
+        _ => null,
+    };
+
+    /// <summary>
+    /// 機能フラグの文字列を真偽値にします。
+    /// </summary>
+    /// <remarks>責務: "true" / "1" / "yes"（大文字小文字を区別しない）だけを有効とし、それ以外と未設定は無効（既定）にします。</remarks>
+    /// <param name="value">フラグの文字列。</param>
+    /// <returns>有効なら true。</returns>
+    private static bool ParseFlag(string? value) =>
+        value is not null
+        && (string.Equals(value, "true", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(value, "1", StringComparison.Ordinal)
+            || string.Equals(value, "yes", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// JSON の <c>section.key</c> の要素を取り出します。
+    /// </summary>
+    /// <remarks>責務: 節とキーがあればその要素を、なければ null を返します。</remarks>
+    /// <param name="root">ルート要素。</param>
+    /// <param name="section">節の名前。</param>
+    /// <param name="key">キー。</param>
+    /// <returns>要素。なければ null。</returns>
+    private static JsonElement? GetValue(JsonElement root, string section, string key) =>
         root.ValueKind == JsonValueKind.Object
         && root.TryGetProperty(section, out var node)
         && node.ValueKind == JsonValueKind.Object
         && node.TryGetProperty(key, out var value)
-        && value.ValueKind == JsonValueKind.String
-            ? value.GetString()
+            ? value
             : null;
 
     /// <summary>
@@ -160,5 +204,8 @@ public static class CloudServiceConfigurationLoader
 
         /// <summary>カスタム URL スキーム。</summary>
         public string? CallbackScheme { get; init; }
+
+        /// <summary>AppleSignIn:Enabled の値（true / false か、その文字列）。</summary>
+        public string? AppleSignInEnabled { get; init; }
     }
 }

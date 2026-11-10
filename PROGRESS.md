@@ -8,13 +8,14 @@ README 確認済みのコミット: dbb884d
 
 ## 現状
 - iOS 版と同じ機能のアプリとして一通りできた。ローカルモード（アカウントなし）とデモ用アダプターで、全画面を実際に操作して確かめた（下の「確かめたこと・確かめていないこと」）。
+- **Sign in with Apple と iCloud 同期は「近日対応（Coming Soon）」**（2026-11-10、開発者の指示）。機能フラグ `AppleSignIn:Enabled`（既定 false）で止めている。ログイン画面の「Apple アカウントで続ける」と設定画面の「iCloud にサインイン」は押せないボタンに「近日対応」の印。使える入口は「この PC で続ける」（ローカルモード）だけ。Services ID が出たら、docs/CLOUD_SETUP.md の「0. 有効にする手順（チェックリスト）」のとおりフラグを true にするだけで動く（コードとテストは残してある）。
 - 層：Domain（`src/ProjectZD8.Domain`）、Application（`src/ProjectZD8.Application`）、Data（`src/ProjectZD8.Data` と、Windows の API を使う `src/ProjectZD8.Data.Windows`）、画面と組み立て（ルートのアプリ。`App/`、`Platform/Windows/`）。
-- テスト：Domain 56 件、Application 155 件、Data 283 件、計 494 件すべて合格。全プロジェクトのビルド（`ProjectZD8ForWindows.slnx`、x64）は警告 0・エラー 0。
+- テスト：Domain 56 件、Application 155 件、Data 311 件、計 522 件すべて合格。全プロジェクトのビルド（`ProjectZD8ForWindows.slnx`、x64）は警告 0・エラー 0。
 - 保存：マスタ系は SQLite（`<データ>\projectzd8.sqlite`）、生ログと取得の証跡は自作の追記専用ログストア（`<データ>\logs\<セッション>\`）。iOS 版は全部を GRDB（SQLite）に入れているので、ここが違う（README にも書いた）。データのフォルダはパッケージの LocalState。
 - 生ログストアの性能（Release、24 コア、1 セッションに 100 万件、`tools/ProjectZD8.LogStoreBenchmark`）：書込み 124 万件/秒、Append の遅延 p50 0.6µs・p99 2.0µs・p99.9 20.7µs（最大 14.1ms）。sequence の範囲読取（1,000 件）p50 0.66ms・p99 1.06ms、時間窓（10 秒分）p50 0.65ms・p99 1.09ms、全件読取 377ms。ディスク 26.5MiB（27.8 バイト/件）。開き直し（索引あり）1.2ms、異常終了後の開き直し（全走査）204ms。
 - OBD：USB シリアル（COM、115200bps）、Bluetooth Classic（RFCOMM / SPP）、BLE（GATT の UART）、デモ用アダプター。機器の検出、既定アダプターの記憶、BLE の既定アダプターの到来を監視してシェルの InfoBar で接続を尋ねる処理（iOS と同じユースケース）。
-- 同期と認証：Swift の Codable と同じ JSON、CloudKit Web Services のクライアントと各リポジトリ（車両・整備・接続セッション・AccountSettings・AccountSessionRevocation）、Web 版の Sign in with Apple（ID トークンの検証と sub の取り出し）、CloudKit の Web 認証（設定画面の「iCloud 同期」カード）、PasswordVault（だめなら DPAPI）への保存。設定（`appsettings.Local.json` か環境変数 `PROJECTZD8_*`）がなければローカルモード。
-- 翻訳：iOS 版の xcstrings（904 キー）と Windows 版だけの文言（`Strings/WindowsOnly.xcstrings`、17 キー）から、日本語・英語・スペイン語の .resw を生成して取り込んだ。
+- 同期と認証：Swift の Codable と同じ JSON、CloudKit Web Services のクライアントと各リポジトリ（車両・整備・接続セッション・AccountSettings・AccountSessionRevocation）、Web 版の Sign in with Apple（ID トークンの検証と sub の取り出し）、CloudKit の Web 認証（設定画面の「iCloud 同期」カード）、PasswordVault（だめなら DPAPI）への保存。機能フラグが有効で設定（`appsettings.Local.json` か環境変数 `PROJECTZD8_*`）もそろったときだけ使う。それ以外はローカルモード。
+- 翻訳：iOS 版の xcstrings（904 キー）と Windows 版だけの文言（`Strings/WindowsOnly.xcstrings`、18 キー）から、日本語・英語・スペイン語の .resw を生成して取り込んだ。
 - git は C:\Program Files\Git にあるが PATH に入っていない（Git Bash の git は使える）。GitHub CLI（gh）はない。.NET SDK 10.0.403 あり。iOS 版を参照用に ..\ProjectZD8 に clone 済み（8bcda6f）。
 
 ## 確かめたこと・確かめていないこと
@@ -22,12 +23,14 @@ README 確認済みのコミット: dbb884d
 - 確かめていない：実機の OBD アダプター（USB シリアル・RFCOMM・BLE の接続と送受信、探索、到来の監視）、実際の CloudKit と Apple のサインイン（テストは偽の HTTP 応答だけ）、本物の車、電源断での fsync の効き目、ARM64 と x86 のビルド、狭いウインドウ（640×420）、写真の取り込み、停止確認・Raw の解放・セッション削除の各ダイアログ、Release ビルド（トリミングあり）での起動。
 
 ## 直近の作業
+- 2026-11-10: Sign in with Apple と iCloud 同期を「近日対応（Coming Soon）」にした（開発者の指示）。機能フラグ AppleSignIn:Enabled（既定 false）を足し、ログイン画面と設定画面に押せないボタンと「近日対応」の印を出した。有効にしたときに、ローカルモードのデータを最初の Apple アカウントへ引き継ぐ処理（SqliteAccountDataReassignment と LocalAccountDataAdoptingAuthorizationPort）を作った。切り替えと引き継ぎのテスト 28 件を追加。docs/CLOUD_SETUP.md に有効にする手順のチェックリストを書いた。起動してログイン画面と設定画面（日本語・英語）を目で確かめた（screenshots/coming-soon/）。
 - 2026-11-10: Data 層・画面・組み立て・翻訳・マニフェストを作り、アプリを完成させた。サブエージェント 4 つ（永続化、デバイス、ネットワークと認証、画面）を別の作業ツリーで並行させ、リードがまとめて組み立てを本物の Data 層に差し替えた。ローカルモードとデモ用アダプターで全画面を操作して確かめた。
 - 2026-11-10: Application 層とそのテストを C# に移植した（9 機能、テスト 155 件合格）。
 - 2026-11-10: 全プロジェクトを .NET 10 に上げた。Domain 層とそのテストを C# に移植した（56 件合格）。移植の規約を docs/PORTING_CONVENTIONS.md に書いた。
 - 2026-11-10: iOS 版の CloudKit と認証の実装を調べ、Windows から同期する方式を設計した（下の「同期の設計メモ」）。
 
 ## 次にやること
+- Services ID が発行されたら、docs/CLOUD_SETUP.md の「0. 有効にする手順（チェックリスト）」を順に進め、最後に AppleSignIn:Enabled を true にする。
 - 開発者の準備（docs/CLOUD_SETUP.md）：Apple Developer で Services ID とリダイレクト先の https ドメインを用意し、docs/web/ のページを置く。CloudKit Console で API トークン（Sign In Callback）を作り、AccountSettings と AccountSessionRevocation のスキーマを Production に反映する。appsettings.Local.json を置く。
 - 実際の Apple・CloudKit につないで確かめる（下の検討事項の「CloudKit Web Services の確かめていない点」と「sub の一致」）。
 - 実機の OBD アダプター（OBDLink EX の USB、OBDLink MX+ の Bluetooth、BLE の ELM327）で接続・識別・ライブ取得を確かめる。
@@ -63,6 +66,8 @@ README 確認済みのコミット: dbb884d
 - CloudKit Console で、スキーマを本番環境（Production）に反映する必要がある（開発者の作業）。
 
 ## 検討事項・未決定
+- ローカルモードのデータの引き継ぎで決めきれていない点：①この PC で最初に Apple でサインインしたアカウントへ、確認なしで自動で引き継ぐ（Windows のユーザーごとに 1 人が使う前提）。家族で 1 台の PC を共有し、別の人が先に Apple でサインインすると、その人のアカウントに入る。確認のダイアログ（「この PC のデータを引き継ぎますか？」）を出すかどうか → 開発者に確認。②付け替え先に同じ ID の車両があれば上書きしない（元の持ち主に残る）。③引き継いだ走行ログが iCloud に上がるのは、自動アップロードの設定が有効なときだけ（無効なら履歴に手動アップロードのボタンが出る）。
+- 機能フラグを有効にしたあと、ローカルモードに戻す手段はない（フラグを false に戻すとローカルモードの識別子で入り直すが、引き継ぎ済みのデータは Apple のアカウントの持ち物のまま見えなくなる）。戻す運用が要るか → 開発者に確認。
 - アカウント削除で AccountSessionRevocation のレコードを消すかどうか。今の実装は消さない（ほかの端末へログアウトを知らせるのに要るため）。「iOS 版の CloudKit 化の設計案」の「消す」と食い違っている。→ 開発者に確認。
 - アカウント削除で、端末内の整備記録は消えない（iOS 版の ProjectZD8AccountDataEraser も整備記録を消さないので、同じにした）。ローカルモードで削除して、もう一度「この PC で続ける」と、前の整備記録が見える。iOS 側も含めて消すべきか → 開発者に確認。
 - 取得元の端末：Domain の ConnectionSessionAcquisitionPlatform に Windows がない。macOS と名乗ると事実と違うので、セッションの acquisitionDevice は記録しない（履歴に「取得端末不明」と出る）。取得証拠の platform は macOS の値を使っている。Domain に Windows を足すと iOS 版との JSON 互換に影響するので、iOS 側と一緒に決める。
@@ -89,6 +94,10 @@ README 確認済みのコミット: dbb884d
 - ライセンスが PolyForm Noncommercial なので、Windows 版も同じライセンスにするか。
 
 ## 決定事項
+- 2026-11-10: Sign in with Apple と iCloud 同期は「近日対応（Coming Soon）」にする（開発者の指示）。切り替えは 1 か所の機能フラグ `AppleSignIn:Enabled`（appsettings.Local.json。環境変数 PROJECTZD8_APPLE_SIGN_IN_ENABLED が優先）。既定は無効で、Services ID などがそろっていてもフラグが true でなければ使わない。フラグを当てはめた設定（CloudServiceConfiguration.ForActiveFeatures）だけを組み立てに渡すので、無効の間は Apple にも CloudKit にも通信しない。フラグが true でも設定が足りなければ Coming Soon のまま（Debug の出力に理由を出す）。
+- 2026-11-10: iCloud 同期も Apple のサインインと同じフラグに従う。CloudKit のレコード名は Apple の sub から作るので、Apple のサインインなしでは同期できないため。
+- 2026-11-10: Coming Soon の間も、ログイン画面の「Apple アカウントで続ける」と設定画面の「iCloud にサインイン」は消さず、押せないボタンに「近日対応」の印を付けて出す。近く使えるようになることと、今はこの PC の中だけに保存することを利用者に伝えるため。
+- 2026-11-10: ローカルモードのデータは、フラグを有効にしたあと、この PC で最初に Apple でサインインしたアカウントへ 1 回だけ自動で引き継ぐ（LocalAccountDataAdoptingAuthorizationPort）。SQLite の車両・写真・接続セッション・整備記録の accountIdentifier を 1 回のトランザクションで付け替え（生ログと取得証跡はセッションの ID で引くので一緒に移る）、設定は引き継ぎ先になければ写す。引き継いだあとは既存の同期で iCloud に上がる。理由：データの ID は UUID なので付け替えだけで済み、CloudKit の車両カタログの 3 者の突き合わせでも「この端末だけにある車両」として上がる。2 つ目の Apple アカウントには引き継がない（データの持ち主を 1 人に決めるため）。失敗してもサインインは成功させ、次のサインインでやり直す。
 - 2026-11-10: Windows は接続セッションの同期で macOS の役割（ConnectionSessionSyncDeviceRole.MacOS。生ログを CloudKit に保管し、Mac 受領証を出す）を担う。Application には iOS と macOS の 2 つの役割しかなく、デスクトップで全ログを持つ Windows は Mac と同じ立場のため。iOS 側の生ログのキャッシュを消す判断に影響する点は、iOS と同期するときに見る。
 - 2026-11-10: 設定がないとき、ログイン画面のボタンは「この PC で続ける」にし、「Apple アカウントのみ」の説明を隠し、ローカルモードの説明を出す。免責事項の同意ボタンも「同意して続ける」にする（実際の動きと文言を合わせるため）。Windows 版だけの文言は Strings/WindowsOnly.xcstrings に置く（iOS 版の xcstrings を変えないため）。
 - 2026-11-10: iCloud（CloudKit）へのサインインは、Apple のサインインとは別に、設定画面の「iCloud 同期」カードから行う。CloudKit の Web 認証は Apple ID の入力を伴うので、利用者が自分で始める操作にした。

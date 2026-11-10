@@ -347,7 +347,7 @@ public sealed partial class WindowsSettingsView : UserControl
         {
             WindowsCloudSyncAvailability.Available => ("windows.cloud.signed_in", Tone.Accent),
             WindowsCloudSyncAvailability.SignedOut => ("windows.cloud.signed_out", Tone.Neutral),
-            _ => ("windows.cloud.local_mode", Tone.Neutral),
+            _ => ("windows.cloud.coming_soon", Tone.Neutral),
         };
         content.Children.Add(new GlyphLabel(
             availability == WindowsCloudSyncAvailability.Available ? FluentSymbol.Cloud : FluentSymbol.Info,
@@ -371,7 +371,20 @@ public sealed partial class WindowsSettingsView : UserControl
                 DesignTokens.Foreground(Tone.Caution)));
         }
 
-        if (availability == WindowsCloudSyncAvailability.SignedOut && !_cloudSync.IsSigningIn)
+        if (availability == WindowsCloudSyncAvailability.NotConfigured)
+        {
+            // Coming Soon の間は、入口があることだけを示す押せないボタンを出す（機能フラグ AppleSignIn:Enabled で有効になる）。
+            var comingSoon = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+            comingSoon.Children.Add(new Button
+            {
+                Content = LocalizedText.Get("windows.cloud.sign_in"),
+                IsEnabled = false,
+            });
+            comingSoon.Children.Add(StatusPill.Create(null, LocalizedText.Get("windows.login.apple_coming_soon"), Tone.Accent));
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(comingSoon, "windows-settings-cloud-coming-soon");
+            content.Children.Add(comingSoon);
+        }
+        else if (availability == WindowsCloudSyncAvailability.SignedOut && !_cloudSync.IsSigningIn)
         {
             var signIn = new Button
             {

@@ -28,7 +28,7 @@ namespace ProjectZD8ForWindows.AppRoot.Composition;
 /// <param name="SessionLogAnalysis">保存済みログの解析モデル。</param>
 /// <param name="StartVehicleConnection">ホームの接続要求を車両識別へ渡すユースケース。</param>
 /// <param name="MakeSettingsPresentationModel">設定画面の表示モデルを作る処理（ログアウトのたびに作り直す）。</param>
-/// <param name="IsLocalMode">Apple・CloudKit の設定がなく、アカウントなしのローカルモードで動いているなら true。</param>
+/// <param name="IsLocalMode">Sign in with Apple が使えず（機能フラグ AppleSignIn:Enabled が無効＝Coming Soon、または設定が足りない）、アカウントなしのローカルモードで動いているなら true。</param>
 /// <param name="CloudSync">Windows 版だけの iCloud サインインの表示モデル。</param>
 /// <param name="PromptForDefaultAdapterConnection">既定アダプターの到来を監視して接続を尋ねるユースケース（iOS 版と同じ）。</param>
 /// <param name="PromptedVehicleConnectionRequest">尋ねて受け入れられた接続要求をサインイン後まで預かる入れ物。</param>

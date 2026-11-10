@@ -48,9 +48,10 @@ iOS 版とやりとりする JSON（CloudKit のレコード）の形式は、�
 
 ## アカウントと同期
 
-- Apple の Services ID と CloudKit の API トークンを設定すると、Web 版の Sign in with Apple でサインインし、設定画面から iCloud（CloudKit）にサインインして iOS 版と同期します。手順は [docs/CLOUD_SETUP.md](docs/CLOUD_SETUP.md)。
+- **Sign in with Apple と iCloud 同期は、今は「近日対応（Coming Soon）」です。** ログイン画面と設定画面には押せないボタンに「近日対応」の印を付けて出し、使える入口は「この PC で続ける」（アカウントなしのローカルモード。データはこの PC の中だけ）です。
+- 機能フラグ `AppleSignIn:Enabled`（既定は `false`）を `true` にし、Apple の Services ID・https のリダイレクト先・CloudKit の API トークンをそろえると有効になります。Web 版の Sign in with Apple でサインインし、設定画面から iCloud（CloudKit）にサインインして iOS 版と同期します。手順とチェックリストは [docs/CLOUD_SETUP.md](docs/CLOUD_SETUP.md)。
 - 設定は `appsettings.Local.json`（コミットしない。見本は `appsettings.Local.example.json`）か環境変数 `PROJECTZD8_*` から読みます。
-- **設定がなければ、アカウントなしのローカルモード**で動きます（データはこの PC の中だけ）。
+- 有効にしたあと、この PC で初めて Apple でサインインしたとき、ローカルモードで貯めた車両・走行ログ・整備記録・設定を、そのアカウントへ 1 回だけ引き継ぎます。
 
 ## 必要なもの
 

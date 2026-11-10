@@ -3658,9 +3658,9 @@ Domina la conducción.</value>
     <value>Tu adaptador predeterminado está cerca</value>
     <comment>windows.adapter_prompt.title</comment>
   </data>
-  <data name="windows_cloud_local_mode" xml:space="preserve">
-    <value>Modo local: iCloud no está configurado en este equipo.</value>
-    <comment>windows.cloud.local_mode</comment>
+  <data name="windows_cloud_coming_soon" xml:space="preserve">
+    <value>Próximamente: la sincronización con iCloud llegará junto con el inicio de sesión con Apple. Hasta entonces, los datos se quedan en este equipo.</value>
+    <comment>windows.cloud.coming_soon</comment>
   </data>
   <data name="windows_cloud_sign_in" xml:space="preserve">
     <value>Iniciar sesión en iCloud</value>
@@ -3686,6 +3686,10 @@ Domina la conducción.</value>
     <value>Termina de iniciar sesión en el navegador…</value>
     <comment>windows.cloud.signing_in</comment>
   </data>
+  <data name="windows_login_apple_coming_soon" xml:space="preserve">
+    <value>Próximamente</value>
+    <comment>windows.login.apple_coming_soon</comment>
+  </data>
   <data name="windows_login_continue_local" xml:space="preserve">
     <value>Continuar en este equipo</value>
     <comment>windows.login.continue_local</comment>
@@ -3695,7 +3699,7 @@ Domina la conducción.</value>
     <comment>windows.login.disclaimer.accept_local</comment>
   </data>
   <data name="windows_login_local_mode_notice" xml:space="preserve">
-    <value>El inicio de sesión de Apple no está configurado en este equipo, así que tus datos se guardan solo aquí y no se sincronizan con el iPhone.</value>
+    <value>El inicio de sesión con Apple llegará pronto. Por ahora, tus datos se guardan solo en este equipo y no se sincronizan con el iPhone. Pasarán a tu cuenta de Apple la primera vez que inicies sesión.</value>
     <comment>windows.login.local_mode_notice</comment>
   </data>
 </root>

@@ -17,12 +17,28 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "同意して続ける" } }
       }
     },
+    "windows.login.apple_coming_soon" : {
+      "comment" : "Windows 版だけ。押せない Apple のサインインボタンに付ける印（機能フラグ AppleSignIn:Enabled が無効の間）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Coming soon" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Próximamente" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "近日対応" } }
+      }
+    },
+    "windows.cloud.coming_soon" : {
+      "comment" : "Windows 版だけ。設定画面の iCloud 同期カード（機能フラグが無効の間）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Coming soon: iCloud sync will be available together with Sign in with Apple. Until then, data stays on this PC." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Próximamente: la sincronización con iCloud llegará junto con el inicio de sesión con Apple. Hasta entonces, los datos se quedan en este equipo." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "近日対応：iCloud 同期は、Apple でのサインインと同時に使えるようになります。それまでデータはこの PC の中だけに保存します。" } }
+      }
+    },
     "windows.login.local_mode_notice" : {
       "comment" : "Windows 版だけ。ローカルモードの説明。",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Apple sign-in isn't set up on this PC, so your data is kept only on this PC and isn't synced with iPhone." } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "El inicio de sesión de Apple no está configurado en este equipo, así que tus datos se guardan solo aquí y no se sincronizan con el iPhone." } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "この PC では Apple のサインインを設定していないため、データはこの PC の中だけに保存し、iPhone とは同期しません。" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign in with Apple is coming soon. For now, your data is kept only on this PC and isn't synced with iPhone. It will move to your Apple account when you first sign in." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "El inicio de sesión con Apple llegará pronto. Por ahora, tus datos se guardan solo en este equipo y no se sincronizan con el iPhone. Pasarán a tu cuenta de Apple la primera vez que inicies sesión." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "Apple でのサインインは近日対応です。今はデータをこの PC の中だけに保存し、iPhone とは同期しません。初めて Apple でサインインしたときに、そのアカウントへ引き継ぎます。" } }
       }
     },
     "settings.windows_cloud.eyebrow" : {
@@ -44,13 +60,6 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign in to iCloud with the same Apple ID as your iPhone to sync vehicles, maintenance records, and drive logs." } },
         "es" : { "stringUnit" : { "state" : "translated", "value" : "Inicia sesión en iCloud con el mismo Apple ID que tu iPhone para sincronizar vehículos, mantenimiento y registros de conducción." } },
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "iPhone と同じ Apple ID で iCloud にサインインすると、車両・整備記録・走行ログを同期します。" } }
-      }
-    },
-    "windows.cloud.local_mode" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Local mode: iCloud isn't set up on this PC." } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Modo local: iCloud no está configurado en este equipo." } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ローカルモード：この PC では iCloud を設定していません。" } }
       }
     },
     "windows.cloud.signed_in" : {

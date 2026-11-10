@@ -18,7 +18,7 @@ public sealed class LocalAccountAuthorizationAdapter : IAppleAccountAuthorizatio
     public const string IdentifierPrefix = "local-";
 
     /// <summary>識別子を保存するキーです。</summary>
-    private const string IdentifierKey = "authentication.local-account.v1";
+    public const string IdentifierKey = "authentication.local-account.v1";
 
     /// <summary>識別子の保存先です。</summary>
     private readonly ILocalKeyValueStore _defaults;

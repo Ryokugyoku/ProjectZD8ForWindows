@@ -52,6 +52,37 @@ public sealed record CloudServiceConfiguration
             || string.Equals(CloudKitEnvironment, "production", StringComparison.Ordinal))
         && !string.IsNullOrWhiteSpace(CloudKitApiToken);
 
+    /// <summary>
+    /// Sign in with Apple（と、それに頼る iCloud 同期）を有効にする機能フラグです（appsettings.Local.json の <c>AppleSignIn:Enabled</c>）。
+    /// </summary>
+    /// <remarks>
+    /// 既定は無効（Coming Soon）。Services ID などの設定がそろっていても、このフラグが true でなければ使いません。
+    /// CloudKit のレコード名は Apple の sub から作るので、iCloud 同期もこのフラグに従います。
+    /// </remarks>
+    public bool AppleSignInEnabled { get; init; }
+
+    /// <summary>Sign in with Apple と iCloud 同期を今使えるかどうかです。</summary>
+    public AppleSignInAvailability AppleSignInAvailability =>
+        !AppleSignInEnabled
+            ? AppleSignInAvailability.ComingSoon
+            : IsConfigured
+                ? AppleSignInAvailability.Active
+                : AppleSignInAvailability.MissingSettings;
+
+    /// <summary>Sign in with Apple と iCloud 同期を今使えるなら true（フラグが有効で、設定もそろっている）。</summary>
+    public bool IsAppleSignInActive => AppleSignInAvailability == AppleSignInAvailability.Active;
+
+    /// <summary>
+    /// 機能フラグを当てはめた、実際に使う設定を返します。
+    /// </summary>
+    /// <remarks>
+    /// 責務: 有効なら自分自身を、そうでなければコールバックのスキームだけを残した「設定なし」を返します。
+    /// CloudKit のクライアントや Apple の認可は、この結果だけを見るので、フラグが無効なら同期も通信もしません。
+    /// </remarks>
+    /// <returns>実際に使う設定。</returns>
+    public CloudServiceConfiguration ForActiveFeatures() =>
+        IsAppleSignInActive ? this : NotConfigured with { CallbackScheme = CallbackScheme };
+
     /// <summary>設定のない状態（ローカルモード）です。</summary>
     public static CloudServiceConfiguration NotConfigured { get; } = new();
 
@@ -71,7 +102,7 @@ public sealed record CloudServiceConfiguration
     /// <remarks>責務: 設定の概要を、秘密を含まない文字列へ変換します。</remarks>
     /// <returns>伏せ字の入った設定の説明。</returns>
     public override string ToString() =>
-        $"CloudServiceConfiguration {{ IsConfigured = {IsConfigured}, AppleServicesId = {AppleServicesId}, "
+        $"CloudServiceConfiguration {{ AppleSignInEnabled = {AppleSignInEnabled}, IsConfigured = {IsConfigured}, AppleServicesId = {AppleServicesId}, "
         + $"AppleRedirectUri = {AppleRedirectUri}, CallbackScheme = {CallbackScheme}, "
         + $"CloudKitContainerId = {CloudKitContainerId}, CloudKitEnvironment = {CloudKitEnvironment}, "
         + $"CloudKitApiToken = {(string.IsNullOrEmpty(CloudKitApiToken) ? "(なし)" : "***")} }}";

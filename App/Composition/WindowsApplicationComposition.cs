@@ -70,7 +70,14 @@ public static class WindowsApplicationComposition
     public static WindowsApplicationRoot MakeRoot(string[] arguments)
     {
         var dataDirectory = WindowsApplicationDataLocation.DataDirectory();
-        var cloudConfiguration = CloudServiceConfigurationLoader.Load(WindowsApplicationDataLocation.LocalSettingsPath(dataDirectory));
+        // 機能フラグ（AppleSignIn:Enabled）が無効なら、設定がそろっていても「設定なし」として扱う（Coming Soon）。
+        var loadedConfiguration = CloudServiceConfigurationLoader.Load(WindowsApplicationDataLocation.LocalSettingsPath(dataDirectory));
+        if (loadedConfiguration.AppleSignInAvailability == AppleSignInAvailability.MissingSettings)
+        {
+            Debug.WriteLine($"AppleSignIn:Enabled は true ですが、設定が足りないため Coming Soon のままにします: {loadedConfiguration}");
+        }
+
+        var cloudConfiguration = loadedConfiguration.ForActiveFeatures();
         var acquisitionConfiguration = ProductionConnectionSessionAcquisitionConfiguration.Phase4G;
         var performanceEvents = MakeAcquisitionPerformanceEventPort();
         var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
@@ -175,6 +182,7 @@ public static class WindowsApplicationComposition
 
         var authenticationModel = MakeAuthenticationSessionModel(
             arguments,
+            dataDirectory,
             cloudConfiguration,
             httpClient,
             callbackBroker,
@@ -226,7 +234,7 @@ public static class WindowsApplicationComposition
             SessionLogAnalysis: sessionLogAnalysisModel,
             StartVehicleConnection: startVehicleConnection,
             MakeSettingsPresentationModel: () => MakeSettingsPresentationModel(defaultAdapterStore),
-            IsLocalMode: !cloudConfiguration.IsConfigured,
+            IsLocalMode: !loadedConfiguration.IsAppleSignInActive,
             CloudSync: cloudSyncModel,
             PromptForDefaultAdapterConnection: promptForDefaultAdapterConnection,
             PromptedVehicleConnectionRequest: promptedRequest,
@@ -372,12 +380,13 @@ public static class WindowsApplicationComposition
     /// 認証・資格情報の保存・アカウント削除を結び付けた認証セッションモデルを作ります。
     /// </summary>
     /// <remarks>
-    /// 責務: 設定があれば Web 版の Sign in with Apple、なければローカルモードの認可を、
+    /// 責務: 機能フラグが有効で設定もあれば Web 版の Sign in with Apple（ローカルモードのデータの引き継ぎ付き）、なければローカルモードの認可を、
     /// 資格情報の保存と端末内データの消去とともに Authentication のユースケースへ注入します。
     /// </remarks>
     /// <returns>認証セッションのモデル。</returns>
     private static AuthenticationSessionModel MakeAuthenticationSessionModel(
         string[] arguments,
+        string dataDirectory,
         CloudServiceConfiguration cloudConfiguration,
         HttpClient httpClient,
         AuthorizationCallbackBroker callbackBroker,
@@ -392,12 +401,17 @@ public static class WindowsApplicationComposition
         CloudKitVehicleRepository vehicleRepository,
         IVehiclePIDCapabilityStorage capabilityRepository)
     {
+        // cloudConfiguration は機能フラグを当てはめた後の設定。フラグが無効（Coming Soon）ならローカルモードの認可になる。
         IAppleAccountAuthorizationPort authorization = cloudConfiguration.IsConfigured
-            ? new WebAppleAccountAuthorizationClient(
-                cloudConfiguration,
-                callbackBroker,
-                browserLauncher,
-                new AppleIdentityTokenValidator(new AppleJsonWebKeySetCache(httpClient), cloudConfiguration.AppleServicesId!))
+            ? new LocalAccountDataAdoptingAuthorizationPort(
+                new WebAppleAccountAuthorizationClient(
+                    cloudConfiguration,
+                    callbackBroker,
+                    browserLauncher,
+                    new AppleIdentityTokenValidator(new AppleJsonWebKeySetCache(httpClient), cloudConfiguration.AppleServicesId!)),
+                defaults,
+                SqliteAccountDataReassignment.OpenApplicationRepository(dataDirectory).Reassign,
+                accountSettingsStore)
             : new LocalAccountAuthorizationAdapter(defaults);
         var sessionStore = new SecretStoreAuthenticationSessionStore(secretStore);
         var sessionRevocation = new SynchronizedAccountSessionRevocationStore(defaults, synchronizedStore);

@@ -3658,9 +3658,9 @@ Own the drive.</value>
     <value>Your default adapter is nearby</value>
     <comment>windows.adapter_prompt.title</comment>
   </data>
-  <data name="windows_cloud_local_mode" xml:space="preserve">
-    <value>Local mode: iCloud isn't set up on this PC.</value>
-    <comment>windows.cloud.local_mode</comment>
+  <data name="windows_cloud_coming_soon" xml:space="preserve">
+    <value>Coming soon: iCloud sync will be available together with Sign in with Apple. Until then, data stays on this PC.</value>
+    <comment>windows.cloud.coming_soon</comment>
   </data>
   <data name="windows_cloud_sign_in" xml:space="preserve">
     <value>Sign in to iCloud</value>
@@ -3686,6 +3686,10 @@ Own the drive.</value>
     <value>Finish signing in in your browser…</value>
     <comment>windows.cloud.signing_in</comment>
   </data>
+  <data name="windows_login_apple_coming_soon" xml:space="preserve">
+    <value>Coming soon</value>
+    <comment>windows.login.apple_coming_soon</comment>
+  </data>
   <data name="windows_login_continue_local" xml:space="preserve">
     <value>Continue on this PC</value>
     <comment>windows.login.continue_local</comment>
@@ -3695,7 +3699,7 @@ Own the drive.</value>
     <comment>windows.login.disclaimer.accept_local</comment>
   </data>
   <data name="windows_login_local_mode_notice" xml:space="preserve">
-    <value>Apple sign-in isn't set up on this PC, so your data is kept only on this PC and isn't synced with iPhone.</value>
+    <value>Sign in with Apple is coming soon. For now, your data is kept only on this PC and isn't synced with iPhone. It will move to your Apple account when you first sign in.</value>
     <comment>windows.login.local_mode_notice</comment>
   </data>
 </root>

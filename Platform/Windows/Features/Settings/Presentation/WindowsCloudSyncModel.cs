@@ -10,7 +10,7 @@ namespace ProjectZD8ForWindows.Platform.Windows.Features.Settings.Presentation;
 /// </summary>
 public enum WindowsCloudSyncAvailability
 {
-    /// <summary>設定（Services ID・API トークン）がなく、ローカルモードで動いている。</summary>
+    /// <summary>Sign in with Apple が Coming Soon（機能フラグ AppleSignIn:Enabled が無効か、設定が足りない）で、ローカルモードで動いている。</summary>
     NotConfigured,
 
     /// <summary>設定はあるが、iCloud にサインインしていない。</summary>

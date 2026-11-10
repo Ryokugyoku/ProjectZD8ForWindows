@@ -76,7 +76,7 @@ public sealed class CloudKitConnectionSessionTransferRepository : IConnectionSes
     /// <param name="metadata">一覧の共有に必要なセッション概要と生ログのマニフェスト。</param>
     /// <param name="accountIdentifier">同期対象の Apple アカウント識別子。</param>
     /// <exception cref="ConnectionSessionRepositoryException">状態の検証に失敗したか、使えない場合。</exception>
-    public Task PublishMetadata(ConnectionSessionCloudMetadata metadata, string accountIdentifier)
+    public async Task PublishMetadata(ConnectionSessionCloudMetadata metadata, string accountIdentifier)
     {
         if (metadata.Session.EndedAt is not { } endedAt
             || !string.Equals(metadata.Session.AccountIdentifier, accountIdentifier, StringComparison.Ordinal)
@@ -84,7 +84,7 @@ public sealed class CloudKitConnectionSessionTransferRepository : IConnectionSes
         {
             throw new ConnectionSessionRepositoryException(ConnectionSessionRepositoryError.InvalidState);
         }
-        return Write(async () =>
+        await Write(async () =>
         {
             await _database.UpsertRecord(
                     MetadataRecordType,
@@ -238,13 +238,13 @@ public sealed class CloudKitConnectionSessionTransferRepository : IConnectionSes
     /// <param name="progress">0〜1 で知らせる保存の進み具合。</param>
     /// <returns>保存した資産のバイト列の SHA-256。</returns>
     /// <exception cref="ConnectionSessionRepositoryException">アカウントが違うか、使えない場合。</exception>
-    public Task<string> Upload(ConnectionSessionTransferPackage package, string accountIdentifier, Action<double> progress)
+    public async Task<string> Upload(ConnectionSessionTransferPackage package, string accountIdentifier, Action<double> progress)
     {
         if (!string.Equals(package.AccountIdentifier, accountIdentifier, StringComparison.Ordinal))
         {
             throw new ConnectionSessionRepositoryException(ConnectionSessionRepositoryError.InvalidState);
         }
-        return Write(async () =>
+        return await Write(async () =>
         {
             var data = CloudKitPayloadJsonCodec.EncodeTransferPackage(package);
             var digest = CloudKitAccountFingerprint.Sha256Hex(data);

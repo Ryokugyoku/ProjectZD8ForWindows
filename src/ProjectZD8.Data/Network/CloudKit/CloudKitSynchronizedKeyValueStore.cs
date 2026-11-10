@@ -54,20 +54,28 @@ public sealed class CloudKitSynchronizedKeyValueStore : ISynchronizedKeyValueSto
     private long _version;
 
     /// <summary>
-    /// CloudKit のデータベースを注入して作ります。
+    /// CloudKit のデータベースを注入して作ります。変更の通知は、作ったスレッドの文脈（UI スレッド）で発生します。
+    /// </summary>
+    /// <remarks>責務: 同期先と時計を固定し、通知のスレッドを現在の文脈に決めます。</remarks>
+    /// <param name="database">CloudKit のデータベース。</param>
+    /// <param name="time">時計。<c>null</c> なら <see cref="TimeProvider.System"/>。</param>
+    public CloudKitSynchronizedKeyValueStore(ICloudKitDatabase database, TimeProvider? time = null)
+        : this(database, time, SynchronizationContext.Current)
+    {
+    }
+
+    /// <summary>
+    /// CloudKit のデータベースと、通知を送る文脈を注入して作ります。
     /// </summary>
     /// <remarks>責務: 同期先と時計と通知のスレッドを固定します。</remarks>
     /// <param name="database">CloudKit のデータベース。</param>
     /// <param name="time">時計。<c>null</c> なら <see cref="TimeProvider.System"/>。</param>
-    /// <param name="context">通知を送る文脈。<c>null</c> なら作ったスレッドの現在の文脈（なければ通信したスレッドで直接）。</param>
-    public CloudKitSynchronizedKeyValueStore(
-        ICloudKitDatabase database,
-        TimeProvider? time = null,
-        SynchronizationContext? context = null)
+    /// <param name="context">通知を送る文脈。<c>null</c> なら通信を終えたスレッドで直接通知します。</param>
+    public CloudKitSynchronizedKeyValueStore(ICloudKitDatabase database, TimeProvider? time, SynchronizationContext? context)
     {
         _database = database;
         _time = time ?? TimeProvider.System;
-        _context = context ?? SynchronizationContext.Current;
+        _context = context;
     }
 
     /// <inheritdoc />

@@ -60,11 +60,11 @@ public static class SwiftJsonDate
             _ => throw new ArgumentOutOfRangeException(nameof(encoding), encoding, null),
         };
         var ticks = Math.Round(number * ticksPerUnit, MidpointRounding.AwayFromZero);
-        var total = origin.UtcTicks + ticks;
-        if (total < DateTimeOffset.MinValue.UtcTicks || total > DateTimeOffset.MaxValue.UtcTicks)
+        // 基準からの差を先に整数にしてから足します（0 年からの tick を double で足すと 128 tick 単位に丸まるため）。
+        if (ticks < DateTimeOffset.MinValue.UtcTicks - origin.UtcTicks || ticks > DateTimeOffset.MaxValue.UtcTicks - origin.UtcTicks)
         {
             throw new System.Text.Json.JsonException("日付が表せる範囲を超えています。");
         }
-        return new DateTimeOffset((long)total, TimeSpan.Zero);
+        return new DateTimeOffset(origin.UtcTicks + (long)ticks, TimeSpan.Zero);
     }
 }

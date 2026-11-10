@@ -1,3 +1,4 @@
+using ProjectZD8.Data.Persistence.Sqlite.Database;
 using System.Text;
 using ProjectZD8.Application.LiveTelemetry.Ports;
 using ProjectZD8.Application.VehicleManagement.Ports;
@@ -168,7 +169,7 @@ public sealed class OBDLinkEXPIDTelemetryAdapterTests
             "OK\r>", "61 02 00 01 E2 40\r>", "OK\r>", "61 17 76\r>");
         var adapter = new OBDLinkEXPIDTelemetryAdapter(_ => transport);
 
-        var values = await adapter.ReadVehicleSpecific(ZD8OBDPIDSeedForTests.Definitions, Endpoint);
+        var values = await adapter.ReadVehicleSpecific(ZD8OBDPIDSeed.Definitions, Endpoint);
         await adapter.EndSession();
 
         Assert.Equal([0x00, 0x01, 0xE2, 0x40], values[new OBDPIDRequest(0x21, 0x02)]);
@@ -284,20 +285,4 @@ file sealed class PIDTransportFake : IOBDCommandTransport
         DidClose = true;
         return Task.CompletedTask;
     }
-}
-
-/// <summary>Data層の <c>ZD8OBDPIDSeed</c> をテスト用に写した定義です（永続化担当のフォルダーにあるため）。</summary>
-file static class ZD8OBDPIDSeedForTests
-{
-    /// <summary>iOS 版と同じ出典URIです。</summary>
-    private const string SourceURI = "projectzd8://requirements/zd8-pids/2026-07-23";
-
-    /// <summary>走行距離とAT油温の定義です。</summary>
-    public static readonly IReadOnlyList<OBDPIDDefinition> Definitions =
-    [
-        new(0x21, 0x02, "obd.pid.zd8.21.02.name", 4, "(A * 16777216 + B * 65536 + C * 256 + D) / 10", "km", 0, 429_496_729.5,
-            SourceURI, 1, header: 0x7E0, vehicleModelCode: ZD8VehicleModelPolicy.ModelCode),
-        new(0x21, 0x17, "obd.pid.zd8.21.17.name", 1, "A - 58", "°C", -58, 197,
-            SourceURI, 1, header: 0x7E1, vehicleModelCode: ZD8VehicleModelPolicy.ModelCode),
-    ];
 }

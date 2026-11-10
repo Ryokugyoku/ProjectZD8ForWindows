@@ -1,7 +1,7 @@
 # ProjectZD8ForWindows 進捗
 
 最終更新: 2026-11-10
-README 確認済みのコミット: 5709f29
+README 確認済みのコミット: 6eaaa87（Application 追加分は未コミットのまま確認済み）
 
 ## 概要
 - iOS/macOS アプリ「RevTorque Insight」（GitHub: Ryokugyoku/ProjectZD8、Swift/SwiftUI）を Windows（WinUI 3 / .NET 10）向けに作り直す。
@@ -9,12 +9,14 @@ README 確認済みのコミット: 5709f29
 ## 現状
 - Domain 層（iOS 版の Domain、Swift 65 ファイル）を `src/ProjectZD8.Domain`（net10.0）に移植済み。ビルドは警告 0。
 - Domain のテスト 12 ファイルを `tests/ProjectZD8.Domain.Tests`（xUnit）に移植済み。56 件すべて合格。JSON の往復テスト 2 ファイルは Data 層で移す。
-- WinUI 3 のアプリ本体はテンプレートのまま（Domain を参照しているだけ）。
+- Application 層（iOS 版の Application/Features、9 機能・Swift 約 80 ファイル）を `src/ProjectZD8.Application`（net10.0、Domain だけを参照）に移植済み。テスト 30 ファイル・155 件を `tests/ProjectZD8.Application.Tests` に移し、すべて合格。ビルドは警告 0。
+- WinUI 3 のアプリ本体はテンプレートのまま（Domain と Application を参照しているだけ）。
 - 元リポジトリの構成を調べ終えた（Domain / Application / Data / Platform のクリーンアーキテクチャ、テストあり）。
 - git は C:\Program Files\Git にあるが PATH に入っていない。GitHub CLI（gh）はない。.NET SDK 10.0.403 あり。
 - iOS 版を参照用に ..\ProjectZD8 に clone 済み（8bcda6f）。
 
 ## 直近の作業
+- 2026-11-10: Application 層とそのテストを C# に移植した（9 機能、テスト 155 件合格、Domain の修正なし）。サブエージェント 5 つで機能ごとに並行作業。アプリ（x64）のビルドも成功。README の構成表に追加。
 - 2026-11-10: 全プロジェクトを .NET 10 に上げた。テスト 56 件合格、アプリ（x64）のビルドも成功。アプリの起動は未確認。
 - 2026-11-10: Domain 層とそのテストを C# に移植した（テスト 56 件合格、移植のバグは見つからず）。移植の規約を docs/PORTING_CONVENTIONS.md に、README を新しく書いた。git init して最初のコミット（5709f29）を作った。
 - 2026-11-10: iOS 版の CloudKit と認証の実装を調べ、Windows から同期する方式を設計した（下の「同期の設計メモ」）。
@@ -23,7 +25,6 @@ README 確認済みのコミット: 5709f29
 ## 次にやること
 - iOS 版の設定とログアウト通知を CloudKit 化する（ProjectZD8 リポジトリ側の作業。下の設計案）
 - 開発者側の準備：Apple Developer で Sign in with Apple 用の Services ID とリダイレクト先ドメインを用意する。CloudKit Console で API トークンを作る
-- Application 層（iOS 版の Application/Features）を C# に移す（次の作業）
 - Data 層：JSON の互換性（下の「JSON 互換の注意」）→ SQLite → CloudKit Web Services のクライアント → ELM327 と BLE の通信
 - 画面（WinUI 3）
 
@@ -54,6 +55,13 @@ README 確認済みのコミット: 5709f29
 - CloudKit Console で、スキーマを本番環境（Production）に反映する必要がある（開発者の作業）。
 
 ## 検討事項・未決定
+- Application 移植で Swift と完全には同じにならない点：
+  - Swift の `Task {}` は後で走るが、C# の async は最初の await まで同期で走る。状態遷移の順番は同じにしたが、同じ同期区間で続けて操作を送ると（例：VehicleSaved の直後に EditCancelled）見える状態が変わることがある。LiveTelemetryModel だけは Task.Yield で Swift に近づけた。モデルは UI スレッド（単一スレッド）から呼ぶ前提。
+  - Swift の actor 3 つ（取得コントローラー、マニフェスト作成、バッチ保存）は lock 付きのクラスにした。ポートに CancellationToken がないので、実行中の呼び出しは止められず、世代番号の確認で古い結果を捨てる（Swift と同じ結果）。
+  - 並べ替え：localizedStandardCompare は現在のカルチャ＋IgnoreCase＋NumericOrdering で近似。caseInsensitiveCompare は OrdinalIgnoreCase。LINQ の安定ソートなので同値の並びは Swift と違うことがある。
+  - Swift でクラッシュする入力（PID 定義の重複、範囲の min>max）は C# ではクラッシュしない（エラー表示・false になる）。
+  - SessionLogAnalysisModel は表示用の配列をバッチごとにコピーする（とても長いログで遅くなる可能性）。
+- Data 層ができたら直すテスト：同期の往復テスト 1 件（testRoundTripBetweenIPhoneAndMacPreservesSharedArchiveMetadata）は GRDB が必要なので未移植。取得コントローラーの結合テストと生ログ準備のテストの一部は、テストファイル内のメモリ上の代用リポジトリで動かしている。Demo アダプターや OBD PID の初期データもテスト内に写した。→ Data 層の実装に差し替えて確かめ直す。
 - Windows を「Mac 受領証」（ConnectionSessionMacReceipt）を出す端末として扱うか。出すと、iOS 側が生ログのキャッシュを消す判断に影響する。
 - Sign in with Apple のリダイレクト先ドメインをどれにするか。そのドメインからカスタム URL スキームでアプリに戻す。
 - git の user.name / user.email が未設定。最初のコミットは -c で作成者 Ryokugyoku を指定した。リモート（GitHub）にはまだ push していない。
@@ -63,6 +71,7 @@ README 確認済みのコミット: 5709f29
 - ライセンスが PolyForm Noncommercial なので、Windows 版も同じライセンスにするか。
 
 ## 決定事項
+- 2026-11-10: Application 層の名前空間は ProjectZD8.Application.<機能>.<サブフォルダ>（フォルダは Features/ 付きで iOS 版と同じ）。Port は I 付きインターフェースで、ファイル名にも I を付ける。async メソッドに Async の接尾辞は付けない（Domain に合わせる）。State は INotifyPropertyChanged を実装した UI 非依存のクラス。
 - 2026-11-10: 移植は Windows 版から始め、Domain → Application → Data → 画面の順に進める（開発者の指示）。
 - 2026-11-10: 名前空間とプロジェクト名は iOS 版に合わせて ProjectZD8 にする。Domain は OS に依存しないクラスライブラリにして、JSON の属性は付けない。
 - 2026-11-10: 全プロジェクトを .NET 10（LTS）に上げた（開発者の指示）。アプリは net10.0-windows10.0.19041.0、Domain とテストは net10.0。

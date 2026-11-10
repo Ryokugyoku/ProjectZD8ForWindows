@@ -11,9 +11,11 @@
     <Deploy />
   </Project>
   <Folder Name="/src/">
+    <Project Path="src/ProjectZD8.Application/ProjectZD8.Application.csproj" />
     <Project Path="src/ProjectZD8.Domain/ProjectZD8.Domain.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/ProjectZD8.Application.Tests/ProjectZD8.Application.Tests.csproj" />
     <Project Path="tests/ProjectZD8.Domain.Tests/ProjectZD8.Domain.Tests.csproj" />
   </Folder>
 </Solution>

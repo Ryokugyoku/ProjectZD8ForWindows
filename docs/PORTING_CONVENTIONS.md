@@ -9,6 +9,8 @@ iOS 版の `AGENTS.md`・`Documentation/CODING_STANDARDS.md`・`Documentation/PL
 |---|---|---|
 | `ProjectZD8/Domain` | `src/ProjectZD8.Domain`（net10.0） | `ProjectZD8.Domain.<サブフォルダ>` |
 | `ProjectZD8Tests/Domain` | `tests/ProjectZD8.Domain.Tests`（xUnit） | `ProjectZD8.Domain.Tests.<サブフォルダ>` |
+| `ProjectZD8/Application/Features/<機能>` | `src/ProjectZD8.Application/Features/<機能>`（net10.0、Domain だけを参照） | `ProjectZD8.Application.<機能>.<サブフォルダ>`（Features は入れない） |
+| `ProjectZD8Tests/Application/Features/<機能>` | `tests/ProjectZD8.Application.Tests/Features/<機能>` | `ProjectZD8.Application.Tests.<機能>.<サブフォルダ>` |
 
 - フォルダ構成とファイル名は iOS 版と同じにする（`Domain/Entities/VehicleProfile.swift` → `src/ProjectZD8.Domain/Entities/VehicleProfile.cs`）。
 - Domain は他のプロジェクトにも OS にも依存しない。`System.Text.Json` の属性も Domain には付けない（JSON の互換性は Data 層で扱う）。
@@ -62,6 +64,14 @@ iOS 版の `AGENTS.md`・`Documentation/CODING_STANDARDS.md`・`Documentation/PL
 - **整数の幅**：件数・序数・版番号は `int`、`Int64` は `long`、`UInt` と `UInt64` は `ulong`。
 - **検証付きの型**：`with` で検証を飛ばされないよう、プロパティを get 専用にする。Swift で `var` のものだけ `{ get; init; }` にする。
 - **文字列の比較**：基本は Ordinal。ただし、Swift の `==` と同じ結果が必要な箇所（取得マニフェストの単位の比較）だけは、Unicode の正規化（FormD）をしてから比べる。
+
+## Application 層の約束（Application の移植で確定）
+
+- Port（`XxxPort` などの protocol）は `I` 付きの interface。ファイル名にも `I` を付ける。async メソッドに `Async` の接尾辞は付けない。
+- State（`@Observable`）は UI に依存しない `public sealed class` で `INotifyPropertyChanged` を実装する。共通の基底クラスは作らない。`@MainActor` は無視し、「UI スレッドから呼ぶ前提」と XML ドキュメントに書く。
+- Swift の `Task {}` は、内部の `CancellationTokenSource` と `Task` をフィールドに持って表す。C# の async は最初の await まで同期で走るので、状態遷移の順番が Swift と同じになるよう確かめる。`Task.Run` でスレッドを増やさない。
+- `actor` は `lock` 付きのクラス。await をまたいでロックしない。
+- テストの Fake はテストファイルの中に置く（`file` 型か private の入れ子クラス）。非同期の完了は `TestSupport/AsyncWait.UntilAsync` で待つ。
 
 ## ドキュメント
 

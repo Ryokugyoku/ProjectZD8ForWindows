@@ -11,7 +11,9 @@ WinUI 3（Windows App SDK）と .NET 10 で作り直しています。CloudKit �
 |---|---|
 | `ProjectZD8ForWindows.csproj`（ルート） | WinUI 3 のアプリ本体（パッケージ化した MSIX アプリ） |
 | `src/ProjectZD8.Domain` | 業務ルール層（iOS 版の `ProjectZD8/Domain` に対応）。net10.0、OS に依存しない |
+| `src/ProjectZD8.Application` | ユースケース層（iOS 版の `ProjectZD8/Application` に対応）。net10.0、Domain だけを参照する。機能ごとに `Features/<機能>/{Actions,Ports,State,UseCases}` |
 | `tests/ProjectZD8.Domain.Tests` | Domain 層の xUnit テスト |
+| `tests/ProjectZD8.Application.Tests` | Application 層の xUnit テスト |
 | `docs/PORTING_CONVENTIONS.md` | Swift から C# に移すときの規約 |
 
 アプリ本体の csproj はリポジトリのルートにあるので、`src/` と `tests/` の中のファイルはアプリのビルド対象から外しています。
@@ -28,6 +30,7 @@ WinUI 3（Windows App SDK）と .NET 10 で作り直しています。CloudKit �
 
 ```bash
 dotnet test tests/ProjectZD8.Domain.Tests
+dotnet test tests/ProjectZD8.Application.Tests
 ```
 
 アプリ本体は Visual Studio で `ProjectZD8ForWindows.slnx` を開き、プラットフォーム（x64 など）を選んで実行します。

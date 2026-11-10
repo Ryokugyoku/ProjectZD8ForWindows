@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- iOS 版 ProjectZD8/Application に対応するユースケース層。Domain だけに依存し、UI・OS・永続化・ネットワークには依存しない。 -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>ProjectZD8.Application</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="ProjectZD8.Application.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProjectZD8.Domain\ProjectZD8.Domain.csproj" />
+  </ItemGroup>
+</Project>

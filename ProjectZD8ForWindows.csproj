@@ -37,6 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="src\ProjectZD8.Domain\ProjectZD8.Domain.csproj" />
+    <ProjectReference Include="src\ProjectZD8.Application\ProjectZD8.Application.csproj" />
   </ItemGroup>
 
   <!--

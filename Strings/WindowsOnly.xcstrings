@@ -9,6 +9,14 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "この PC で続ける" } }
       }
     },
+    "windows.login.disclaimer.accept_local" : {
+      "comment" : "Windows 版だけ。ローカルモードの免責事項ダイアログの同意ボタン。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Agree and Continue" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Aceptar y continuar" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "同意して続ける" } }
+      }
+    },
     "windows.login.local_mode_notice" : {
       "comment" : "Windows 版だけ。ローカルモードの説明。",
       "localizations" : {

@@ -88,7 +88,9 @@ ConnectionSessionMacReceipt、ConnectionSessionDeletion）は、そのまま使�
 }
 ```
 
-- 読み込みは `CloudServiceConfigurationLoader.Load(path)`。どのパスを渡すかはアプリの組み立てが決めます（実行ファイルと同じフォルダーを想定）。
+- 置き場所は次のどちらか（上から順に探します。`App/Composition/WindowsApplicationDataLocation.cs`）：
+  1. アプリのデータのフォルダー：`%LOCALAPPDATA%\Packages\<パッケージファミリー名>\LocalState\appsettings.Local.json`（パッケージなしで動かしたときは `%LOCALAPPDATA%\RevTorqueInsight\`）
+  2. 実行フォルダー：リポジトリのルートに置くと、ビルドで実行フォルダーへコピーされます（`ProjectZD8ForWindows.csproj` に、ファイルがあるときだけコピーする設定があります）。
 - 環境変数でも渡せます（ファイルより優先）：`PROJECTZD8_APPLE_SERVICES_ID`、`PROJECTZD8_APPLE_REDIRECT_URI`、`PROJECTZD8_CALLBACK_SCHEME`、
   `PROJECTZD8_CLOUDKIT_CONTAINER_ID`、`PROJECTZD8_CLOUDKIT_ENVIRONMENT`、`PROJECTZD8_CLOUDKIT_API_TOKEN`。
 - `Environment` は、同期したい iOS 版に合わせます。Xcode から実行した iOS 版は **development**、TestFlight／App Store の iOS 版は **production** です（データは環境ごとに別です）。
@@ -96,9 +98,9 @@ ConnectionSessionMacReceipt、ConnectionSessionDeletion）は、そのまま使�
 
 ## 7. アプリ側の登録（組み立て・パッケージ）
 
-- `Package.appxmanifest` にプロトコル `revtorque-insight` を登録します（`<uap:Extension Category="windows.protocol"><uap:Protocol Name="revtorque-insight" /></uap:Extension>`）。
-- ブラウザーから戻ると新しいインスタンスが起動するので、単一インスタンスにして（`AppInstance.FindOrRegisterForKey` → `RedirectActivationToAsync`）、
-  起動中のインスタンスで `AuthorizationCallbackBroker.TryDeliver(uri)` を呼びます。
+- 済んでいます：`Package.appxmanifest` にプロトコル `revtorque-insight` を登録済み。アプリは単一インスタンス（`App/Lifecycle/Program.cs`）で、ブラウザーからの戻りは起動中のインスタンスの `AuthorizationCallbackBroker.TryDeliver(uri)` に渡ります。
+- 設定を置いてアプリを起動すると、ログイン画面のボタンが「Apple アカウントで続ける」になります。サインインのあと、設定画面の「iCloud 同期」カードで iCloud にサインインします（ckWebAuthToken の取得）。
+
 
 ## 8. 確かめられていないこと
 

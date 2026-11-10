@@ -3690,6 +3690,10 @@ Own the drive.</value>
     <value>Continue on this PC</value>
     <comment>windows.login.continue_local</comment>
   </data>
+  <data name="windows_login_disclaimer_accept_local" xml:space="preserve">
+    <value>Agree and Continue</value>
+    <comment>windows.login.disclaimer.accept_local</comment>
+  </data>
   <data name="windows_login_local_mode_notice" xml:space="preserve">
     <value>Apple sign-in isn't set up on this PC, so your data is kept only on this PC and isn't synced with iPhone.</value>
     <comment>windows.login.local_mode_notice</comment>

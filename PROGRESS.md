@@ -1,36 +1,40 @@
 # ProjectZD8ForWindows 進捗
 
 最終更新: 2026-11-10
-README 確認済みのコミット: cb6c663
+README 確認済みのコミット: d357c58
 
 ## 概要
-- iOS/macOS アプリ「RevTorque Insight」（GitHub: Ryokugyoku/ProjectZD8、Swift/SwiftUI）を Windows（WinUI 3 / .NET 10）向けに作り直す。
+- iOS/macOS アプリ「RevTorque Insight」（GitHub: Ryokugyoku/ProjectZD8、Swift/SwiftUI）を Windows（WinUI 3 / .NET 10）向けに作り直す。iOS 版と CloudKit で同期する。
 
 ## 現状
-- Domain 層（iOS 版の Domain、Swift 65 ファイル）を `src/ProjectZD8.Domain`（net10.0）に移植済み。ビルドは警告 0。
-- Domain のテスト 12 ファイルを `tests/ProjectZD8.Domain.Tests`（xUnit）に移植済み。56 件すべて合格。JSON の往復テスト 2 ファイルは Data 層で移す。
-- Application 層（iOS 版の Application/Features、9 機能・Swift 約 80 ファイル）を `src/ProjectZD8.Application`（net10.0、Domain だけを参照）に移植済み。テスト 30 ファイル・155 件を `tests/ProjectZD8.Application.Tests` に移し、すべて合格。ビルドは警告 0。
-- Data 層を作った（2026-11-10）。`src/ProjectZD8.Data`（net10.0）と `src/ProjectZD8.Data.Windows`（Windows の API）。テスト 283 件（`tests/ProjectZD8.Data.Tests`）すべて合格。iOS の Data のテストはほぼすべて移植（対象外は下の検討事項）。
-  - 永続化：マスタ系は SQLite（`Persistence/Sqlite`、`dir/projectzd8.sqlite`）、生ログと取得の証跡（batch・PID 要求）は自作の追記専用ログストア（`Persistence/LogStore`、`dir/logs/<セッション>/`）。iOS 版は全部を GRDB（SQLite）に入れているので、ここが違う。
-  - デバイス：ELM327、OBDLink EX の PID 取得、VIN、デモ用アダプター、USB シリアル（COM、115200bps）、Bluetooth Classic（RFCOMM / SPP）、BLE（GATT の UART）、機器の検出、既定アダプターの記憶（JSON ファイル）、到来の監視と接続の確認（アプリ内のイベント）、スリープ抑止（SetThreadExecutionState）。
-  - ネットワークと認証：Swift の Codable と同じ JSON、CloudKit Web Services のクライアント（REST）と各リポジトリ、AccountSettings と AccountSessionRevocation のレコード、Web 版の Sign in with Apple（ID トークンを RS256 で検証して sub を取り出す）、ckWebAuthToken の取得、PasswordVault（だめなら DPAPI）への保存、設定ファイル（`appsettings.Local.json` と環境変数 `PROJECTZD8_*`）。設定がなければローカルモード。開発者の手順は `docs/CLOUD_SETUP.md`。
-- 生ログストアの性能（Release、24 コア、1 セッションに 100 万件）：書込み 124 万件/秒、Append の遅延 p50 0.6µs・p99 2.0µs・p99.9 20.7µs（最大 14.1ms）。sequence の範囲読取（1,000 件）p50 0.66ms・p99 1.06ms、時間窓（10 秒分）p50 0.65ms・p99 1.09ms、全件読取 377ms。ディスク 26.5MiB（27.8 バイト/件）。異常終了後の開き直し（全走査）204ms。測定は `tools/ProjectZD8.LogStoreBenchmark`。
-- 元リポジトリの構成を調べ終えた（Domain / Application / Data / Platform のクリーンアーキテクチャ、テストあり）。
-- git は C:\Program Files\Git にあるが PATH に入っていない。GitHub CLI（gh）はない。.NET SDK 10.0.403 あり。
-- iOS 版を参照用に ..\ProjectZD8 に clone 済み（8bcda6f）。
+- iOS 版と同じ機能のアプリとして一通りできた。ローカルモード（アカウントなし）とデモ用アダプターで、全画面を実際に操作して確かめた（下の「確かめたこと・確かめていないこと」）。
+- 層：Domain（`src/ProjectZD8.Domain`）、Application（`src/ProjectZD8.Application`）、Data（`src/ProjectZD8.Data` と、Windows の API を使う `src/ProjectZD8.Data.Windows`）、画面と組み立て（ルートのアプリ。`App/`、`Platform/Windows/`）。
+- テスト：Domain 56 件、Application 155 件、Data 283 件、計 494 件すべて合格。全プロジェクトのビルド（`ProjectZD8ForWindows.slnx`、x64）は警告 0・エラー 0。
+- 保存：マスタ系は SQLite（`<データ>\projectzd8.sqlite`）、生ログと取得の証跡は自作の追記専用ログストア（`<データ>\logs\<セッション>\`）。iOS 版は全部を GRDB（SQLite）に入れているので、ここが違う（README にも書いた）。データのフォルダはパッケージの LocalState。
+- 生ログストアの性能（Release、24 コア、1 セッションに 100 万件、`tools/ProjectZD8.LogStoreBenchmark`）：書込み 124 万件/秒、Append の遅延 p50 0.6µs・p99 2.0µs・p99.9 20.7µs（最大 14.1ms）。sequence の範囲読取（1,000 件）p50 0.66ms・p99 1.06ms、時間窓（10 秒分）p50 0.65ms・p99 1.09ms、全件読取 377ms。ディスク 26.5MiB（27.8 バイト/件）。開き直し（索引あり）1.2ms、異常終了後の開き直し（全走査）204ms。
+- OBD：USB シリアル（COM、115200bps）、Bluetooth Classic（RFCOMM / SPP）、BLE（GATT の UART）、デモ用アダプター。機器の検出、既定アダプターの記憶、BLE の既定アダプターの到来を監視してシェルの InfoBar で接続を尋ねる処理（iOS と同じユースケース）。
+- 同期と認証：Swift の Codable と同じ JSON、CloudKit Web Services のクライアントと各リポジトリ（車両・整備・接続セッション・AccountSettings・AccountSessionRevocation）、Web 版の Sign in with Apple（ID トークンの検証と sub の取り出し）、CloudKit の Web 認証（設定画面の「iCloud 同期」カード）、PasswordVault（だめなら DPAPI）への保存。設定（`appsettings.Local.json` か環境変数 `PROJECTZD8_*`）がなければローカルモード。
+- 翻訳：iOS 版の xcstrings（904 キー）と Windows 版だけの文言（`Strings/WindowsOnly.xcstrings`、17 キー）から、日本語・英語・スペイン語の .resw を生成して取り込んだ。
+- git は C:\Program Files\Git にあるが PATH に入っていない（Git Bash の git は使える）。GitHub CLI（gh）はない。.NET SDK 10.0.403 あり。iOS 版を参照用に ..\ProjectZD8 に clone 済み（8bcda6f）。
+
+## 確かめたこと・確かめていないこと
+- 確かめた（2026-11-10、x64 Debug をパッケージ登録して起動。スクリーンショットは共有メモのフォルダの screenshots/final/）：ローカルモードのログイン → 免責事項 → ホーム → 設定でアダプターを探索（実機なし。デモの USB 3 件だけが出て、Windows の探索はエラーなし）→ デモ USB を既定に → 接続 → VIN の識別と車両の登録（SQLite）→ ライブ PID（87 件）→ 生ログがログストアに書かれることをファイルで確認 → 切断 → 履歴・セッション詳細（2,407 件、正常終了）・分析（折れ線）→ 整備記録の作成 → 終了（索引ファイルが書かれる）と再起動（サインインの復元、履歴が残る）→ PID 収集設定 → 英語への切替 → アカウント削除（ログと既定アダプターが消え、ログイン画面に戻る）。2 つ目の起動（revtorque-insight:// のプロトコル起動）は起動中のインスタンスへ転送された。
+- 確かめていない：実機の OBD アダプター（USB シリアル・RFCOMM・BLE の接続と送受信、探索、到来の監視）、実際の CloudKit と Apple のサインイン（テストは偽の HTTP 応答だけ）、本物の車、電源断での fsync の効き目、ARM64 と x86 のビルド、狭いウインドウ（640×420）、写真の取り込み、停止確認・Raw の解放・セッション削除の各ダイアログ、Release ビルド（トリミングあり）での起動。
 
 ## 直近の作業
-- 2026-11-10: Application 層とそのテストを C# に移植した（9 機能、テスト 155 件合格、Domain の修正なし）。サブエージェント 5 つで機能ごとに並行作業。アプリ（x64）のビルドも成功。README の構成表に追加。
-- 2026-11-10: 全プロジェクトを .NET 10 に上げた。テスト 56 件合格、アプリ（x64）のビルドも成功。アプリの起動は未確認。
-- 2026-11-10: Domain 層とそのテストを C# に移植した（テスト 56 件合格、移植のバグは見つからず）。移植の規約を docs/PORTING_CONVENTIONS.md に、README を新しく書いた。git init して最初のコミット（5709f29）を作った。
+- 2026-11-10: Data 層・画面・組み立て・翻訳・マニフェストを作り、アプリを完成させた。サブエージェント 4 つ（永続化、デバイス、ネットワークと認証、画面）を別の作業ツリーで並行させ、リードがまとめて組み立てを本物の Data 層に差し替えた。ローカルモードとデモ用アダプターで全画面を操作して確かめた。
+- 2026-11-10: Application 層とそのテストを C# に移植した（9 機能、テスト 155 件合格）。
+- 2026-11-10: 全プロジェクトを .NET 10 に上げた。Domain 層とそのテストを C# に移植した（56 件合格）。移植の規約を docs/PORTING_CONVENTIONS.md に書いた。
 - 2026-11-10: iOS 版の CloudKit と認証の実装を調べ、Windows から同期する方式を設計した（下の「同期の設計メモ」）。
-- 2026-11-10: 元リポジトリの構成を調べ、移植のしやすさを評価した。
 
 ## 次にやること
-- iOS 版の設定とログアウト通知を CloudKit 化する（ProjectZD8 リポジトリ側の作業。下の設計案）
-- 開発者側の準備：Apple Developer で Sign in with Apple 用の Services ID とリダイレクト先ドメインを用意する。CloudKit Console で API トークンを作る
-- Data 層：JSON の互換性（下の「JSON 互換の注意」）→ SQLite → CloudKit Web Services のクライアント → ELM327 と BLE の通信
-- 画面（WinUI 3）
+- 開発者の準備（docs/CLOUD_SETUP.md）：Apple Developer で Services ID とリダイレクト先の https ドメインを用意し、docs/web/ のページを置く。CloudKit Console で API トークン（Sign In Callback）を作り、AccountSettings と AccountSessionRevocation のスキーマを Production に反映する。appsettings.Local.json を置く。
+- 実際の Apple・CloudKit につないで確かめる（下の検討事項の「CloudKit Web Services の確かめていない点」と「sub の一致」）。
+- 実機の OBD アダプター（OBDLink EX の USB、OBDLink MX+ の Bluetooth、BLE の ELM327）で接続・識別・ライブ取得を確かめる。
+- iOS 版の設定とログアウト通知を CloudKit 化する（ProjectZD8 リポジトリ側の作業。下の設計案）。それまで設定とログアウト通知は iOS と同期しない。
+- 画面の細部：ローカルモードでも Garage の副題（「iPhone と同期します」）と整備の最終同期時刻（雲の記号つき）がクラウドに保存したように見える。ローカルモードでは出し分ける。
+- Application.Tests の中のメモリ上の代用リポジトリと PID 定義の写しを、Data の実装に置き換える（Application.Tests から Data を参照する）。未移植の往復テスト（testRoundTripBetweenIPhoneAndMacPreservesSharedArchiveMetadata）を移す。
+- ARM64 と x86 のビルド、Release（トリミングあり）での起動を確かめる。
 
 ## 同期の設計メモ（iOS 版の実装から確認したこと）
 - コンテナは iCloud.Ryokugyoku.ProjectZD8 の private database（default zone）。
@@ -60,32 +64,41 @@ README 確認済みのコミット: cb6c663
 
 ## 検討事項・未決定
 - アカウント削除で AccountSessionRevocation のレコードを消すかどうか。今の実装は消さない（ほかの端末へログアウトを知らせるのに要るため）。「iOS 版の CloudKit 化の設計案」の「消す」と食い違っている。→ 開発者に確認。
+- アカウント削除で、端末内の整備記録は消えない（iOS 版の ProjectZD8AccountDataEraser も整備記録を消さないので、同じにした）。ローカルモードで削除して、もう一度「この PC で続ける」と、前の整備記録が見える。iOS 側も含めて消すべきか → 開発者に確認。
+- 取得元の端末：Domain の ConnectionSessionAcquisitionPlatform に Windows がない。macOS と名乗ると事実と違うので、セッションの acquisitionDevice は記録しない（履歴に「取得端末不明」と出る）。取得証拠の platform は macOS の値を使っている。Domain に Windows を足すと iOS 版との JSON 互換に影響するので、iOS 側と一緒に決める。
 - CloudKit Web Services の確かめていない点：新しい ckWebAuthToken が応答のどこに入るか（JSON の ckWebAuthToken / ckSession と同名のヘッダーを見ている）、CloudKit Console の Sign In Callback にカスタム URL スキームを直接入れられるか（入れられなければ https のページ経由。docs/web/cloudkit-callback.html）、update / forceReplace の実際の動き、asset の receipt の形。
-- Web の Sign in with Apple で得た sub が iOS の credential.user と一致するか（同じ Team・同じ主 App ID なら一致するはず）。実機で確かめる。
+- Web の Sign in with Apple で得た sub が iOS の credential.user と一致するか（同じ Team・同じ主 App ID なら一致するはず）。実際につないで確かめる。
+- Sign in with Apple のリダイレクト先ドメインをどれにするか（開発者が用意する）。
 - Swift の sortedKeys の並び順と、iOS が実際に書いた JSON とのバイト単位の比較はしていない（読み込みは順番に依存しない）。
 - 生ログストアと SQLite にまたがる操作（セッション終了・回復・生ログの置換）は、SQLite のトランザクション中に LogStore を fsync してから SQLite を確定する。fsync のあとに SQLite の確定だけが失敗すると不整合が残る（まれ）。
 - 生ログの除去と復元で、Windows は取得証拠を残したまま生ログだけを消す。iOS は Raw を参照する PID 要求があると外部キーで失敗するので、iOS 側の不具合かもしれない。→ iOS 側で確認。
-- Domain の取得 platform に Windows の値がない。manifest の CHECK 制約を緩めたが、Windows で取ったセッションを何として記録するか（今は macOS 相当）は未決定。Domain に Windows を足すと iOS 版との JSON 互換に影響する。
 - 計測中のセッションは batch の証拠をすべてメモリに持つ。2 時間を超える長いセッションのメモリ量は未測定。
-- 同じデータフォルダを複数のプロセスで開くことは想定していない（単一インスタンスにする）。
 - 実機で見る必要がある点（デバイス）：FTDI ドライバーが COM ポートのインターフェイスを登録するか、BusReportedDeviceDesc と Manufacturer が値を返すか、GetGattServicesAsync(Uncached) で接続が始まるか、SPP をキャッシュから取れない機器での 10 秒の照会。
-- iOS のテストで移植しなかったもの：旧 DB（v8）からの移行（Windows に旧 DB はない）、日時が無限大のテスト（C# にない）、取得性能の計測マトリクス（ベンチマークで代用）。Application.Tests の中のメモリ上の代用リポジトリや PID 定義の写し（PROGRESS の上の項目）は、Data の実装に置き換えられる（Application.Tests から Data を参照する必要がある）。
+- 画面の確かめていない点：免責事項ダイアログを出すと左下に白い弧が描かれる（見た目だけ。原因不明）。画面担当が直す前、設定画面への移動直後にアダプター選択を開くと XAML の内部で落ちる（0xc000027b）ことがあった。描き直しを減らして再現しなくなったが、根本原因は不明。
+- 言語を切り替えても、WinUI 標準の文言（「ナビゲーションを閉じる」など）は OS の言語のまま。
+- 時間の単位（h・m・s）とバイト数（1 KB = 1,000 バイト）は自前の書式で、Apple の書式と少し違う。
+- iOS のテストで移植しなかったもの：旧 DB（v8）からの移行（Windows に旧 DB はない）、日時が無限大のテスト（C# にない）、取得性能の計測マトリクス（ベンチマークで代用）。
 - Application 移植で Swift と完全には同じにならない点：
   - Swift の `Task {}` は後で走るが、C# の async は最初の await まで同期で走る。状態遷移の順番は同じにしたが、同じ同期区間で続けて操作を送ると（例：VehicleSaved の直後に EditCancelled）見える状態が変わることがある。LiveTelemetryModel だけは Task.Yield で Swift に近づけた。モデルは UI スレッド（単一スレッド）から呼ぶ前提。
   - Swift の actor 3 つ（取得コントローラー、マニフェスト作成、バッチ保存）は lock 付きのクラスにした。ポートに CancellationToken がないので、実行中の呼び出しは止められず、世代番号の確認で古い結果を捨てる（Swift と同じ結果）。
-  - 並べ替え：localizedStandardCompare は現在のカルチャ＋IgnoreCase＋NumericOrdering で近似。caseInsensitiveCompare は OrdinalIgnoreCase。LINQ の安定ソートなので同値の並びは Swift と違うことがある。
+  - 並べ替え：localizedStandardCompare は現在のカルチャ＋IgnoreCase＋NumericOrdering で近似。LINQ の安定ソートなので同値の並びは Swift と違うことがある。
   - Swift でクラッシュする入力（PID 定義の重複、範囲の min>max）は C# ではクラッシュしない（エラー表示・false になる）。
   - SessionLogAnalysisModel は表示用の配列をバッチごとにコピーする（とても長いログで遅くなる可能性）。
-- Data 層ができたら直すテスト：同期の往復テスト 1 件（testRoundTripBetweenIPhoneAndMacPreservesSharedArchiveMetadata）は GRDB が必要なので未移植。取得コントローラーの結合テストと生ログ準備のテストの一部は、テストファイル内のメモリ上の代用リポジトリで動かしている。Demo アダプターや OBD PID の初期データもテスト内に写した。→ Data 層の実装に差し替えて確かめ直す。
-- Windows を「Mac 受領証」（ConnectionSessionMacReceipt）を出す端末として扱うか。出すと、iOS 側が生ログのキャッシュを消す判断に影響する。
-- Sign in with Apple のリダイレクト先ドメインをどれにするか。そのドメインからカスタム URL スキームでアプリに戻す。
-- git の user.name / user.email が未設定。最初のコミットは -c で作成者 Ryokugyoku を指定した。リモート（GitHub）にはまだ push していない。
-- 移植で Swift と完全には同じにならない点（実害は小さい見込み）：計算式の中の漢数字（一 など）を Swift は数字として扱うが .NET は扱わない（エラーの種類が変わるだけ）。double の NaN 同士の比較が等しくなる。日時の精度が 100ns 単位。
-- 対応する OBD アダプター：BLE の UART（Windows の BLE API で可能）と、Bluetooth Classic の SPP / COM ポート（OBDLink MX+ など）。iOS の ExternalAccessory（MFi）は Windows では使えない。
-- 文字列の翻訳（Localizable.xcstrings、約520KB）を .resw に変換する方法。
+  - 計算式の中の漢数字（一 など）を Swift は数字として扱うが .NET は扱わない。double の NaN 同士の比較が等しくなる。日時の精度が 100ns 単位。
+- リモート（GitHub）にはまだ push していない。git の user.name / user.email は未設定（コミットは -c で Ryokugyoku を指定）。
 - ライセンスが PolyForm Noncommercial なので、Windows 版も同じライセンスにするか。
 
 ## 決定事項
+- 2026-11-10: Windows は接続セッションの同期で macOS の役割（ConnectionSessionSyncDeviceRole.MacOS。生ログを CloudKit に保管し、Mac 受領証を出す）を担う。Application には iOS と macOS の 2 つの役割しかなく、デスクトップで全ログを持つ Windows は Mac と同じ立場のため。iOS 側の生ログのキャッシュを消す判断に影響する点は、iOS と同期するときに見る。
+- 2026-11-10: 設定がないとき、ログイン画面のボタンは「この PC で続ける」にし、「Apple アカウントのみ」の説明を隠し、ローカルモードの説明を出す。免責事項の同意ボタンも「同意して続ける」にする（実際の動きと文言を合わせるため）。Windows 版だけの文言は Strings/WindowsOnly.xcstrings に置く（iOS 版の xcstrings を変えないため）。
+- 2026-11-10: iCloud（CloudKit）へのサインインは、Apple のサインインとは別に、設定画面の「iCloud 同期」カードから行う。CloudKit の Web 認証は Apple ID の入力を伴うので、利用者が自分で始める操作にした。
+- 2026-11-10: 既定アダプターの到来の確認は、iOS のローカル通知の代わりにシェルの InfoBar で出す（アプリが動いている間だけ監視するため、トーストは使わない）。
+- 2026-11-10: 対応していない表示言語のときは英語で出す（csproj の DefaultLanguage=en-US）。iOS 版の元の言語は日本語だが、海外の利用者に読める言語を優先した。
+- 2026-11-10: 開発者の設定ファイル appsettings.Local.json は、データのフォルダ（LocalState）、実行フォルダの順に探す。リポジトリのルートに置くとビルドで実行フォルダへコピーする（コミットはしない）。
+- 2026-11-10: 組み立てで Swift のプロトコル合成に当たる型として、Data に IConnectionSessionStorage と IVehiclePIDCapabilityStorage を置いた（SQLite 実装と使えないときの実装が両方実装する。メンバーは足さない）。
+- 2026-11-10: 組み立ては DI コンテナを使わず、iOS 版と同じ静的な組み立て（App/Composition/WindowsApplicationComposition）にした。依存の作り方を iOS 版と 1 対 1 で見比べられるようにするため。
+- 2026-11-10: App/ フォルダの名前空間は ProjectZD8ForWindows.AppRoot.*（ProjectZD8ForWindows.App は App クラスとぶつかるため）。
+- 2026-11-10: グラフはチャート用の NuGet を使わず、XAML の Polyline と Path で描く（点が多いと間引く）。
 - 2026-11-10: トランザクション系の保存は、セッションごとの追記専用ジャーナル（1 レコード＝長さ＋CRC32、256 件ごとの疎な索引に sequence と日時の範囲、確定したセグメントは 64KB ブロックごとに Deflate 圧縮）にした。書込みは背景スレッド 1 本と上限付きキューで group commit（計測を止めない）、開くときに書きかけの末尾を切り詰める（クラッシュ耐性）。NuGet を増やさず、Domain のリポジトリのインターフェースの裏に隠したので、あとで LMDB などに替えられる。
 - 2026-11-10: 計測中の書込みは fsync を待たない。落ちると直前の数 ms を失うことがあるが、残るのは必ず途中までの正しい列。fsync の方針は LogStoreFlushPolicy で 3 種類から選べる。
 - 2026-11-10: 車両は SQLite が正。CloudKit の VehicleCatalog とは、前回同期した車両 ID の一覧を端末に残して 3 者で突き合わせる（両方にあれば更新日時の新しい方、同じならこの端末）。VehicleCatalog に削除の印がないため。同期の失敗は次の読み込みに回し、端末内の一覧を返す（iOS はキャッシュが空なら例外）。

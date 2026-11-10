@@ -71,6 +71,12 @@ public sealed partial class WindowsLoginView : UserControl
         PanelSubtitle.Text = LocalizedText.Get("auth.panel.subtitle");
         TrustText.Text = LocalizedText.Get("auth.trust.apple_only");
         ConsentHint.Text = LocalizedText.Get("auth.consent_hint");
+        if (_isLocalMode)
+        {
+            // ローカルモードでは Apple のサインインを使わないので、「Apple アカウントのみ」の説明を出さない。
+            PanelSubtitle.Visibility = Visibility.Collapsed;
+            TrustRow.Visibility = Visibility.Collapsed;
+        }
         foreach (var (glyph, key) in new[]
         {
             (FluentSymbol.Pulse, "auth.capability.telemetry"),
@@ -208,7 +214,7 @@ public sealed partial class WindowsLoginView : UserControl
         {
             Title = LocalizedText.Get("auth.disclaimer.title"),
             Content = new ScrollViewer { Content = body, MaxHeight = 460 },
-            PrimaryButtonText = LocalizedText.Get("auth.disclaimer.accept"),
+            PrimaryButtonText = LocalizedText.Get(_isLocalMode ? "windows.login.disclaimer.accept_local" : "auth.disclaimer.accept"),
             CloseButtonText = LocalizedText.Get("auth.disclaimer.cancel"),
             DefaultButton = ContentDialogButton.Primary,
             RequestedTheme = ElementTheme.Dark,

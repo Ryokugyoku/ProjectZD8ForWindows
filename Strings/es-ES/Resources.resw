@@ -3690,6 +3690,10 @@ Domina la conducción.</value>
     <value>Continuar en este equipo</value>
     <comment>windows.login.continue_local</comment>
   </data>
+  <data name="windows_login_disclaimer_accept_local" xml:space="preserve">
+    <value>Aceptar y continuar</value>
+    <comment>windows.login.disclaimer.accept_local</comment>
+  </data>
   <data name="windows_login_local_mode_notice" xml:space="preserve">
     <value>El inicio de sesión de Apple no está configurado en este equipo, así que tus datos se guardan solo aquí y no se sincronizan con el iPhone.</value>
     <comment>windows.login.local_mode_notice</comment>

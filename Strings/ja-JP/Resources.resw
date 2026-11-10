@@ -3690,6 +3690,10 @@
     <value>この PC で続ける</value>
     <comment>windows.login.continue_local</comment>
   </data>
+  <data name="windows_login_disclaimer_accept_local" xml:space="preserve">
+    <value>同意して続ける</value>
+    <comment>windows.login.disclaimer.accept_local</comment>
+  </data>
   <data name="windows_login_local_mode_notice" xml:space="preserve">
     <value>この PC では Apple のサインインを設定していないため、データはこの PC の中だけに保存し、iPhone とは同期しません。</value>
     <comment>windows.login.local_mode_notice</comment>

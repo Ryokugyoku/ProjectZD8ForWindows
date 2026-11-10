@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="ProjectZD8ForWindows.Platform.Windows.Features.Settings.Views.WindowsSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto">
+        <StackPanel x:Name="Page" Padding="32,28,32,32" Spacing="20" MaxWidth="1120" HorizontalAlignment="Stretch" />
+    </ScrollViewer>
+</UserControl>

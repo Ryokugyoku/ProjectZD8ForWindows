@@ -10,7 +10,11 @@ README 確認済みのコミット: cb6c663
 - Domain 層（iOS 版の Domain、Swift 65 ファイル）を `src/ProjectZD8.Domain`（net10.0）に移植済み。ビルドは警告 0。
 - Domain のテスト 12 ファイルを `tests/ProjectZD8.Domain.Tests`（xUnit）に移植済み。56 件すべて合格。JSON の往復テスト 2 ファイルは Data 層で移す。
 - Application 層（iOS 版の Application/Features、9 機能・Swift 約 80 ファイル）を `src/ProjectZD8.Application`（net10.0、Domain だけを参照）に移植済み。テスト 30 ファイル・155 件を `tests/ProjectZD8.Application.Tests` に移し、すべて合格。ビルドは警告 0。
-- WinUI 3 のアプリ本体はテンプレートのまま（Domain と Application を参照しているだけ）。
+- Data 層を作った（2026-11-10）。`src/ProjectZD8.Data`（net10.0）と `src/ProjectZD8.Data.Windows`（Windows の API）。テスト 283 件（`tests/ProjectZD8.Data.Tests`）すべて合格。iOS の Data のテストはほぼすべて移植（対象外は下の検討事項）。
+  - 永続化：マスタ系は SQLite（`Persistence/Sqlite`、`dir/projectzd8.sqlite`）、生ログと取得の証跡（batch・PID 要求）は自作の追記専用ログストア（`Persistence/LogStore`、`dir/logs/<セッション>/`）。iOS 版は全部を GRDB（SQLite）に入れているので、ここが違う。
+  - デバイス：ELM327、OBDLink EX の PID 取得、VIN、デモ用アダプター、USB シリアル（COM、115200bps）、Bluetooth Classic（RFCOMM / SPP）、BLE（GATT の UART）、機器の検出、既定アダプターの記憶（JSON ファイル）、到来の監視と接続の確認（アプリ内のイベント）、スリープ抑止（SetThreadExecutionState）。
+  - ネットワークと認証：Swift の Codable と同じ JSON、CloudKit Web Services のクライアント（REST）と各リポジトリ、AccountSettings と AccountSessionRevocation のレコード、Web 版の Sign in with Apple（ID トークンを RS256 で検証して sub を取り出す）、ckWebAuthToken の取得、PasswordVault（だめなら DPAPI）への保存、設定ファイル（`appsettings.Local.json` と環境変数 `PROJECTZD8_*`）。設定がなければローカルモード。開発者の手順は `docs/CLOUD_SETUP.md`。
+- 生ログストアの性能（Release、24 コア、1 セッションに 100 万件）：書込み 124 万件/秒、Append の遅延 p50 0.6µs・p99 2.0µs・p99.9 20.7µs（最大 14.1ms）。sequence の範囲読取（1,000 件）p50 0.66ms・p99 1.06ms、時間窓（10 秒分）p50 0.65ms・p99 1.09ms、全件読取 377ms。ディスク 26.5MiB（27.8 バイト/件）。異常終了後の開き直し（全走査）204ms。測定は `tools/ProjectZD8.LogStoreBenchmark`。
 - 元リポジトリの構成を調べ終えた（Domain / Application / Data / Platform のクリーンアーキテクチャ、テストあり）。
 - git は C:\Program Files\Git にあるが PATH に入っていない。GitHub CLI（gh）はない。.NET SDK 10.0.403 あり。
 - iOS 版を参照用に ..\ProjectZD8 に clone 済み（8bcda6f）。
@@ -55,6 +59,17 @@ README 確認済みのコミット: cb6c663
 - CloudKit Console で、スキーマを本番環境（Production）に反映する必要がある（開発者の作業）。
 
 ## 検討事項・未決定
+- アカウント削除で AccountSessionRevocation のレコードを消すかどうか。今の実装は消さない（ほかの端末へログアウトを知らせるのに要るため）。「iOS 版の CloudKit 化の設計案」の「消す」と食い違っている。→ 開発者に確認。
+- CloudKit Web Services の確かめていない点：新しい ckWebAuthToken が応答のどこに入るか（JSON の ckWebAuthToken / ckSession と同名のヘッダーを見ている）、CloudKit Console の Sign In Callback にカスタム URL スキームを直接入れられるか（入れられなければ https のページ経由。docs/web/cloudkit-callback.html）、update / forceReplace の実際の動き、asset の receipt の形。
+- Web の Sign in with Apple で得た sub が iOS の credential.user と一致するか（同じ Team・同じ主 App ID なら一致するはず）。実機で確かめる。
+- Swift の sortedKeys の並び順と、iOS が実際に書いた JSON とのバイト単位の比較はしていない（読み込みは順番に依存しない）。
+- 生ログストアと SQLite にまたがる操作（セッション終了・回復・生ログの置換）は、SQLite のトランザクション中に LogStore を fsync してから SQLite を確定する。fsync のあとに SQLite の確定だけが失敗すると不整合が残る（まれ）。
+- 生ログの除去と復元で、Windows は取得証拠を残したまま生ログだけを消す。iOS は Raw を参照する PID 要求があると外部キーで失敗するので、iOS 側の不具合かもしれない。→ iOS 側で確認。
+- Domain の取得 platform に Windows の値がない。manifest の CHECK 制約を緩めたが、Windows で取ったセッションを何として記録するか（今は macOS 相当）は未決定。Domain に Windows を足すと iOS 版との JSON 互換に影響する。
+- 計測中のセッションは batch の証拠をすべてメモリに持つ。2 時間を超える長いセッションのメモリ量は未測定。
+- 同じデータフォルダを複数のプロセスで開くことは想定していない（単一インスタンスにする）。
+- 実機で見る必要がある点（デバイス）：FTDI ドライバーが COM ポートのインターフェイスを登録するか、BusReportedDeviceDesc と Manufacturer が値を返すか、GetGattServicesAsync(Uncached) で接続が始まるか、SPP をキャッシュから取れない機器での 10 秒の照会。
+- iOS のテストで移植しなかったもの：旧 DB（v8）からの移行（Windows に旧 DB はない）、日時が無限大のテスト（C# にない）、取得性能の計測マトリクス（ベンチマークで代用）。Application.Tests の中のメモリ上の代用リポジトリや PID 定義の写し（PROGRESS の上の項目）は、Data の実装に置き換えられる（Application.Tests から Data を参照する必要がある）。
 - Application 移植で Swift と完全には同じにならない点：
   - Swift の `Task {}` は後で走るが、C# の async は最初の await まで同期で走る。状態遷移の順番は同じにしたが、同じ同期区間で続けて操作を送ると（例：VehicleSaved の直後に EditCancelled）見える状態が変わることがある。LiveTelemetryModel だけは Task.Yield で Swift に近づけた。モデルは UI スレッド（単一スレッド）から呼ぶ前提。
   - Swift の actor 3 つ（取得コントローラー、マニフェスト作成、バッチ保存）は lock 付きのクラスにした。ポートに CancellationToken がないので、実行中の呼び出しは止められず、世代番号の確認で古い結果を捨てる（Swift と同じ結果）。
@@ -71,6 +86,21 @@ README 確認済みのコミット: cb6c663
 - ライセンスが PolyForm Noncommercial なので、Windows 版も同じライセンスにするか。
 
 ## 決定事項
+- 2026-11-10: トランザクション系の保存は、セッションごとの追記専用ジャーナル（1 レコード＝長さ＋CRC32、256 件ごとの疎な索引に sequence と日時の範囲、確定したセグメントは 64KB ブロックごとに Deflate 圧縮）にした。書込みは背景スレッド 1 本と上限付きキューで group commit（計測を止めない）、開くときに書きかけの末尾を切り詰める（クラッシュ耐性）。NuGet を増やさず、Domain のリポジトリのインターフェースの裏に隠したので、あとで LMDB などに替えられる。
+- 2026-11-10: 計測中の書込みは fsync を待たない。落ちると直前の数 ms を失うことがあるが、残るのは必ず途中までの正しい列。fsync の方針は LogStoreFlushPolicy で 3 種類から選べる。
+- 2026-11-10: 車両は SQLite が正。CloudKit の VehicleCatalog とは、前回同期した車両 ID の一覧を端末に残して 3 者で突き合わせる（両方にあれば更新日時の新しい方、同じならこの端末）。VehicleCatalog に削除の印がないため。同期の失敗は次の読み込みに回し、端末内の一覧を返す（iOS はキャッシュが空なら例外）。
+- 2026-11-10: SQLite の日時は UTC の Ticks（100ns）で保存する（iOS の GRDB はミリ秒）。C# の日時を損なわずに往復させるため。取得境界は iOS と同じく µs に丸めて比べる。
+- 2026-11-10: Bluetooth の識別子は、Classic も BLE もアドレス（00-04-3E-12-34-56 の形）。Windows には iOS のペリフェラル UUID に当たる値がないため。SPP 機器は Bluetooth 側にだけ出し、USB の一覧から Bluetooth の仮想 COM（BTHENUM）を除く（同じ機器を二重に出さないため）。
+- 2026-11-10: Bluetooth Classic の候補は、MX+ に加えて、既知の BLE 名の接頭辞か名前に「OBD」「ELM327」を含む SPP 機器（macOS は MX+ だけ）。ペアリングしていない機器は列挙しない。
+- 2026-11-10: 到来の監視は USB シリアル（DeviceWatcher）と BLE（アドバタイズ）。Classic は監視しない（iOS も BLE だけ）。アプリが動いている間だけ。接続の確認はトーストでなくアプリ内のイベント（InAppDefaultAdapterConnectionPrompt）で出す。Data.Windows を WindowsAppSDK に依存させないため。
+- 2026-11-10: 設定がないとき（ローカルモード）は、LocalAccountAuthorizationAdapter が端末内で固定のアカウント ID を作る。CloudKit 系は取得が空・削除は何もしない。
+- 2026-11-10: Web の Sign in with Apple では資格情報の状態を問い合わせる手段がないので、CredentialState は常に Authorized を返す。
+- 2026-11-10: 取得性能のイベントは os_signpost の代わりに ETW（EventSource）に出す。
+- 2026-11-10: 翻訳は scripts/ConvertXcstrings.cs（.NET 10 のファイル実行）で xcstrings から Strings/{ja-JP,en-US,es-ES}/Resources.resw を生成する。.resw の Name は英数字以外を _ にし、記号を含むキーには SHA-256 の先頭 8 桁を付ける（LocalizedText.ResourceName と同じ規則）。訳がない言語は日本語（元の言語）で補う。printf 形式（%@ など）は値に残し、アプリの LocalizedText.Format で埋める。
+- 2026-11-10: カスタム URL スキームは revtorque-insight（戻り先は revtorque-insight://auth/apple と revtorque-insight://auth/cloudkit）。製品名と合わせ、iOS の識別子とぶつからないため。
+- 2026-11-10: Data 層は 2 つに分ける。OS に依存しない部分は src/ProjectZD8.Data（net10.0、テストしやすい）、Windows の API が要る部分（シリアル、Bluetooth、資格情報、ブラウザー起動）は src/ProjectZD8.Data.Windows。
+- 2026-11-10: Microsoft.Data.Sqlite が既定で引く SQLitePCLRaw.lib.e_sqlite3 2.1.11 に既知の脆弱性（GHSA-2m69-gcr7-jv3q）があるので、2.1.14 を明示して参照する。
+- 2026-11-10: マニフェストから、テンプレートに入っていた systemAIModels を外した（使わないため）。
 - 2026-11-10: Application 層の名前空間は ProjectZD8.Application.<機能>.<サブフォルダ>（フォルダは Features/ 付きで iOS 版と同じ）。Port は I 付きインターフェースで、ファイル名にも I を付ける。async メソッドに Async の接尾辞は付けない（Domain に合わせる）。State は INotifyPropertyChanged を実装した UI 非依存のクラス。
 - 2026-11-10: 移植は Windows 版から始め、Domain → Application → Data → 画面の順に進める（開発者の指示）。
 - 2026-11-10: 名前空間とプロジェクト名は iOS 版に合わせて ProjectZD8 にする。Domain は OS に依存しないクラスライブラリにして、JSON の属性は付けない。

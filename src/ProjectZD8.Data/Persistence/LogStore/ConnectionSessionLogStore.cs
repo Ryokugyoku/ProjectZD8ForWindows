@@ -160,6 +160,28 @@ public sealed class ConnectionSessionLogStore : IDisposable
         }
     }
 
+    /// <summary>索引ファイルを書かずにストアを捨てます（テストでプロセスの異常終了を再現するため）。</summary>
+    /// <remarks>責務: キューの分だけ書いてファイルを閉じ、背景書込みを止めます。索引ファイルは書きません。</remarks>
+    internal void Abandon()
+    {
+        List<SessionLog> logs;
+        lock (_gate)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+            logs = _logs.Values.ToList();
+            _logs.Clear();
+        }
+        foreach (var log in logs)
+        {
+            _writer.Close(log);
+        }
+        _writer.Dispose();
+    }
+
     /// <summary>セッションのディレクトリーを返します。</summary>
     /// <remarks>責務: セッションIDを小文字UUIDのディレクトリー名へ変換します。</remarks>
     /// <param name="identifier">セッションID。</param>

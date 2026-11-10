@@ -94,6 +94,10 @@ public sealed class SqliteConnectionSessionRepository :
     /// <summary>テストが直接SQLを実行するためのDBです。</summary>
     internal SqliteDatabase Database => _context.Database;
 
+    /// <summary>LogStoreを索引ファイルなしで捨てます（テストでプロセスの異常終了を再現するため）。</summary>
+    /// <remarks>責務: <see cref="ConnectionSessionLogStore.Abandon"/> へ委譲します。</remarks>
+    internal void AbandonForTesting() => _context.LogStore.Abandon();
+
     /// <inheritdoc cref="SqliteConnectionSessionAcquisitionRepository.SaveStartOnce"/>
     public void SaveStartOnce(ConnectionSessionAcquisitionManifest manifest, DateTimeOffset startedAt, ConnectionSessionID sessionID) =>
         _acquisition.SaveStartOnce(manifest, startedAt, sessionID);
@@ -199,7 +203,7 @@ public sealed class SqliteConnectionSessionRepository :
                 {
                     var session = record ?? throw new InvalidDataException("Connection session contains an invalid identifier or end reason");
                     var corrected = _context.WithActualCounts(session);
-                    return corrected.RawLogSummary.RecordCount > 0
+                    return corrected.RawLogSummary.LocalState != ConnectionSessionLocalRawState.Removed && corrected.RawLogSummary.RecordCount > 0
                         ? corrected with { RawLogSummary = corrected.RawLogSummary with { LocalState = ConnectionSessionLocalRawState.Available } }
                         : corrected;
                 }).ToList();

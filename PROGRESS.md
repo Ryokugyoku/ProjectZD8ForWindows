@@ -1,6 +1,6 @@
 # ProjectZD8ForWindows 進捗
 
-最終更新: 2026-11-10
+最終更新: 2026-11-11
 README 確認済みのコミット: 3cfc2eb（＋未コミットのロゴと Identity を反映済み）
 
 ## 概要
@@ -23,6 +23,8 @@ README 確認済みのコミット: 3cfc2eb（＋未コミットのロゴと Ide
 - 確かめていない：実機の OBD アダプター（USB シリアル・RFCOMM・BLE の接続と送受信、探索、到来の監視）、実際の CloudKit と Apple のサインイン（テストは偽の HTTP 応答だけ）、本物の車、電源断での fsync の効き目、ARM64 と x86 のビルド、狭いウインドウ（640×420）、写真の取り込み、停止確認・Raw の解放・セッション削除の各ダイアログ、Release ビルド（トリミングあり）での起動。
 
 ## 直近の作業
+- 2026-11-11: Microsoft Store に 1.0.0.0 を提出した（審査中）。Partner Center でプロパティ・年齢区分（3+）・パッケージ（x64、Desktop のみ）・3 言語の掲載情報・認定メモ・runFullTrust の理由・無料・プライベート対象ユーザー（既知のユーザー グループ「RevTorque Insight Beta Testers」、開発者の個人の Microsoft アカウント 1 件）を設定した。IARC の同意、パッケージとスクリーンショットのアップロード、アプリ開発者契約 8.11 への同意は開発者が行った。手元のビルドで .msixupload の中身が古い Identity のまま再利用され弾かれたので、出力を消して作り直した（docs/STORE_RELEASE.md に注意を追記）。
+- 2026-11-10: Store の最初の提出の準備（開発者の依頼）。PRIVACY.md、docs/store/listing.md（日・英・西の掲載文、認定メモ、年齢区分の答え）、docs/store/screenshots/（UI オートメーションでデモ用アダプターを操作して撮影）を作って push した。CI が GitHub で成功。Partner Center で提出の下書きを作り、プロパティを入力・保存し、年齢区分のアンケートに答えた（同意と保存は開発者）。
 - 2026-11-10: ロゴを作り、Partner Center で「RevTorque Insight」を予約した（開発者の依頼）。ロゴは iOS 版のアプリアイコンを元に scripts/GenerateAppIcons.cs で 72 ファイルを作った（タイル・ストア・スプラッシュ・ロック画面、タスクバーとスタート用の角丸）。パッケージに入ることとタスクバーの表示を確かめた。Identity を Partner Center の値にして、Store 用の .msixupload が作れることを確かめた。
 - 2026-11-10: Microsoft Store のベータ公開の準備と自動リリースを作った（開発者の依頼）。GitHub Actions の CI（ビルドとテスト）と Release（タグで Store に提出）、scripts/Set-PackageIdentity.ps1、docs/STORE_RELEASE.md。Store 用の .msixupload を手元で作れることを確かめた（シンボルを付けると dotnet CLI では失敗するので外した）。トリミングした Release が起動直後に落ちたので、トリミングを止めて、起動とウインドウの応答を確かめた（画面の操作は未）。ワークフローは GitHub ではまだ動かしていない。
 - 2026-11-10: LICENSE（PolyForm Noncommercial 1.0.0）を足し、GitHub に公開リポジトリとして上げた。
@@ -34,9 +36,11 @@ README 確認済みのコミット: 3cfc2eb（＋未コミットのロゴと Ide
 - 2026-11-10: iOS 版の CloudKit と認証の実装を調べ、Windows から同期する方式を設計した（下の「同期の設計メモ」）。
 
 ## 次にやること
-- Microsoft Store のベータ公開（docs/STORE_RELEASE.md の順に）。済み：ロゴ、アプリ名の予約（Store ID 9N7FN5KKVR1M）、マニフェストの Identity。残り（開発者の作業）：①Partner Center の上部に出ている更新されたアプリ開発者契約（App Developer Agreement）に同意する（同意しないと公開できない）、②プライバシーポリシーの URL、③既知のユーザー グループ（テスターのメール）、④ストアの説明・スクリーンショット・年齢区分、⑤push して Actions の「Release」を手で動かし、作った .msixupload で最初の提出を手で行う（プライベート対象ユーザー）、⑥Entra のアプリと GitHub の Secrets・Variables（STORE_PRODUCT_ID=9N7FN5KKVR1M など）を登録する。そのあとはタグ v1.2.3 の push で自動提出。予約は 3 か月以内（2027-02 上旬まで）に提出しないと失効する。
+- Microsoft Store の審査結果を待つ（2026-11-11 に 1.0.0.0 を提出、「In certification」）。通ったら、テスターのアカウントで https://apps.microsoft.com/detail/restricted/9N7FN5KKVR1M から入れて動作を確かめる。不合格なら理由を見て直し、1.0.1 で出し直す（iCloud ボタンが理由になる可能性あり。下の検討事項）。
+- 自動提出の設定：Partner Center で Entra のアプリ（マネージャー）を作り、GitHub の Secrets（PARTNER_CENTER_*）と Variables（STORE_PRODUCT_ID=9N7FN5KKVR1M）を登録する（docs/STORE_RELEASE.md の 3）。そのあとはタグ v1.2.3 の push で提出される。次のバージョンは 1.0.1 以上にする。
 - パッケージ ID を Store の値（Ryokugyoku.RevTorqueInsight）に変えたので、手元の開発用のインストール（d2fa5ca6-… の仮の ID）とはデータのフォルダが別になる。古い方は不要になったら「アプリ」から削除する。
-- GitHub Actions のワークフローはまだ GitHub 上で一度も動かしていない。push したら CI と Release（手動実行、submit なし）が通るか確かめる。
+- GitHub Actions：CI は GitHub 上で成功した（2026-11-10、fae48b4）。Release はまだ動かしていない（最初の提出は手元で作った同じ形のパッケージを使う）。
+- ローカルモードでも、履歴の詳細に「iCloudにアップロード」ボタンと「アップロード待ち」の印が出る（押しても失敗する）。Garage の副題「iPhoneと同期します」も同じ。Store の審査で「動かない機能」と言われるおそれがあるので、ローカルモードでは隠す（認定メモには「iCloud の機能は近日対応」と書いた）。
 - 画面の作り直し（2026-11-10）を目で確かめる：接続バーの接続・切断、履歴の 2 列（幅 1100 以上）とパンくず・戻る、右クリックメニュー、整備の「新しい記録」と ↑↓ の選択、設定の行、ライブ取得中に分類ボタンを連打してもクリックが届くこと、暗い外観・英語・狭い幅（640）。
 - Services ID が発行されたら、docs/CLOUD_SETUP.md の「0. 有効にする手順（チェックリスト）」を順に進め、最後に AppleSignIn:Enabled を true にする。
 - 開発者の準備（docs/CLOUD_SETUP.md）：Apple Developer で Services ID とリダイレクト先の https ドメインを用意し、docs/web/ のページを置く。CloudKit Console で API トークン（Sign In Callback）を作り、AccountSettings と AccountSessionRevocation のスキーマを Production に反映する。appsettings.Local.json を置く。
@@ -109,6 +113,8 @@ README 確認済みのコミット: 3cfc2eb（＋未コミットのロゴと Ide
 - GitHub（Ryokugyoku/ProjectZD8ForWindows）に push 済み。git の user.name / user.email は未設定（コミットは -c で Ryokugyoku を指定）。
 
 ## 決定事項
+- 2026-11-11: 最初の提出は、ローカルモードの iCloud ボタンを直さずにそのまま出す（開発者の判断「このまま提出して」）。審査で指摘されたら直して出し直す。
+- 2026-11-11: Store のカテゴリは Utilities + tools、配布先は Windows デスクトップだけ、価格は無料、掲載言語は日本語・英語・スペイン語（パッケージの言語と同じ）。
 - 2026-11-10: Windows 版のロゴは iOS 版のアプリアイコン（R の回転計とシアン・オレンジの信号の線）をそのまま使う（開発者が Claude に一任）。ブランドを揃え、Windows 版の配色もこのアイコンから取っているため。タスクバーとスタートは紺の角丸の板に図柄を置く。
 - 2026-11-10: Store の製品名は「RevTorque Insight」（Store ID 9N7FN5KKVR1M、パッケージ名 Ryokugyoku.RevTorqueInsight）。Identity の値は公開されている値なのでマニフェストにコミットする。
 - 2026-11-10: ベータ版は Microsoft Store のプライベート対象ユーザー（既知のユーザー グループ）で配る。一般公開のあとはパッケージ フライト（開発者の依頼「指定したユーザーのみにテスト公開」）。最初の提出だけ Partner Center で手で行う（Store の API は既存の提出を元にしか作れないため）。

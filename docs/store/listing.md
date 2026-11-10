@@ -6,7 +6,7 @@ Partner Center の「ストア掲載情報」に貼る文面です。パッケ�
 - プライバシーポリシーの URL：https://github.com/Ryokugyoku/ProjectZD8ForWindows/blob/main/PRIVACY.md
 - Web サイト：https://github.com/Ryokugyoku/ProjectZD8ForWindows
 - サポートの連絡先：https://github.com/Ryokugyoku/ProjectZD8ForWindows/issues
-- カテゴリ：ナビゲーションと地図（Navigation & maps）。サブカテゴリはなし
+- カテゴリ：ユーティリティとツール（Utilities + tools）。サブカテゴリはなし
 - 価格：無料
 
 ## 日本語（ja-jp）

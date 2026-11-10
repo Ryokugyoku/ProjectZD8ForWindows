@@ -79,3 +79,4 @@ git push origin v1.0.1
 - 配布は今は **x64 だけ** です。ARM64 と x86 のビルドは確かめていません。
 - `.msixupload` にシンボル（.appxsym）は入れていません。dotnet CLI では作れないためです（Store のクラッシュ解析でスタックが読みにくくなります）。
 - `appsettings.Local.json` がリポジトリのルートにあるとパッケージに入るので、リリースのワークフローではエラーにしています。
+- **手元で .msixupload を作るときは、先に `bin/x64/Release` と `obj/x64/Release` を消します。** マニフェストを変えても、.msixupload の中の .msix が前回のビルドのまま再利用されることがありました（2026-11-11、古い Identity のまま Partner Center に上がって弾かれた）。提出前に中身の `AppxManifest.xml` の Identity を確かめます。GitHub Actions は毎回まっさらな状態からビルドするので、この問題は起きません。

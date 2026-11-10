@@ -1,7 +1,7 @@
 # ProjectZD8ForWindows 進捗
 
 最終更新: 2026-11-10
-README 確認済みのコミット: ef7c619（＋未コミットの Store 公開の準備を反映済み）
+README 確認済みのコミット: 3cfc2eb（＋未コミットのロゴと Identity を反映済み）
 
 ## 概要
 - iOS/macOS アプリ「RevTorque Insight」（GitHub: Ryokugyoku/ProjectZD8、Swift/SwiftUI）を Windows（WinUI 3 / .NET 10）向けに作り直す。iOS 版と CloudKit で同期する。
@@ -23,6 +23,7 @@ README 確認済みのコミット: ef7c619（＋未コミットの Store 公開
 - 確かめていない：実機の OBD アダプター（USB シリアル・RFCOMM・BLE の接続と送受信、探索、到来の監視）、実際の CloudKit と Apple のサインイン（テストは偽の HTTP 応答だけ）、本物の車、電源断での fsync の効き目、ARM64 と x86 のビルド、狭いウインドウ（640×420）、写真の取り込み、停止確認・Raw の解放・セッション削除の各ダイアログ、Release ビルド（トリミングあり）での起動。
 
 ## 直近の作業
+- 2026-11-10: ロゴを作り、Partner Center で「RevTorque Insight」を予約した（開発者の依頼）。ロゴは iOS 版のアプリアイコンを元に scripts/GenerateAppIcons.cs で 72 ファイルを作った（タイル・ストア・スプラッシュ・ロック画面、タスクバーとスタート用の角丸）。パッケージに入ることとタスクバーの表示を確かめた。Identity を Partner Center の値にして、Store 用の .msixupload が作れることを確かめた。
 - 2026-11-10: Microsoft Store のベータ公開の準備と自動リリースを作った（開発者の依頼）。GitHub Actions の CI（ビルドとテスト）と Release（タグで Store に提出）、scripts/Set-PackageIdentity.ps1、docs/STORE_RELEASE.md。Store 用の .msixupload を手元で作れることを確かめた（シンボルを付けると dotnet CLI では失敗するので外した）。トリミングした Release が起動直後に落ちたので、トリミングを止めて、起動とウインドウの応答を確かめた（画面の操作は未）。ワークフローは GitHub ではまだ動かしていない。
 - 2026-11-10: LICENSE（PolyForm Noncommercial 1.0.0）を足し、GitHub に公開リポジトリとして上げた。
 - 2026-11-10: 画面を Windows 向けに作り直した（開発者の依頼「ボタンが若干不便」）。原因：多くの画面がモデルの変化（ライブ取得・ログ読込み・アダプター探索で 1 秒に何度も）のたびにボタンを作り直し、押してから離すまでにボタンが消えてクリックが取りこぼされていた。対策：RenderGate（押している最中・メニューやドロップダウンを開いている間は作り直しを待たせる）と、描く内容の鍵が変わったときだけ作り直す方式を全画面に入れた。あわせて、ナビを 1 行・設定を下に、全画面共通の接続バー（接続・切断・ライブ表示）、戻る（ボタン・Alt+←・マウスの戻る）、履歴のパンくずと広い幅での一覧・詳細の 2 列、右クリックメニュー（セッション・整備記録・車両）、整備の「新しい記録」メニューと ListView、Ctrl+S・F5、設定を Windows 11 の設定アプリ風の行に。不具合も直した：車両の編集で写真を選ぶと入力が消えていた、PID 収集設定でスイッチを切り替えるたびに一覧が先頭に戻っていた。整備記録の削除に確認ダイアログを足した（モデルは確認なしで消すため）。ビルド警告 0、テスト 522 件合格、起動して応答することまで確認（画面の目視は未）。
@@ -33,7 +34,8 @@ README 確認済みのコミット: ef7c619（＋未コミットの Store 公開
 - 2026-11-10: iOS 版の CloudKit と認証の実装を調べ、Windows から同期する方式を設計した（下の「同期の設計メモ」）。
 
 ## 次にやること
-- Microsoft Store のベータ公開（docs/STORE_RELEASE.md の順に）。開発者の作業：①ロゴを作る（Assets/ はテンプレートの × 印のまま。審査で落ちる）、②プライバシーポリシーの URL、③Partner Center でアプリ名を予約し、製品 ID の値を `scripts/Set-PackageIdentity.ps1` でマニフェストに入れてコミットする（今は Publisher="CN=ryoku" の仮の値）、④既知のユーザー グループ、⑤Actions の「Release」を手で動かして作った .msixupload で最初の提出を手で行う（プライベート対象ユーザー）、⑥Entra のアプリと GitHub の Secrets・Variables（STORE_PRODUCT_ID など）を登録する。そのあとはタグ v1.2.3 の push で自動提出。
+- Microsoft Store のベータ公開（docs/STORE_RELEASE.md の順に）。済み：ロゴ、アプリ名の予約（Store ID 9N7FN5KKVR1M）、マニフェストの Identity。残り（開発者の作業）：①Partner Center の上部に出ている更新されたアプリ開発者契約（App Developer Agreement）に同意する（同意しないと公開できない）、②プライバシーポリシーの URL、③既知のユーザー グループ（テスターのメール）、④ストアの説明・スクリーンショット・年齢区分、⑤push して Actions の「Release」を手で動かし、作った .msixupload で最初の提出を手で行う（プライベート対象ユーザー）、⑥Entra のアプリと GitHub の Secrets・Variables（STORE_PRODUCT_ID=9N7FN5KKVR1M など）を登録する。そのあとはタグ v1.2.3 の push で自動提出。予約は 3 か月以内（2027-02 上旬まで）に提出しないと失効する。
+- パッケージ ID を Store の値（Ryokugyoku.RevTorqueInsight）に変えたので、手元の開発用のインストール（d2fa5ca6-… の仮の ID）とはデータのフォルダが別になる。古い方は不要になったら「アプリ」から削除する。
 - GitHub Actions のワークフローはまだ GitHub 上で一度も動かしていない。push したら CI と Release（手動実行、submit なし）が通るか確かめる。
 - 画面の作り直し（2026-11-10）を目で確かめる：接続バーの接続・切断、履歴の 2 列（幅 1100 以上）とパンくず・戻る、右クリックメニュー、整備の「新しい記録」と ↑↓ の選択、設定の行、ライブ取得中に分類ボタンを連打してもクリックが届くこと、暗い外観・英語・狭い幅（640）。
 - Services ID が発行されたら、docs/CLOUD_SETUP.md の「0. 有効にする手順（チェックリスト）」を順に進め、最後に AppleSignIn:Enabled を true にする。
@@ -107,6 +109,8 @@ README 確認済みのコミット: ef7c619（＋未コミットの Store 公開
 - GitHub（Ryokugyoku/ProjectZD8ForWindows）に push 済み。git の user.name / user.email は未設定（コミットは -c で Ryokugyoku を指定）。
 
 ## 決定事項
+- 2026-11-10: Windows 版のロゴは iOS 版のアプリアイコン（R の回転計とシアン・オレンジの信号の線）をそのまま使う（開発者が Claude に一任）。ブランドを揃え、Windows 版の配色もこのアイコンから取っているため。タスクバーとスタートは紺の角丸の板に図柄を置く。
+- 2026-11-10: Store の製品名は「RevTorque Insight」（Store ID 9N7FN5KKVR1M、パッケージ名 Ryokugyoku.RevTorqueInsight）。Identity の値は公開されている値なのでマニフェストにコミットする。
 - 2026-11-10: ベータ版は Microsoft Store のプライベート対象ユーザー（既知のユーザー グループ）で配る。一般公開のあとはパッケージ フライト（開発者の依頼「指定したユーザーのみにテスト公開」）。最初の提出だけ Partner Center で手で行う（Store の API は既存の提出を元にしか作れないため）。
 - 2026-11-10: リリースは GitHub Actions で自動にする（開発者の依頼）。タグ v1.2.3 の push で、テスト → x64 の .msixupload → GitHub の pre-release → msstore CLI（microsoft/microsoft-store-apppublisher）で Store に提出。パッケージのバージョンはタグから作る（1.2.3.0）。STORE_PRODUCT_ID が空なら提出しない。仮の Publisher のままなら提出しない。
 - 2026-11-10: Release でもトリミングしない（PublishTrimmed=False）。トリミングした Release のパッケージが起動直後に落ちた（Microsoft.UI.Xaml.dll、0xc000027b）。トリミングなしなら起動する。パッケージは約 80 MB。

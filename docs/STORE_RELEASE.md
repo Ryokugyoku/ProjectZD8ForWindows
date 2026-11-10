@@ -9,7 +9,9 @@
 
 ## 1. 提出の前に用意するもの（開発者の作業）
 
-- [ ] **ロゴ**：`Assets/` の画像は、テンプレートの × 印のままです。Square150x150Logo・Square44x44Logo・Wide310x150Logo・StoreLogo・SplashScreen・LockScreenLogo を差し替えます（Visual Studio でマニフェストを開くと、「ビジュアル資産」から 1 枚の元画像で全サイズを作れます）。
+- [x] **ロゴ**：iOS 版のアイコン（`Design/AppIcon-1024.png`）から `scripts/GenerateAppIcons.cs` で全サイズを作ってあります。
+- [x] **アプリ名の予約とパッケージ ID**：「RevTorque Insight」（Store ID `9N7FN5KKVR1M`）。マニフェストに反映済みです（下の 2 の 1・2 は済み）。
+- [ ] **アプリ開発者契約**：Partner Center の上部に更新の通知が出ていれば、読んで同意します（同意しないと公開できません）。
 - [ ] **プライバシーポリシーの URL**：マニフェストに `internetClient` があるため、提出に必須です。
 - [ ] **ストアの掲載情報**：説明、スクリーンショット（1 枚以上）、年齢区分のアンケート。
 - [ ] **テスターの Microsoft アカウント**（メールアドレス）。

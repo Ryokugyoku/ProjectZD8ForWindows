@@ -21,6 +21,7 @@ CloudKit Web Services を通じて iOS 版とデータを同期します。
 | `docs/PORTING_CONVENTIONS.md` | Swift から C# に移すときの規約 |
 | `docs/CLOUD_SETUP.md`、`docs/web/` | iCloud 同期と Sign in with Apple の準備（開発者向け）と、サインイン後に戻るページの見本 |
 | `docs/STORE_RELEASE.md`、`.github/workflows/`、`scripts/Set-PackageIdentity.ps1` | Microsoft Store への公開（プライベート対象ユーザーでのベータ配布）と、GitHub Actions のビルド・テスト・自動リリース |
+| `Design/AppIcon-1024.png`、`scripts/GenerateAppIcons.cs` | アプリアイコンの元画像（iOS 版と同じ）と、そこから `Assets/` のロゴを全サイズ作るスクリプト（`dotnet run --file scripts/GenerateAppIcons.cs -- Design/AppIcon-1024.png Assets`） |
 
 アプリ本体の csproj はリポジトリのルートにあるので、`src/`・`tests/`・`tools/`・`scripts/` の中のファイルはアプリのビルド対象から外しています。
 技術的な識別子（名前空間、プロジェクト名）は、iOS 版と同じく `ProjectZD8` を使います。

@@ -1,0 +1,43 @@
+<!doctype html>
+<!--
+  Sign in with Apple（Web）の戻り先のページです。開発者の https のドメインに置き、Services ID の Return URL に登録します。
+  Apple はこのページへ #code=…&id_token=…&state=…（または #error=…）を付けて戻します（response_mode=fragment）。
+  このページはその値をそのまま revtorque-insight://auth/apple?… へ転送し、Windows アプリに渡します。
+  値はサーバーへ送られません（フラグメントはブラウザーの外へ出ません）。ログにも残しません。
+  手順は docs/CLOUD_SETUP.md を見てください。
+-->
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>RevTorque Insight に戻ります</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 3rem auto; max-width: 32rem; padding: 0 1rem; line-height: 1.6; }
+    a.button { display: inline-block; padding: .6rem 1.2rem; border-radius: .4rem; background: #0a64d8; color: #fff; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <h1>RevTorque Insight に戻ります</h1>
+  <p id="message">アプリを開いています…</p>
+  <p><a id="open" class="button" href="#" hidden>アプリを開く</a></p>
+  <script>
+    (function () {
+      // Apple はフラグメントで返します。念のためクエリーにも対応します。
+      var params = window.location.hash.length > 1 ? window.location.hash.substring(1) : window.location.search.substring(1);
+      if (!params) {
+        document.getElementById("message").textContent = "サインインの情報がありません。アプリからやり直してください。";
+        return;
+      }
+      var target = "revtorque-insight://auth/apple?" + params;
+      // 戻るボタンで同じ値を使い回さないよう、アドレスバーからは消します。
+      history.replaceState(null, "", window.location.pathname);
+      var link = document.getElementById("open");
+      link.href = target;
+      link.hidden = false;
+      document.getElementById("message").textContent = "アプリが開かないときは、下のボタンを押してください。このページは閉じてかまいません。";
+      window.location.replace(target);
+    })();
+  </script>
+</body>
+</html>

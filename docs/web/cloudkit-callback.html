@@ -1,0 +1,42 @@
+<!doctype html>
+<!--
+  CloudKit Web Services のサインイン（ckWebAuthToken）の戻り先のページです。
+  CloudKit Console の API トークンの「Sign In Callback」を URL Redirect にして、このページの https の URL を登録します。
+  CloudKit はこのページへ ?ckWebAuthToken=… を付けて戻します。このページはそれを revtorque-insight://auth/cloudkit?… へ転送します。
+  （カスタム URL スキームを直接 Sign In Callback に登録できる場合は、このページは要りません。docs/CLOUD_SETUP.md 参照）
+  注意：クエリーはこのページのサーバーのアクセスログに残ることがあります。ログを残さないホスティングを使ってください。
+-->
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>RevTorque Insight に戻ります</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 3rem auto; max-width: 32rem; padding: 0 1rem; line-height: 1.6; }
+    a.button { display: inline-block; padding: .6rem 1.2rem; border-radius: .4rem; background: #0a64d8; color: #fff; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <h1>RevTorque Insight に戻ります</h1>
+  <p id="message">アプリを開いています…</p>
+  <p><a id="open" class="button" href="#" hidden>アプリを開く</a></p>
+  <script>
+    (function () {
+      // URL エンコードされたままの値を、そのまま渡します（+ / = を崩さないため）。
+      var params = window.location.search.length > 1 ? window.location.search.substring(1) : window.location.hash.substring(1);
+      if (params.indexOf("ckWebAuthToken=") < 0 && params.indexOf("ckSession=") < 0) {
+        document.getElementById("message").textContent = "iCloud のサインインの情報がありません。アプリからやり直してください。";
+        return;
+      }
+      var target = "revtorque-insight://auth/cloudkit?" + params;
+      history.replaceState(null, "", window.location.pathname);
+      var link = document.getElementById("open");
+      link.href = target;
+      link.hidden = false;
+      document.getElementById("message").textContent = "アプリが開かないときは、下のボタンを押してください。このページは閉じてかまいません。";
+      window.location.replace(target);
+    })();
+  </script>
+</body>
+</html>

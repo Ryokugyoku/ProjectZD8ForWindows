@@ -1,0 +1,3633 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- scripts/ConvertXcstrings.cs が iOS 版の Localizable.xcstrings から生成。手で編集しない。 -->
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="k_________xf7fe73b2" xml:space="preserve">
+    <value>%1$@ / %2$@</value>
+    <comment>%@ / %@</comment>
+  </data>
+  <data name="k__lld_xdaea457f" xml:space="preserve">
+    <value>%lld</value>
+    <comment>%lld</comment>
+  </data>
+  <data name="k__lld____lld_x67c946e9" xml:space="preserve">
+    <value>%1$lld · %2$lld</value>
+    <comment>%lld · %lld</comment>
+  </data>
+  <data name="BRZ" xml:space="preserve">
+    <value>BRZ</value>
+    <comment>BRZ</comment>
+  </data>
+  <data name="R" xml:space="preserve">
+    <value>R</value>
+    <comment>R</comment>
+  </data>
+  <data name="RevTorque_Insight_x9cb2bd2f" xml:space="preserve">
+    <value>RevTorque Insight</value>
+    <comment>RevTorque Insight</comment>
+  </data>
+  <data name="VEHICLE___SESSION___SEQUENCE_x2f1083ce" xml:space="preserve">
+    <value>VEHICLE / SESSION / SEQUENCE</value>
+    <comment>VEHICLE / SESSION / SEQUENCE</comment>
+  </data>
+  <data name="ZD8" xml:space="preserve">
+    <value>ZD8</value>
+    <comment>ZD8</comment>
+  </data>
+  <data name="account_delete_cancel" xml:space="preserve">
+    <value>キャンセル</value>
+    <comment>account.delete.cancel</comment>
+  </data>
+  <data name="account_delete_card_description" xml:space="preserve">
+    <value>このアカウントのアプリ設定と保存済みログイン情報を完全に削除します。</value>
+    <comment>account.delete.card.description</comment>
+  </data>
+  <data name="account_delete_card_title" xml:space="preserve">
+    <value>アカウントを削除</value>
+    <comment>account.delete.card.title</comment>
+  </data>
+  <data name="account_delete_confirm" xml:space="preserve">
+    <value>削除する</value>
+    <comment>account.delete.confirm</comment>
+  </data>
+  <data name="account_delete_error" xml:space="preserve">
+    <value>削除を完了できませんでした。再試行できるようログイン情報は保持されています。</value>
+    <comment>account.delete.error</comment>
+  </data>
+  <data name="account_delete_item_adapter" xml:space="preserve">
+    <value>この端末に保存したデフォルトアダプターと端末固有の接続選択</value>
+    <comment>account.delete.item.adapter</comment>
+  </data>
+  <data name="account_delete_item_credential" xml:space="preserve">
+    <value>このアプリのAppleログイン用に保存した識別情報</value>
+    <comment>account.delete.item.credential</comment>
+  </data>
+  <data name="account_delete_item_driving_data" xml:space="preserve">
+    <value>各端末およびCloudKitに保存されたすべての接続セッションと未デコードOBD Rawログ</value>
+    <comment>account.delete.item.driving_data</comment>
+  </data>
+  <data name="account_delete_item_shared_settings" xml:space="preserve">
+    <value>端末内およびiCloud共有設定に保存した言語と外観</value>
+    <comment>account.delete.item.shared_settings</comment>
+  </data>
+  <data name="account_delete_item_vehicles" xml:space="preserve">
+    <value>各端末およびCloudKitに保存された登録車両プロフィールと写真</value>
+    <comment>account.delete.item.vehicles</comment>
+  </data>
+  <data name="account_delete_navigation_title" xml:space="preserve">
+    <value>アカウント削除</value>
+    <comment>account.delete.navigation_title</comment>
+  </data>
+  <data name="account_delete_next" xml:space="preserve">
+    <value>次へ</value>
+    <comment>account.delete.next</comment>
+  </data>
+  <data name="account_delete_retry" xml:space="preserve">
+    <value>削除を再試行</value>
+    <comment>account.delete.retry</comment>
+  </data>
+  <data name="account_delete_review_message" xml:space="preserve">
+    <value>次のデータは完全に削除され、元に戻すことはできません。</value>
+    <comment>account.delete.review.message</comment>
+  </data>
+  <data name="account_delete_review_title" xml:space="preserve">
+    <value>削除される事項</value>
+    <comment>account.delete.review.title</comment>
+  </data>
+  <data name="account_delete_start" xml:space="preserve">
+    <value>アカウント削除を開始</value>
+    <comment>account.delete.start</comment>
+  </data>
+  <data name="account_delete_warning_message" xml:space="preserve">
+    <value>アカウントを削除すると、各端末とCloudKitに保存されたすべての取得済み運転データ、アプリ設定、ログイン情報が完全に削除されます。この操作は取り消せません。</value>
+    <comment>account.delete.warning.message</comment>
+  </data>
+  <data name="account_delete_warning_title" xml:space="preserve">
+    <value>アカウントを削除しますか？</value>
+    <comment>account.delete.warning.title</comment>
+  </data>
+  <data name="analysis_back_session" xml:space="preserve">
+    <value>セッションに戻る</value>
+    <comment>analysis.back.session</comment>
+  </data>
+  <data name="analysis_card_caption" xml:space="preserve">
+    <value>時系列 %lld サンプル</value>
+    <comment>analysis.card.caption</comment>
+  </data>
+  <data name="analysis_card_value" xml:space="preserve">
+    <value>PID時系列</value>
+    <comment>analysis.card.value</comment>
+  </data>
+  <data name="analysis_chart_time" xml:space="preserve">
+    <value>時刻</value>
+    <comment>analysis.chart.time</comment>
+  </data>
+  <data name="analysis_chart_value" xml:space="preserve">
+    <value>値</value>
+    <comment>analysis.chart.value</comment>
+  </data>
+  <data name="analysis_column_pid" xml:space="preserve">
+    <value>PID</value>
+    <comment>analysis.column.pid</comment>
+  </data>
+  <data name="analysis_column_raw" xml:space="preserve">
+    <value>Rawデータ</value>
+    <comment>analysis.column.raw</comment>
+  </data>
+  <data name="analysis_column_time" xml:space="preserve">
+    <value>時刻</value>
+    <comment>analysis.column.time</comment>
+  </data>
+  <data name="analysis_column_value" xml:space="preserve">
+    <value>変換値</value>
+    <comment>analysis.column.value</comment>
+  </data>
+  <data name="analysis_components_diagnostics_body" xml:space="preserve">
+    <value>PID 31は故障コード消去後、PID 21はMIL点灯中の累積距離です。消去日時や原因は特定できず、ECUの挙動にも依存します。</value>
+    <comment>analysis.components.diagnostics.body</comment>
+  </data>
+  <data name="analysis_components_diagnostics_title" xml:space="preserve">
+    <value>診断距離履歴</value>
+    <comment>analysis.components.diagnostics.title</comment>
+  </data>
+  <data name="analysis_components_electrical_body" xml:space="preserve">
+    <value>ECUが見ている電圧を回転数や電装負荷と比較できます。オルタネータ出力の直接測定ではなく、単独診断もできません。</value>
+    <comment>analysis.components.electrical.body</comment>
+  </data>
+  <data name="analysis_components_electrical_title" xml:space="preserve">
+    <value>充電・電源系</value>
+    <comment>analysis.components.electrical.title</comment>
+  </data>
+  <data name="analysis_components_empty" xml:space="preserve">
+    <value>対応している部品・系統へ結び付けられるPIDがありません。</value>
+    <comment>analysis.components.empty</comment>
+  </data>
+  <data name="analysis_components_exhaust_body" xml:space="preserve">
+    <value>触媒・DPF温度から熱履歴を見ます。温度だけでは煤量、再生成否、部品健全性を確定できません。</value>
+    <comment>analysis.components.exhaust.body</comment>
+  </data>
+  <data name="analysis_components_exhaust_title" xml:space="preserve">
+    <value>排気後処理系</value>
+    <comment>analysis.components.exhaust.title</comment>
+  </data>
+  <data name="analysis_components_fuel_intake_body" xml:space="preserve">
+    <value>燃料補正と吸入空気量から混合気補正や吸気需要を比較します。負荷、回転数、温度、漏れ、整備情報も必要です。</value>
+    <comment>analysis.components.fuel_intake.body</comment>
+  </data>
+  <data name="analysis_components_fuel_intake_title" xml:space="preserve">
+    <value>燃料・吸気系</value>
+    <comment>analysis.components.fuel_intake.title</comment>
+  </data>
+  <data name="analysis_components_statistics" xml:space="preserve">
+    <value>最新 %1$.1f / 最小 %2$.1f / 平均 %3$.1f / 最大 %4$.1f %5$@</value>
+    <comment>analysis.components.statistics</comment>
+  </data>
+  <data name="analysis_components_subtitle" xml:space="preserve">
+    <value>取得できたPIDがある系統だけを表示します。値は比較の手掛かりであり、単独で故障を確定するものではありません。</value>
+    <comment>analysis.components.subtitle</comment>
+  </data>
+  <data name="analysis_components_thermal_body" xml:space="preserve">
+    <value>冷却水温・油温から暖機と熱の推移を見ます。近い条件で比較し、単発の値だけで部品故障を断定しません。</value>
+    <comment>analysis.components.thermal.body</comment>
+  </data>
+  <data name="analysis_components_thermal_title" xml:space="preserve">
+    <value>冷却・潤滑系</value>
+    <comment>analysis.components.thermal.title</comment>
+  </data>
+  <data name="analysis_components_title" xml:space="preserve">
+    <value>部品・系統から見る</value>
+    <comment>analysis.components.title</comment>
+  </data>
+  <data name="analysis_download_cancel" xml:space="preserve">
+    <value>キャンセル</value>
+    <comment>analysis.download.cancel</comment>
+  </data>
+  <data name="analysis_download_confirm" xml:space="preserve">
+    <value>ダウンロード</value>
+    <comment>analysis.download.confirm</comment>
+  </data>
+  <data name="analysis_download_confirm_message" xml:space="preserve">
+    <value>Rawログ（%@）をiCloudからダウンロードしてPID時系列解析を開始しますか？</value>
+    <comment>analysis.download.confirm.message</comment>
+  </data>
+  <data name="analysis_download_confirm_title" xml:space="preserve">
+    <value>iCloudからダウンロードしますか？</value>
+    <comment>analysis.download.confirm.title</comment>
+  </data>
+  <data name="analysis_download_progress" xml:space="preserve">
+    <value>iCloudからダウンロード中</value>
+    <comment>analysis.download.progress</comment>
+  </data>
+  <data name="analysis_empty_body" xml:space="preserve">
+    <value>このセッションには保持されたRaw PID応答がありません。</value>
+    <comment>analysis.empty.body</comment>
+  </data>
+  <data name="analysis_empty_title" xml:space="preserve">
+    <value>解析データがありません</value>
+    <comment>analysis.empty.title</comment>
+  </data>
+  <data name="analysis_error_storage" xml:space="preserve">
+    <value>解析データを読み込めませんでした。</value>
+    <comment>analysis.error.storage</comment>
+  </data>
+  <data name="analysis_eyebrow" xml:space="preserve">
+    <value>セッション走行解析</value>
+    <comment>analysis.eyebrow</comment>
+  </data>
+  <data name="analysis_hero_caption" xml:space="preserve">
+    <value>変換値はすべて元の応答バイト列まで追跡できます。</value>
+    <comment>analysis.hero.caption</comment>
+  </data>
+  <data name="analysis_loading" xml:space="preserve">
+    <value>解析を読み込み中…</value>
+    <comment>analysis.loading</comment>
+  </data>
+  <data name="analysis_mode_overview" xml:space="preserve">
+    <value>走行サマリー</value>
+    <comment>analysis.mode.overview</comment>
+  </data>
+  <data name="analysis_mode_relationships" xml:space="preserve">
+    <value>相関</value>
+    <comment>analysis.mode.relationships</comment>
+  </data>
+  <data name="analysis_mode_title" xml:space="preserve">
+    <value>表示</value>
+    <comment>analysis.mode.title</comment>
+  </data>
+  <data name="analysis_mode_trends" xml:space="preserve">
+    <value>折れ線</value>
+    <comment>analysis.mode.trends</comment>
+  </data>
+  <data name="analysis_open" xml:space="preserve">
+    <value>ログデータ解析</value>
+    <comment>analysis.open</comment>
+  </data>
+  <data name="analysis_open_hint" xml:space="preserve">
+    <value>走行サマリー・グラフを開く</value>
+    <comment>analysis.open.hint</comment>
+  </data>
+  <data name="analysis_overview_distance" xml:space="preserve">
+    <value>記録済みセッション距離</value>
+    <comment>analysis.overview.distance</comment>
+  </data>
+  <data name="analysis_overview_estimate_note" xml:space="preserve">
+    <value>走行時間・推定距離・ランキングは隣接観測から算出します。長い欠測は除くため、接続時間より短くなる場合があります。</value>
+    <comment>analysis.overview.estimate_note</comment>
+  </data>
+  <data name="analysis_overview_estimated_distance" xml:space="preserve">
+    <value>車速からの推定距離</value>
+    <comment>analysis.overview.estimated_distance</comment>
+  </data>
+  <data name="analysis_overview_moving_duration" xml:space="preserve">
+    <value>観測走行時間</value>
+    <comment>analysis.overview.moving_duration</comment>
+  </data>
+  <data name="analysis_overview_ranking_empty" xml:space="preserve">
+    <value>滞在時間を推定できる連続観測がありません。</value>
+    <comment>analysis.overview.ranking_empty</comment>
+  </data>
+  <data name="analysis_overview_rpm_band" xml:space="preserve">
+    <value>%1$.0f〜%2$.0f rpm未満</value>
+    <comment>analysis.overview.rpm_band</comment>
+  </data>
+  <data name="analysis_overview_rpm_ranking" xml:space="preserve">
+    <value>長く維持した回転域</value>
+    <comment>analysis.overview.rpm_ranking</comment>
+  </data>
+  <data name="analysis_overview_rpm_ranking_note" xml:space="preserve">
+    <value>500 rpm単位で順位化します。低回転が多いだけではスラッジリスクを確定できず、形式、負荷、油温、オイル規格、走行時間、整備履歴も必要です。</value>
+    <comment>analysis.overview.rpm_ranking_note</comment>
+  </data>
+  <data name="analysis_overview_session_duration" xml:space="preserve">
+    <value>接続時間</value>
+    <comment>analysis.overview.session_duration</comment>
+  </data>
+  <data name="analysis_overview_speed_band" xml:space="preserve">
+    <value>%1$.0f〜%2$.0f km/h未満</value>
+    <comment>analysis.overview.speed_band</comment>
+  </data>
+  <data name="analysis_overview_speed_ranking" xml:space="preserve">
+    <value>長く維持した速度帯</value>
+    <comment>analysis.overview.speed_ranking</comment>
+  </data>
+  <data name="analysis_overview_speed_ranking_note" xml:space="preserve">
+    <value>10 km/h単位で推定観測時間を順位化します。0〜10 km/h帯には停車とごく低速の移動を含みます。</value>
+    <comment>analysis.overview.speed_ranking_note</comment>
+  </data>
+  <data name="analysis_overview_subtitle" xml:space="preserve">
+    <value>時間・距離と、よく使った速度帯・回転域を分けて表示します。</value>
+    <comment>analysis.overview.subtitle</comment>
+  </data>
+  <data name="analysis_overview_title" xml:space="preserve">
+    <value>セッション・走行サマリー</value>
+    <comment>analysis.overview.title</comment>
+  </data>
+  <data name="analysis_pid_identifier" xml:space="preserve">
+    <value>モード %02X ・ PID %02X</value>
+    <comment>analysis.pid.identifier</comment>
+  </data>
+  <data name="analysis_raw_unavailable" xml:space="preserve">
+    <value>Rawのみ</value>
+    <comment>analysis.raw.unavailable</comment>
+  </data>
+  <data name="analysis_relationship_empty_body" xml:space="preserve">
+    <value>対応するPID組に3秒以内の観測が2点以上あると表示されます。</value>
+    <comment>analysis.relationship.empty.body</comment>
+  </data>
+  <data name="analysis_relationship_empty_title" xml:space="preserve">
+    <value>表示できる相関がありません</value>
+    <comment>analysis.relationship.empty.title</comment>
+  </data>
+  <data name="analysis_relationship_guide_common" xml:space="preserve">
+    <value>PIDの組を選び、点の広がりやまとまりを見ます。各点は3秒以内で最も近い観測同士を組み合わせたものです。運転状態の傾向比較に使い、因果関係の証明や単独での故障診断には使用しません。</value>
+    <comment>analysis.relationship.guide.common</comment>
+  </data>
+  <data name="analysis_relationship_guide_rpm_load" xml:space="preserve">
+    <value>エンジン回転数 × 算出負荷は、どの回転域・相対負荷域を使ったかを見る組です。点が集中する領域や外れ方をセッション間で比較し、運転領域の違いを把握できます。</value>
+    <comment>analysis.relationship.guide.rpm_load</comment>
+  </data>
+  <data name="analysis_relationship_guide_rpm_maf" xml:space="preserve">
+    <value>エンジン回転数 × 吸入空気量は、回転域に対して実測吸入空気質量がどう変化したかを見る組です。負荷や走行条件も考慮し、曲線の変化や不自然なまとまりを比較の手掛かりにします。</value>
+    <comment>analysis.relationship.guide.rpm_maf</comment>
+  </data>
+  <data name="analysis_relationship_guide_rpm_speed" xml:space="preserve">
+    <value>エンジン回転数 × 車速は、使用回転域、停車、加速、変速に伴う可能性のある変化を見やすくする組です。似た経路同士で形を比較しますが、この図だけでギア段を特定することはできません。</value>
+    <comment>analysis.relationship.guide.rpm_speed</comment>
+  </data>
+  <data name="analysis_relationship_guide_speed_zd8_atf" xml:space="preserve">
+    <value>車速 × ZD8 AT油温は、走行負荷に伴う変速機温度の変化を比較するための観察値です。診断しきい値ではありません。</value>
+    <comment>analysis.relationship.guide.speed_zd8_atf</comment>
+  </data>
+  <data name="analysis_relationship_guide_throttle_load" xml:space="preserve">
+    <value>スロットル開度 × 算出負荷は、スロットル開度と相対的なエンジン負荷を比較する組です。応答の形、遅れに見える広がり、セッション間の違いを見ます。スロットル開度はアクセルペダル位置と同一とは限りません。</value>
+    <comment>analysis.relationship.guide.throttle_load</comment>
+  </data>
+  <data name="analysis_relationship_guide_title" xml:space="preserve">
+    <value>この散布図の見方</value>
+    <comment>analysis.relationship.guide.title</comment>
+  </data>
+  <data name="analysis_relationship_guide_trim_banks" xml:space="preserve">
+    <value>短期燃料補正 Bank 1 × Bank 2は、両バンクの同時期の補正傾向を比べる組です。均衡したまとまりや継続的な偏りを比較の手掛かりにできますが、診断前に車両のバンク構成と他条件の確認が必要です。</value>
+    <comment>analysis.relationship.guide.trim_banks</comment>
+  </data>
+  <data name="analysis_relationship_pair" xml:space="preserve">
+    <value>PIDの組み合わせ</value>
+    <comment>analysis.relationship.pair</comment>
+  </data>
+  <data name="analysis_relationship_subtitle" xml:space="preserve">
+    <value>3秒以内で最も近い観測を対応付けます。因果関係を示すものではありません。</value>
+    <comment>analysis.relationship.subtitle</comment>
+  </data>
+  <data name="analysis_relationship_title" xml:space="preserve">
+    <value>PIDの関係</value>
+    <comment>analysis.relationship.title</comment>
+  </data>
+  <data name="analysis_summary_decoded" xml:space="preserve">
+    <value>数式変換済み</value>
+    <comment>analysis.summary.decoded</comment>
+  </data>
+  <data name="analysis_summary_raw" xml:space="preserve">
+    <value>Rawのみ</value>
+    <comment>analysis.summary.raw</comment>
+  </data>
+  <data name="analysis_summary_samples" xml:space="preserve">
+    <value>取得PID</value>
+    <comment>analysis.summary.samples</comment>
+  </data>
+  <data name="analysis_timeline_subtitle" xml:space="preserve">
+    <value>時系列順。値には保存済みPID定義の数式を適用しています。</value>
+    <comment>analysis.timeline.subtitle</comment>
+  </data>
+  <data name="analysis_timeline_title" xml:space="preserve">
+    <value>PID時系列</value>
+    <comment>analysis.timeline.title</comment>
+  </data>
+  <data name="analysis_title" xml:space="preserve">
+    <value>走行解析</value>
+    <comment>analysis.title</comment>
+  </data>
+  <data name="analysis_trend_average" xml:space="preserve">
+    <value>平均</value>
+    <comment>analysis.trend.average</comment>
+  </data>
+  <data name="analysis_trend_empty_body" xml:space="preserve">
+    <value>数値へ変換できるPIDがあると折れ線グラフを表示します。</value>
+    <comment>analysis.trend.empty.body</comment>
+  </data>
+  <data name="analysis_trend_empty_title" xml:space="preserve">
+    <value>表示できる数値推移がありません</value>
+    <comment>analysis.trend.empty.title</comment>
+  </data>
+  <data name="analysis_trend_guide_codes_cleared_distance" xml:space="preserve">
+    <value>PID 31は故障コード消去後の累積走行距離です。消去日時は含まず、リセット挙動や対応はECUごとに異なります。</value>
+    <comment>analysis.trend.guide.codes_cleared_distance</comment>
+  </data>
+  <data name="analysis_trend_guide_coolant" xml:space="preserve">
+    <value>冷却水温は暖機と冷却挙動を示します。近い条件で比較し、単発変化だけで原因部品を特定しません。</value>
+    <comment>analysis.trend.guide.coolant</comment>
+  </data>
+  <data name="analysis_trend_guide_exhaust_temperature" xml:space="preserve">
+    <value>触媒・DPF温度は熱履歴を示しますが、煤量、再生成否、部品健全性は確定できません。</value>
+    <comment>analysis.trend.guide.exhaust_temperature</comment>
+  </data>
+  <data name="analysis_trend_guide_fuel_trim" xml:space="preserve">
+    <value>燃料補正はECUの混合気補正です。バンク構成、制御状態、負荷、温度、車種別基準が必要です。</value>
+    <comment>analysis.trend.guide.fuel_trim</comment>
+  </data>
+  <data name="analysis_trend_guide_generic" xml:space="preserve">
+    <value>表示名の値を時系列で記録します。変化時刻、範囲、繰り返し方を他条件と比較し、この系列だけで故障を断定しません。</value>
+    <comment>analysis.trend.guide.generic</comment>
+  </data>
+  <data name="analysis_trend_guide_load" xml:space="preserve">
+    <value>算出負荷はECUが求める相対負荷で、実測トルクではありません。回転数、スロットル、吸入空気量、走行条件と比較します。</value>
+    <comment>analysis.trend.guide.load</comment>
+  </data>
+  <data name="analysis_trend_guide_maf" xml:space="preserve">
+    <value>吸入空気量は1秒あたりの空気質量です。回転数、負荷、スロットルと比較し、漏れ、詰まり、汚れ、校正差も考慮します。</value>
+    <comment>analysis.trend.guide.maf</comment>
+  </data>
+  <data name="analysis_trend_guide_mil_distance" xml:space="preserve">
+    <value>PID 21はMIL点灯中の累積走行距離です。故障原因や点灯開始日時は特定できません。</value>
+    <comment>analysis.trend.guide.mil_distance</comment>
+  </data>
+  <data name="analysis_trend_guide_odometer" xml:space="preserve">
+    <value>PID A6はECUが報告する累積走行距離です。対応は車両ごとに異なり、法定計器の証明値ではありません。</value>
+    <comment>analysis.trend.guide.odometer</comment>
+  </data>
+  <data name="analysis_trend_guide_oil_temperature" xml:space="preserve">
+    <value>油温は暖機と熱履歴を示しますが、油圧、油量、粘度、スラッジを直接測る値ではありません。</value>
+    <comment>analysis.trend.guide.oil_temperature</comment>
+  </data>
+  <data name="analysis_trend_guide_rpm" xml:space="preserve">
+    <value>PID 0Cはエンジン回転数です。使用域、アイドリング、加速、変速に伴う変化が見えますが、負荷やギア段は単独で特定できません。</value>
+    <comment>analysis.trend.guide.rpm</comment>
+  </data>
+  <data name="analysis_trend_guide_runtime" xml:space="preserve">
+    <value>PID 1Fは現在の始動からのエンジン稼働時間で、アプリの接続時間とは異なります。</value>
+    <comment>analysis.trend.guide.runtime</comment>
+  </data>
+  <data name="analysis_trend_guide_speed" xml:space="preserve">
+    <value>PID 0DはECUが報告する車速です。停車、巡航、加減速が見えます。GPS速度とは差が出る場合があります。</value>
+    <comment>analysis.trend.guide.speed</comment>
+  </data>
+  <data name="analysis_trend_guide_throttle" xml:space="preserve">
+    <value>スロットル・ペダルPIDは要求値や実位置です。名称を確認し、スロットル開度とペダル位置を同一視しません。</value>
+    <comment>analysis.trend.guide.throttle</comment>
+  </data>
+  <data name="analysis_trend_guide_voltage" xml:space="preserve">
+    <value>PID 42はECUが見ている電源電圧です。降下を回転数・電装負荷と比較できますが、オルタネータ出力の直接測定ではありません。</value>
+    <comment>analysis.trend.guide.voltage</comment>
+  </data>
+  <data name="analysis_trend_guide_zd8_atf" xml:space="preserve">
+    <value>ZD8専用AT油温は変速機ECUから応答を確認した場合だけ表示します。値の解釈前に走行条件を確認してください。</value>
+    <comment>analysis.trend.guide.zd8_atf</comment>
+  </data>
+  <data name="analysis_trend_guide_zd8_distance" xml:space="preserve">
+    <value>ZD8専用走行距離はECUが報告する累積値であり、法定計器の証明値ではありません。</value>
+    <comment>analysis.trend.guide.zd8_distance</comment>
+  </data>
+  <data name="analysis_trend_maximum" xml:space="preserve">
+    <value>最大</value>
+    <comment>analysis.trend.maximum</comment>
+  </data>
+  <data name="analysis_trend_minimum" xml:space="preserve">
+    <value>最小</value>
+    <comment>analysis.trend.minimum</comment>
+  </data>
+  <data name="analysis_trend_pid" xml:space="preserve">
+    <value>表示するPID</value>
+    <comment>analysis.trend.pid</comment>
+  </data>
+  <data name="analysis_trend_subtitle" xml:space="preserve">
+    <value>単位を混在させないため、1つのPIDずつ表示します。</value>
+    <comment>analysis.trend.subtitle</comment>
+  </data>
+  <data name="analysis_trend_title" xml:space="preserve">
+    <value>時間変化</value>
+    <comment>analysis.trend.title</comment>
+  </data>
+  <data name="analysis_value_estimated_distance" xml:space="preserve">
+    <value>約%.1f km</value>
+    <comment>analysis.value.estimated_distance</comment>
+  </data>
+  <data name="analysis_value_in_progress" xml:space="preserve">
+    <value>継続中</value>
+    <comment>analysis.value.in_progress</comment>
+  </data>
+  <data name="analysis_value_unavailable" xml:space="preserve">
+    <value>取得なし</value>
+    <comment>analysis.value.unavailable</comment>
+  </data>
+  <data name="auth_capability_analysis" xml:space="preserve">
+    <value>走行分析</value>
+    <comment>auth.capability.analysis</comment>
+  </data>
+  <data name="auth_capability_logs" xml:space="preserve">
+    <value>追跡可能なログ</value>
+    <comment>auth.capability.logs</comment>
+  </data>
+  <data name="auth_capability_telemetry" xml:space="preserve">
+    <value>ライブテレメトリー</value>
+    <comment>auth.capability.telemetry</comment>
+  </data>
+  <data name="auth_checking" xml:space="preserve">
+    <value>Appleアカウントを確認中…</value>
+    <comment>auth.checking</comment>
+  </data>
+  <data name="auth_consent_hint" xml:space="preserve">
+    <value>ログイン前に免責事項の確認と同意が必要です。</value>
+    <comment>auth.consent_hint</comment>
+  </data>
+  <data name="auth_continue_with_apple" xml:space="preserve">
+    <value>Appleアカウントで続ける</value>
+    <comment>auth.continue_with_apple</comment>
+  </data>
+  <data name="auth_disclaimer_accept" xml:space="preserve">
+    <value>同意してAppleでログイン</value>
+    <comment>auth.disclaimer.accept</comment>
+  </data>
+  <data name="auth_disclaimer_cancel" xml:space="preserve">
+    <value>キャンセル</value>
+    <comment>auth.disclaimer.cancel</comment>
+  </data>
+  <data name="auth_disclaimer_instruction" xml:space="preserve">
+    <value>すべての項目を確認し、同意する場合のみログインしてください。</value>
+    <comment>auth.disclaimer.instruction</comment>
+  </data>
+  <data name="auth_disclaimer_introduction" xml:space="preserve">
+    <value>RevTorque Insightは個人が開発・提供する車両データ支援アプリです。利用前に次の内容を確認してください。</value>
+    <comment>auth.disclaimer.introduction</comment>
+  </data>
+  <data name="auth_disclaimer_legal_note" xml:space="preserve">
+    <value>この表示は法的助言ではなく、適用法令により認められる権利を制限するものではありません。</value>
+    <comment>auth.disclaimer.legal_note</comment>
+  </data>
+  <data name="auth_disclaimer_liability_body" xml:space="preserve">
+    <value>開発者の故意・重大な過失その他法令上免責できない場合を除き、利用により生じた車両、機器、データ、財産または身体への損害について、開発者は責任を負いません。</value>
+    <comment>auth.disclaimer.liability.body</comment>
+  </data>
+  <data name="auth_disclaimer_liability_title" xml:space="preserve">
+    <value>責任の範囲</value>
+    <comment>auth.disclaimer.liability.title</comment>
+  </data>
+  <data name="auth_disclaimer_no_warranty_body" xml:space="preserve">
+    <value>動作、正確性、適合性、継続提供、データの完全性、および車両や機器との互換性を保証しません。</value>
+    <comment>auth.disclaimer.no_warranty.body</comment>
+  </data>
+  <data name="auth_disclaimer_no_warranty_title" xml:space="preserve">
+    <value>無保証</value>
+    <comment>auth.disclaimer.no_warranty.title</comment>
+  </data>
+  <data name="auth_disclaimer_risk_body" xml:space="preserve">
+    <value>本アプリの利用、接続機器の選定・接続、および取得データに基づく判断は、利用者自身の判断と責任で行ってください。</value>
+    <comment>auth.disclaimer.risk.body</comment>
+  </data>
+  <data name="auth_disclaimer_risk_title" xml:space="preserve">
+    <value>自己の判断と責任</value>
+    <comment>auth.disclaimer.risk.title</comment>
+  </data>
+  <data name="auth_disclaimer_safety_body" xml:space="preserve">
+    <value>運転中は操作しないでください。車両・機器の説明書に従い、本アプリを安全判断や故障診断の唯一の根拠にしないでください。</value>
+    <comment>auth.disclaimer.safety.body</comment>
+  </data>
+  <data name="auth_disclaimer_safety_title" xml:space="preserve">
+    <value>安全を最優先</value>
+    <comment>auth.disclaimer.safety.title</comment>
+  </data>
+  <data name="auth_disclaimer_title" xml:space="preserve">
+    <value>重要事項と免責事項</value>
+    <comment>auth.disclaimer.title</comment>
+  </data>
+  <data name="auth_error_remote_logout_persistence" xml:space="preserve">
+    <value>他端末からログアウトされましたが、端末内セッションを完全に削除できませんでした。再起動後に再試行します。</value>
+    <comment>auth.error.remote_logout_persistence</comment>
+  </data>
+  <data name="auth_error_session_check" xml:space="preserve">
+    <value>保存済みセッションを確認できませんでした。再度ログインできます。</value>
+    <comment>auth.error.session_check</comment>
+  </data>
+  <data name="auth_error_sign_in" xml:space="preserve">
+    <value>ログインを完了できませんでした。もう一度お試しください。</value>
+    <comment>auth.error.sign_in</comment>
+  </data>
+  <data name="auth_error_unavailable" xml:space="preserve">
+    <value>現在Appleログインを利用できません。時間をおいてお試しください。</value>
+    <comment>auth.error.unavailable</comment>
+  </data>
+  <data name="auth_eyebrow" xml:space="preserve">
+    <value>DRIVE INTELLIGENCE</value>
+    <comment>auth.eyebrow</comment>
+  </data>
+  <data name="auth_panel_eyebrow" xml:space="preserve">
+    <value>SECURE ENTRY</value>
+    <comment>auth.panel.eyebrow</comment>
+  </data>
+  <data name="auth_panel_subtitle" xml:space="preserve">
+    <value>パスワード作成は不要です。ログイン方法はAppleアカウントのみに限定しています。</value>
+    <comment>auth.panel.subtitle</comment>
+  </data>
+  <data name="auth_panel_title" xml:space="preserve">
+    <value>コックピットへようこそ。</value>
+    <comment>auth.panel.title</comment>
+  </data>
+  <data name="auth_signing_in" xml:space="preserve">
+    <value>安全にログイン中…</value>
+    <comment>auth.signing_in</comment>
+  </data>
+  <data name="auth_subtitle" xml:space="preserve">
+    <value>一回ごとの走行を、明確で追跡可能な車両インサイトへ。</value>
+    <comment>auth.subtitle</comment>
+  </data>
+  <data name="auth_title" xml:space="preserve">
+    <value>愛車を知り、
+走りを自分のものに。</value>
+    <comment>auth.title</comment>
+  </data>
+  <data name="auth_trust_apple_only" xml:space="preserve">
+    <value>Appleアカウントのみ</value>
+    <comment>auth.trust.apple_only</comment>
+  </data>
+  <data name="auth_trust_local" xml:space="preserve">
+    <value>最小限の識別情報</value>
+    <comment>auth.trust.local</comment>
+  </data>
+  <data name="auth_trust_private" xml:space="preserve">
+    <value>Keychainで保護</value>
+    <comment>auth.trust.private</comment>
+  </data>
+  <data name="common_close" xml:space="preserve">
+    <value>閉じる</value>
+    <comment>common.close</comment>
+  </data>
+  <data name="default_adapter_arrival_body" xml:space="preserve">
+    <value>%@ が接続可能になりました。RevTorque Insightを開いて接続しますか？</value>
+    <comment>default-adapter-arrival-body</comment>
+  </data>
+  <data name="default_adapter_arrival_connect_action" xml:space="preserve">
+    <value>開いて接続</value>
+    <comment>default-adapter-arrival-connect-action</comment>
+  </data>
+  <data name="default_adapter_arrival_decline_action" xml:space="preserve">
+    <value>今はしない</value>
+    <comment>default-adapter-arrival-decline-action</comment>
+  </data>
+  <data name="default_adapter_arrival_title" xml:space="preserve">
+    <value>デフォルトアダプターを検出</value>
+    <comment>default-adapter-arrival-title</comment>
+  </data>
+  <data name="garage_activity_duration" xml:space="preserve">
+    <value>累積時間</value>
+    <comment>garage.activity.duration</comment>
+  </data>
+  <data name="garage_activity_last_log" xml:space="preserve">
+    <value>最終ログ</value>
+    <comment>garage.activity.last_log</comment>
+  </data>
+  <data name="garage_activity_no_logs" xml:space="preserve">
+    <value>ログなし</value>
+    <comment>garage.activity.no_logs</comment>
+  </data>
+  <data name="garage_activity_odometer" xml:space="preserve">
+    <value>最新の累積走行距離</value>
+    <comment>garage.activity.odometer</comment>
+  </data>
+  <data name="garage_activity_sessions" xml:space="preserve">
+    <value>セッション</value>
+    <comment>garage.activity.sessions</comment>
+  </data>
+  <data name="garage_cancel" xml:space="preserve">
+    <value>キャンセル</value>
+    <comment>garage.cancel</comment>
+  </data>
+  <data name="garage_connection_active" xml:space="preserve">
+    <value>接続中</value>
+    <comment>garage.connection.active</comment>
+  </data>
+  <data name="garage_connection_handoff" xml:space="preserve">
+    <value>車両接続を開始しています…</value>
+    <comment>garage.connection.handoff</comment>
+  </data>
+  <data name="garage_connection_in_progress" xml:space="preserve">
+    <value>車両へ接続中…</value>
+    <comment>garage.connection.in_progress</comment>
+  </data>
+  <data name="garage_default" xml:space="preserve">
+    <value>デフォルト</value>
+    <comment>garage.default</comment>
+  </data>
+  <data name="garage_delete_action" xml:space="preserve">
+    <value>削除</value>
+    <comment>garage.delete.action</comment>
+  </data>
+  <data name="garage_delete_message" xml:space="preserve">
+    <value>この車両と、車両に紐づく全てのセッションおよびRawログを全端末から完全に削除します。この操作は取り消せません。</value>
+    <comment>garage.delete.message</comment>
+  </data>
+  <data name="garage_delete_title" xml:space="preserve">
+    <value>車両を削除しますか？</value>
+    <comment>garage.delete.title</comment>
+  </data>
+  <data name="garage_edit" xml:space="preserve">
+    <value>編集</value>
+    <comment>garage.edit</comment>
+  </data>
+  <data name="garage_editor_save_hint" xml:space="preserve">
+    <value>このプロフィールを反映</value>
+    <comment>garage.editor.save_hint</comment>
+  </data>
+  <data name="garage_editor_studio" xml:space="preserve">
+    <value>VEHICLE STUDIO</value>
+    <comment>garage.editor.studio</comment>
+  </data>
+  <data name="garage_editor_title" xml:space="preserve">
+    <value>車両プロフィール</value>
+    <comment>garage.editor.title</comment>
+  </data>
+  <data name="garage_empty_description" xml:space="preserve">
+    <value>HOMEから接続し、車両を識別して登録してください。</value>
+    <comment>garage.empty.description</comment>
+  </data>
+  <data name="garage_empty_title" xml:space="preserve">
+    <value>登録車両がありません</value>
+    <comment>garage.empty.title</comment>
+  </data>
+  <data name="garage_energy_cng" xml:space="preserve">
+    <value>CNG</value>
+    <comment>garage.energy.cng</comment>
+  </data>
+  <data name="garage_energy_diesel" xml:space="preserve">
+    <value>軽油</value>
+    <comment>garage.energy.diesel</comment>
+  </data>
+  <data name="garage_energy_electricity" xml:space="preserve">
+    <value>電気</value>
+    <comment>garage.energy.electricity</comment>
+  </data>
+  <data name="garage_energy_gasoline" xml:space="preserve">
+    <value>ガソリン</value>
+    <comment>garage.energy.gasoline</comment>
+  </data>
+  <data name="garage_energy_gasolinePremium" xml:space="preserve">
+    <value>ハイオク</value>
+    <comment>garage.energy.gasolinePremium</comment>
+  </data>
+  <data name="garage_energy_gasolineRegular" xml:space="preserve">
+    <value>レギュラー</value>
+    <comment>garage.energy.gasolineRegular</comment>
+  </data>
+  <data name="garage_energy_hydrogen" xml:space="preserve">
+    <value>水素</value>
+    <comment>garage.energy.hydrogen</comment>
+  </data>
+  <data name="garage_energy_lpg" xml:space="preserve">
+    <value>LPG</value>
+    <comment>garage.energy.lpg</comment>
+  </data>
+  <data name="garage_energy_other" xml:space="preserve">
+    <value>その他</value>
+    <comment>garage.energy.other</comment>
+  </data>
+  <data name="garage_error_command_rejected" xml:space="preserve">
+    <value>アダプターまたは車両が識別要求を拒否しました。</value>
+    <comment>garage.error.command_rejected</comment>
+  </data>
+  <data name="garage_error_connection" xml:space="preserve">
+    <value>選択したOBDアダプターのシリアル接続を開けませんでした。</value>
+    <comment>garage.error.connection</comment>
+  </data>
+  <data name="garage_error_delete" xml:space="preserve">
+    <value>車両を削除できませんでした。</value>
+    <comment>garage.error.delete</comment>
+  </data>
+  <data name="garage_error_delete_active_session" xml:space="preserve">
+    <value>接続中の車両セッションを終了してから、この車両を削除してください。</value>
+    <comment>garage.error.delete_active_session</comment>
+  </data>
+  <data name="garage_error_malformed_response" xml:space="preserve">
+    <value>取得した車両識別子を解析できませんでした。</value>
+    <comment>garage.error.malformed_response</comment>
+  </data>
+  <data name="garage_error_obd_unavailable" xml:space="preserve">
+    <value>検証済みOBD実装が接続されるまで車両識別は利用できません。</value>
+    <comment>garage.error.obd_unavailable</comment>
+  </data>
+  <data name="garage_error_photo" xml:space="preserve">
+    <value>選択した写真を読み込めませんでした。</value>
+    <comment>garage.error.photo</comment>
+  </data>
+  <data name="garage_error_pid_catalog" xml:space="preserve">
+    <value>検証済みPIDカタログを準備できませんでした。</value>
+    <comment>garage.error.pid_catalog</comment>
+  </data>
+  <data name="garage_error_save" xml:space="preserve">
+    <value>車両を保存できませんでした。</value>
+    <comment>garage.error.save</comment>
+  </data>
+  <data name="garage_error_sync" xml:space="preserve">
+    <value>車両を同期できませんでした。iCloudを確認してください。</value>
+    <comment>garage.error.sync</comment>
+  </data>
+  <data name="garage_error_timeout" xml:space="preserve">
+    <value>OBDアダプターの応答が時間内に完了しませんでした。</value>
+    <comment>garage.error.timeout</comment>
+  </data>
+  <data name="garage_error_title" xml:space="preserve">
+    <value>処理を続行できません</value>
+    <comment>garage.error.title</comment>
+  </data>
+  <data name="garage_error_vin_unavailable" xml:space="preserve">
+    <value>車両識別子を取得できないため登録を続行できません。</value>
+    <comment>garage.error.vin_unavailable</comment>
+  </data>
+  <data name="garage_eyebrow" xml:space="preserve">
+    <value>VEHICLE COLLECTION</value>
+    <comment>garage.eyebrow</comment>
+  </data>
+  <data name="garage_field_default" xml:space="preserve">
+    <value>デフォルト車両にする</value>
+    <comment>garage.field.default</comment>
+  </data>
+  <data name="garage_field_energy" xml:space="preserve">
+    <value>エネルギー種別</value>
+    <comment>garage.field.energy</comment>
+  </data>
+  <data name="garage_field_engine_model" xml:space="preserve">
+    <value>エンジン型式</value>
+    <comment>garage.field.engine_model</comment>
+  </data>
+  <data name="garage_field_manufacturer" xml:space="preserve">
+    <value>メーカー</value>
+    <comment>garage.field.manufacturer</comment>
+  </data>
+  <data name="garage_field_model_year" xml:space="preserve">
+    <value>年式</value>
+    <comment>garage.field.model_year</comment>
+  </data>
+  <data name="garage_field_name" xml:space="preserve">
+    <value>車両名称</value>
+    <comment>garage.field.name</comment>
+  </data>
+  <data name="garage_field_note" xml:space="preserve">
+    <value>メモ</value>
+    <comment>garage.field.note</comment>
+  </data>
+  <data name="garage_field_obd_identifier" xml:space="preserve">
+    <value>OBD由来識別子</value>
+    <comment>garage.field.obd_identifier</comment>
+  </data>
+  <data name="garage_field_powertrain" xml:space="preserve">
+    <value>動力分類</value>
+    <comment>garage.field.powertrain</comment>
+  </data>
+  <data name="garage_field_tank" xml:space="preserve">
+    <value>タンク容量（L）</value>
+    <comment>garage.field.tank</comment>
+  </data>
+  <data name="garage_field_vin" xml:space="preserve">
+    <value>VIN</value>
+    <comment>garage.field.vin</comment>
+  </data>
+  <data name="garage_identification_all_fields" xml:space="preserve">
+    <value>取得した全情報</value>
+    <comment>garage.identification.all_fields</comment>
+  </data>
+  <data name="garage_identification_confirm" xml:space="preserve">
+    <value>この車両を登録する</value>
+    <comment>garage.identification.confirm</comment>
+  </data>
+  <data name="garage_identification_description" xml:space="preserve">
+    <value>OBDが返した識別子と取得できた全項目を確認してください。未取得値は推測しません。</value>
+    <comment>garage.identification.description</comment>
+  </data>
+  <data name="garage_identification_eyebrow" xml:space="preserve">
+    <value>OBD IDENTIFICATION</value>
+    <comment>garage.identification.eyebrow</comment>
+  </data>
+  <data name="garage_identification_failure_stage" xml:space="preserve">
+    <value>失敗段階:</value>
+    <comment>garage.identification.failure_stage</comment>
+  </data>
+  <data name="garage_identification_loading_hint" xml:space="preserve">
+    <value>VINと取得できる識別情報を照合しています。</value>
+    <comment>garage.identification.loading_hint</comment>
+  </data>
+  <data name="garage_identification_title" xml:space="preserve">
+    <value>この車両を登録しますか？</value>
+    <comment>garage.identification.title</comment>
+  </data>
+  <data name="garage_identification_vin" xml:space="preserve">
+    <value>車両識別番号</value>
+    <comment>garage.identification.vin</comment>
+  </data>
+  <data name="garage_photo" xml:space="preserve">
+    <value>車両写真</value>
+    <comment>garage.photo</comment>
+  </data>
+  <data name="garage_photo_choose" xml:space="preserve">
+    <value>写真を選択</value>
+    <comment>garage.photo.choose</comment>
+  </data>
+  <data name="garage_pid_settings_collecting" xml:space="preserve">
+    <value>収集中</value>
+    <comment>garage.pid_settings.collecting</comment>
+  </data>
+  <data name="garage_pid_settings_empty" xml:space="preserve">
+    <value>対応PIDはまだ収集されていません</value>
+    <comment>garage.pid_settings.empty</comment>
+  </data>
+  <data name="garage_pid_settings_error" xml:space="preserve">
+    <value>PID収集設定を読み書きできませんでした</value>
+    <comment>garage.pid_settings.error</comment>
+  </data>
+  <data name="garage_pid_settings_filter" xml:space="preserve">
+    <value>収集状態</value>
+    <comment>garage.pid_settings.filter</comment>
+  </data>
+  <data name="garage_pid_settings_filter_all" xml:space="preserve">
+    <value>すべて</value>
+    <comment>garage.pid_settings.filter.all</comment>
+  </data>
+  <data name="garage_pid_settings_filter_disabled" xml:space="preserve">
+    <value>停止中</value>
+    <comment>garage.pid_settings.filter.disabled</comment>
+  </data>
+  <data name="garage_pid_settings_filter_enabled" xml:space="preserve">
+    <value>収集中</value>
+    <comment>garage.pid_settings.filter.enabled</comment>
+  </data>
+  <data name="garage_pid_settings_no_results" xml:space="preserve">
+    <value>一致するPIDがありません</value>
+    <comment>garage.pid_settings.no_results</comment>
+  </data>
+  <data name="garage_pid_settings_open" xml:space="preserve">
+    <value>PID収集設定</value>
+    <comment>garage.pid_settings.open</comment>
+  </data>
+  <data name="garage_pid_settings_paused" xml:space="preserve">
+    <value>停止中</value>
+    <comment>garage.pid_settings.paused</comment>
+  </data>
+  <data name="garage_pid_settings_results" xml:space="preserve">
+    <value>対応PID</value>
+    <comment>garage.pid_settings.results</comment>
+  </data>
+  <data name="garage_pid_settings_search" xml:space="preserve">
+    <value>名称・Mode・PIDで検索</value>
+    <comment>garage.pid_settings.search</comment>
+  </data>
+  <data name="garage_pid_settings_summary__lld__lld_x3b5822b8" xml:space="preserve">
+    <value>%2$lld件中 %1$lld件を収集</value>
+    <comment>garage.pid_settings.summary %lld %lld</comment>
+  </data>
+  <data name="garage_pid_settings_title" xml:space="preserve">
+    <value>収集するPID</value>
+    <comment>garage.pid_settings.title</comment>
+  </data>
+  <data name="garage_pid_settings_unconfirmed" xml:space="preserve">
+    <value>未確認</value>
+    <comment>garage.pid_settings.unconfirmed</comment>
+  </data>
+  <data name="garage_powertrain_batteryElectric" xml:space="preserve">
+    <value>電気自動車</value>
+    <comment>garage.powertrain.batteryElectric</comment>
+  </data>
+  <data name="garage_powertrain_combustion" xml:space="preserve">
+    <value>内燃機関</value>
+    <comment>garage.powertrain.combustion</comment>
+  </data>
+  <data name="garage_powertrain_fuelCell" xml:space="preserve">
+    <value>燃料電池</value>
+    <comment>garage.powertrain.fuelCell</comment>
+  </data>
+  <data name="garage_powertrain_hybrid" xml:space="preserve">
+    <value>ハイブリッド</value>
+    <comment>garage.powertrain.hybrid</comment>
+  </data>
+  <data name="garage_powertrain_other" xml:space="preserve">
+    <value>その他</value>
+    <comment>garage.powertrain.other</comment>
+  </data>
+  <data name="garage_powertrain_plugInHybrid" xml:space="preserve">
+    <value>プラグインハイブリッド</value>
+    <comment>garage.powertrain.plugInHybrid</comment>
+  </data>
+  <data name="garage_ready" xml:space="preserve">
+    <value>登録車両を識別しました。接続準備完了です。</value>
+    <comment>garage.ready</comment>
+  </data>
+  <data name="garage_ready_title" xml:space="preserve">
+    <value>車両を識別しました</value>
+    <comment>garage.ready.title</comment>
+  </data>
+  <data name="garage_refresh" xml:space="preserve">
+    <value>同期</value>
+    <comment>garage.refresh</comment>
+  </data>
+  <data name="garage_registration_navigation" xml:space="preserve">
+    <value>車両登録</value>
+    <comment>garage.registration.navigation</comment>
+  </data>
+  <data name="garage_retry" xml:space="preserve">
+    <value>再試行</value>
+    <comment>garage.retry</comment>
+  </data>
+  <data name="garage_save" xml:space="preserve">
+    <value>車両を保存</value>
+    <comment>garage.save</comment>
+  </data>
+  <data name="garage_section_energy" xml:space="preserve">
+    <value>動力・エネルギー</value>
+    <comment>garage.section.energy</comment>
+  </data>
+  <data name="garage_section_identity" xml:space="preserve">
+    <value>基本情報</value>
+    <comment>garage.section.identity</comment>
+  </data>
+  <data name="garage_section_other" xml:space="preserve">
+    <value>車両情報</value>
+    <comment>garage.section.other</comment>
+  </data>
+  <data name="garage_status_identifying" xml:space="preserve">
+    <value>車両情報を取得しています…</value>
+    <comment>garage.status.identifying</comment>
+  </data>
+  <data name="garage_status_loading" xml:space="preserve">
+    <value>車両を同期しています…</value>
+    <comment>garage.status.loading</comment>
+  </data>
+  <data name="garage_subtitle" xml:space="preserve">
+    <value>登録車両を美しく整理し、iPhoneと同期します。</value>
+    <comment>garage.subtitle</comment>
+  </data>
+  <data name="garage_summary_connected" xml:space="preserve">
+    <value>現在接続中</value>
+    <comment>garage.summary.connected</comment>
+  </data>
+  <data name="garage_summary_sessions" xml:space="preserve">
+    <value>記録セッション</value>
+    <comment>garage.summary.sessions</comment>
+  </data>
+  <data name="garage_summary_vehicles" xml:space="preserve">
+    <value>登録車両</value>
+    <comment>garage.summary.vehicles</comment>
+  </data>
+  <data name="garage_synced" xml:space="preserve">
+    <value>クラウド同期対象</value>
+    <comment>garage.synced</comment>
+  </data>
+  <data name="garage_title" xml:space="preserve">
+    <value>Garage</value>
+    <comment>garage.title</comment>
+  </data>
+  <data name="garage_unknown_manufacturer" xml:space="preserve">
+    <value>メーカー未設定</value>
+    <comment>garage.unknown_manufacturer</comment>
+  </data>
+  <data name="history_active_elapsed" xml:space="preserve">
+    <value>経過時間</value>
+    <comment>history.active.elapsed</comment>
+  </data>
+  <data name="history_active_recording" xml:space="preserve">
+    <value>記録中</value>
+    <comment>history.active.recording</comment>
+  </data>
+  <data name="history_active_title" xml:space="preserve">
+    <value>進行中のセッション</value>
+    <comment>history.active.title</comment>
+  </data>
+  <data name="history_archive_empty" xml:space="preserve">
+    <value>終了したセッションは車両ごとにここへ整理されます。</value>
+    <comment>history.archive.empty</comment>
+  </data>
+  <data name="history_archive_title" xml:space="preserve">
+    <value>車両別アーカイブ</value>
+    <comment>history.archive.title</comment>
+  </data>
+  <data name="history_delete_button" xml:space="preserve">
+    <value>セッションを削除</value>
+    <comment>history.delete.button</comment>
+  </data>
+  <data name="history_delete_cancel" xml:space="preserve">
+    <value>キャンセル</value>
+    <comment>history.delete.cancel</comment>
+  </data>
+  <data name="history_delete_confirm" xml:space="preserve">
+    <value>完全に削除</value>
+    <comment>history.delete.confirm</comment>
+  </data>
+  <data name="history_delete_error" xml:space="preserve">
+    <value>すべてのデバイスからセッションを削除できませんでした。ローカルだけの削除を完了扱いにはしていません。</value>
+    <comment>history.delete.error</comment>
+  </data>
+  <data name="history_delete_error_dismiss" xml:space="preserve">
+    <value>閉じる</value>
+    <comment>history.delete.error.dismiss</comment>
+  </data>
+  <data name="history_delete_error_title" xml:space="preserve">
+    <value>削除できませんでした</value>
+    <comment>history.delete.error.title</comment>
+  </data>
+  <data name="history_delete_warning_message" xml:space="preserve">
+    <value>このセッションとRawログ%lld件（%@）を、この端末、iCloud、および同期するすべての端末から完全に削除します。削除後は復元できません。</value>
+    <comment>history.delete.warning.message</comment>
+  </data>
+  <data name="history_delete_warning_title" xml:space="preserve">
+    <value>このセッションを完全に削除しますか？</value>
+    <comment>history.delete.warning.title</comment>
+  </data>
+  <data name="history_detail_back" xml:space="preserve">
+    <value>セッション一覧に戻る</value>
+    <comment>history.detail.back</comment>
+  </data>
+  <data name="history_detail_development_badge" xml:space="preserve">
+    <value>開発中</value>
+    <comment>history.detail.development.badge</comment>
+  </data>
+  <data name="history_detail_development_body" xml:space="preserve">
+    <value>このセッションの走行信号、チャート、イベントタイムラインは今後のアップデートで表示されます。</value>
+    <comment>history.detail.development.body</comment>
+  </data>
+  <data name="history_detail_development_title" xml:space="preserve">
+    <value>走行ログは現在開発中です</value>
+    <comment>history.detail.development.title</comment>
+  </data>
+  <data name="history_detail_disposition_regular" xml:space="preserve">
+    <value>正式データ</value>
+    <comment>history.detail.disposition.regular</comment>
+  </data>
+  <data name="history_detail_disposition_review" xml:space="preserve">
+    <value>ユーザー確認が必要</value>
+    <comment>history.detail.disposition.review</comment>
+  </data>
+  <data name="history_detail_disposition_title" xml:space="preserve">
+    <value>セッション判定</value>
+    <comment>history.detail.disposition.title</comment>
+  </data>
+  <data name="history_detail_disposition_user_accepted" xml:space="preserve">
+    <value>ユーザー確認済み停止</value>
+    <comment>history.detail.disposition.user_accepted</comment>
+  </data>
+  <data name="history_detail_title" xml:space="preserve">
+    <value>セッション詳細</value>
+    <comment>history.detail.title</comment>
+  </data>
+  <data name="history_device_unknown" xml:space="preserve">
+    <value>取得端末不明</value>
+    <comment>history.device.unknown</comment>
+  </data>
+  <data name="history_distance_unsupported" xml:space="preserve">
+    <value>走行距離非対応</value>
+    <comment>history.distance.unsupported</comment>
+  </data>
+  <data name="history_duration_zero" xml:space="preserve">
+    <value>0分</value>
+    <comment>history.duration.zero</comment>
+  </data>
+  <data name="history_empty_body" xml:space="preserve">
+    <value>ホームから接続を開始すると、セッションがここへ自動的に保存されます。</value>
+    <comment>history.empty.body</comment>
+  </data>
+  <data name="history_empty_title" xml:space="preserve">
+    <value>接続履歴はまだありません</value>
+    <comment>history.empty.title</comment>
+  </data>
+  <data name="history_ended" xml:space="preserve">
+    <value>終了</value>
+    <comment>history.ended</comment>
+  </data>
+  <data name="history_error_local_removal" xml:space="preserve">
+    <value>このiPhoneからRawログを削除できませんでした。</value>
+    <comment>history.error.local_removal</comment>
+  </data>
+  <data name="history_error_retry" xml:space="preserve">
+    <value>再試行</value>
+    <comment>history.error.retry</comment>
+  </data>
+  <data name="history_error_storage" xml:space="preserve">
+    <value>接続履歴を読み込めませんでした。</value>
+    <comment>history.error.storage</comment>
+  </data>
+  <data name="history_eyebrow" xml:space="preserve">
+    <value>SESSION ARCHIVE</value>
+    <comment>history.eyebrow</comment>
+  </data>
+  <data name="history_filter_empty" xml:space="preserve">
+    <value>一致するセッションがありません</value>
+    <comment>history.filter.empty</comment>
+  </data>
+  <data name="history_filter_empty_body" xml:space="preserve">
+    <value>日付範囲または終了理由を変更してください。</value>
+    <comment>history.filter.empty.body</comment>
+  </data>
+  <data name="history_filter_from" xml:space="preserve">
+    <value>開始日</value>
+    <comment>history.filter.from</comment>
+  </data>
+  <data name="history_filter_reason" xml:space="preserve">
+    <value>終了の仕方</value>
+    <comment>history.filter.reason</comment>
+  </data>
+  <data name="history_filter_reset" xml:space="preserve">
+    <value>リセット</value>
+    <comment>history.filter.reset</comment>
+  </data>
+  <data name="history_filter_title" xml:space="preserve">
+    <value>セッションを絞り込む</value>
+    <comment>history.filter.title</comment>
+  </data>
+  <data name="history_filter_to" xml:space="preserve">
+    <value>終了日</value>
+    <comment>history.filter.to</comment>
+  </data>
+  <data name="history_in_progress" xml:space="preserve">
+    <value>接続中</value>
+    <comment>history.in.progress</comment>
+  </data>
+  <data name="history_navigation_back" xml:space="preserve">
+    <value>車両別アーカイブに戻る</value>
+    <comment>history.navigation.back</comment>
+  </data>
+  <data name="history_raw_badge" xml:space="preserve">
+    <value>RAW SESSION</value>
+    <comment>history.raw.badge</comment>
+  </data>
+  <data name="history_raw_bytes" xml:space="preserve">
+    <value>データ容量</value>
+    <comment>history.raw.bytes</comment>
+  </data>
+  <data name="history_raw_cloud_failed" xml:space="preserve">
+    <value>再試行が必要</value>
+    <comment>history.raw.cloud.failed</comment>
+  </data>
+  <data name="history_raw_cloud_not_uploaded" xml:space="preserve">
+    <value>未アップロード</value>
+    <comment>history.raw.cloud.not_uploaded</comment>
+  </data>
+  <data name="history_raw_cloud_pending" xml:space="preserve">
+    <value>アップロード待ち</value>
+    <comment>history.raw.cloud.pending</comment>
+  </data>
+  <data name="history_raw_cloud_uploaded" xml:space="preserve">
+    <value>アップロード完了</value>
+    <comment>history.raw.cloud.uploaded</comment>
+  </data>
+  <data name="history_raw_local_available" xml:space="preserve">
+    <value>この端末に保存済み</value>
+    <comment>history.raw.local.available</comment>
+  </data>
+  <data name="history_raw_local_empty" xml:space="preserve">
+    <value>データなし</value>
+    <comment>history.raw.local.empty</comment>
+  </data>
+  <data name="history_raw_local_removed" xml:space="preserve">
+    <value>この端末に未保存</value>
+    <comment>history.raw.local.removed</comment>
+  </data>
+  <data name="history_raw_mac_pending" xml:space="preserve">
+    <value>取込未確認</value>
+    <comment>history.raw.mac.pending</comment>
+  </data>
+  <data name="history_raw_mac_receipt" xml:space="preserve">
+    <value>Mac取込受領証</value>
+    <comment>history.raw.mac.receipt</comment>
+  </data>
+  <data name="history_raw_mac_receipt_missing" xml:space="preserve">
+    <value>Macへの永続取込はまだ確認できません。</value>
+    <comment>history.raw.mac.receipt_missing</comment>
+  </data>
+  <data name="history_raw_mac_verified" xml:space="preserve">
+    <value>取込検証済み</value>
+    <comment>history.raw.mac.verified</comment>
+  </data>
+  <data name="history_raw_precision" xml:space="preserve">
+    <value>応答時間</value>
+    <comment>history.raw.precision</comment>
+  </data>
+  <data name="history_raw_records" xml:space="preserve">
+    <value>Raw件数</value>
+    <comment>history.raw.records</comment>
+  </data>
+  <data name="history_raw_remove_button" xml:space="preserve">
+    <value>容量を解放</value>
+    <comment>history.raw.remove.button</comment>
+  </data>
+  <data name="history_raw_remove_cancel" xml:space="preserve">
+    <value>キャンセル</value>
+    <comment>history.raw.remove.cancel</comment>
+  </data>
+  <data name="history_raw_remove_completed" xml:space="preserve">
+    <value>このiPhoneにはRawログを保持していません</value>
+    <comment>history.raw.remove.completed</comment>
+  </data>
+  <data name="history_raw_remove_confirm" xml:space="preserve">
+    <value>端末から取り除く</value>
+    <comment>history.raw.remove.confirm</comment>
+  </data>
+  <data name="history_raw_remove_safe_message" xml:space="preserve">
+    <value>RawログはiCloudに保管済みです。この端末から%lld件（%@）を取り除きますか？iCloudからは削除せず、セッション履歴は残り、必要時に再ダウンロードします。</value>
+    <comment>history.raw.remove.safe.message</comment>
+  </data>
+  <data name="history_raw_remove_safe_title" xml:space="preserve">
+    <value>端末内Rawログを取り除きますか？</value>
+    <comment>history.raw.remove.safe.title</comment>
+  </data>
+  <data name="history_raw_remove_warning_message" xml:space="preserve">
+    <value>iCloudへの保管を確認できません。Rawログ%lld件（%@）を取り除くと、元データを失う可能性があります。</value>
+    <comment>history.raw.remove.warning.message</comment>
+  </data>
+  <data name="history_raw_remove_warning_title" xml:space="preserve">
+    <value>iCloudへの保管が未確認です</value>
+    <comment>history.raw.remove.warning.title</comment>
+  </data>
+  <data name="history_raw_storage_cloud" xml:space="preserve">
+    <value>Private CloudKit</value>
+    <comment>history.raw.storage.cloud</comment>
+  </data>
+  <data name="history_raw_storage_iphone" xml:space="preserve">
+    <value>iPhoneローカル</value>
+    <comment>history.raw.storage.iphone</comment>
+  </data>
+  <data name="history_raw_storage_mac" xml:space="preserve">
+    <value>Macアーカイブ</value>
+    <comment>history.raw.storage.mac</comment>
+  </data>
+  <data name="history_raw_storage_title" xml:space="preserve">
+    <value>保管フロー</value>
+    <comment>history.raw.storage.title</comment>
+  </data>
+  <data name="history_raw_subtitle" xml:space="preserve">
+    <value>デコード前のOBD応答バイトを、そのまま学習元として保持します。</value>
+    <comment>history.raw.subtitle</comment>
+  </data>
+  <data name="history_reason_accountSignedOut" xml:space="preserve">
+    <value>サインアウト</value>
+    <comment>history.reason.accountSignedOut</comment>
+  </data>
+  <data name="history_reason_acquisitionFailed" xml:space="preserve">
+    <value>取得開始失敗</value>
+    <comment>history.reason.acquisitionFailed</comment>
+  </data>
+  <data name="history_reason_all" xml:space="preserve">
+    <value>すべての終了理由</value>
+    <comment>history.reason.all</comment>
+  </data>
+  <data name="history_reason_connectionLost" xml:space="preserve">
+    <value>デバイス接続喪失（取り外しの可能性）</value>
+    <comment>history.reason.connectionLost</comment>
+  </data>
+  <data name="history_reason_superseded" xml:space="preserve">
+    <value>新しい接続で置換</value>
+    <comment>history.reason.superseded</comment>
+  </data>
+  <data name="history_reason_unexpectedTermination" xml:space="preserve">
+    <value>予期しない終了</value>
+    <comment>history.reason.unexpectedTermination</comment>
+  </data>
+  <data name="history_reason_userDisconnected" xml:space="preserve">
+    <value>正常終了</value>
+    <comment>history.reason.userDisconnected</comment>
+  </data>
+  <data name="history_reason_vehicleNoResponse" xml:space="preserve">
+    <value>車両応答停止（イグニッションOFFの可能性）</value>
+    <comment>history.reason.vehicleNoResponse</comment>
+  </data>
+  <data name="history_refresh" xml:space="preserve">
+    <value>履歴を更新</value>
+    <comment>history.refresh</comment>
+  </data>
+  <data name="history_session_id" xml:space="preserve">
+    <value>SESSION ID</value>
+    <comment>history.session.id</comment>
+  </data>
+  <data name="history_sort_longestDuration" xml:space="preserve">
+    <value>走行時間が長い順</value>
+    <comment>history.sort.longestDuration</comment>
+  </data>
+  <data name="history_sort_newest" xml:space="preserve">
+    <value>日時が新しい順</value>
+    <comment>history.sort.newest</comment>
+  </data>
+  <data name="history_sort_oldest" xml:space="preserve">
+    <value>日時が古い順</value>
+    <comment>history.sort.oldest</comment>
+  </data>
+  <data name="history_sort_shortestDuration" xml:space="preserve">
+    <value>走行時間が短い順</value>
+    <comment>history.sort.shortestDuration</comment>
+  </data>
+  <data name="history_sort_title" xml:space="preserve">
+    <value>並び順</value>
+    <comment>history.sort.title</comment>
+  </data>
+  <data name="history_started" xml:space="preserve">
+    <value>開始</value>
+    <comment>history.started</comment>
+  </data>
+  <data name="history_status_completed" xml:space="preserve">
+    <value>完了</value>
+    <comment>history.status.completed</comment>
+  </data>
+  <data name="history_status_connected" xml:space="preserve">
+    <value>接続中</value>
+    <comment>history.status.connected</comment>
+  </data>
+  <data name="history_status_interrupted" xml:space="preserve">
+    <value>中断</value>
+    <comment>history.status.interrupted</comment>
+  </data>
+  <data name="history_stop_review_accepted" xml:space="preserve">
+    <value>ユーザーが意図した停止として記録しました。観測した終了理由は保持しています。</value>
+    <comment>history.stop_review.accepted</comment>
+  </data>
+  <data name="history_stop_review_cancel" xml:space="preserve">
+    <value>警告のままにする</value>
+    <comment>history.stop_review.cancel</comment>
+  </data>
+  <data name="history_stop_review_card_action" xml:space="preserve">
+    <value>停止内容を確認</value>
+    <comment>history.stop_review.card.action</comment>
+  </data>
+  <data name="history_stop_review_card_connection_lost" xml:space="preserve">
+    <value>アダプターまたはデバイス接続が失われました。意図して取り外した場合だけ確認してください。</value>
+    <comment>history.stop_review.card.connection_lost</comment>
+  </data>
+  <data name="history_stop_review_card_no_response" xml:space="preserve">
+    <value>車両応答が停止しました。意図してイグニッションをOFFにした場合だけ確認してください。</value>
+    <comment>history.stop_review.card.no_response</comment>
+  </data>
+  <data name="history_stop_review_card_title" xml:space="preserve">
+    <value>意図した停止でしたか？</value>
+    <comment>history.stop_review.card.title</comment>
+  </data>
+  <data name="history_stop_review_confirm" xml:space="preserve">
+    <value>正式データとして扱う</value>
+    <comment>history.stop_review.confirm</comment>
+  </data>
+  <data name="history_stop_review_error" xml:space="preserve">
+    <value>停止確認を保存できませんでした。警告状態は変更していません。</value>
+    <comment>history.stop_review.error</comment>
+  </data>
+  <data name="history_stop_review_error_dismiss" xml:space="preserve">
+    <value>閉じる</value>
+    <comment>history.stop_review.error.dismiss</comment>
+  </data>
+  <data name="history_stop_review_error_title" xml:space="preserve">
+    <value>確認を保存できませんでした</value>
+    <comment>history.stop_review.error.title</comment>
+  </data>
+  <data name="history_stop_review_message_connection_lost" xml:space="preserve">
+    <value>デバイス接続の喪失を観測しました。OBDデバイスを意図して取り外した場合は、この終了理由を残したまま正式データとして扱えます。</value>
+    <comment>history.stop_review.message.connection_lost</comment>
+  </data>
+  <data name="history_stop_review_message_no_response" xml:space="preserve">
+    <value>車両応答の停止を観測しました。意図してイグニッションをOFFにした場合は、この終了理由を残したまま正式データとして扱えます。</value>
+    <comment>history.stop_review.message.no_response</comment>
+  </data>
+  <data name="history_stop_review_title" xml:space="preserve">
+    <value>セッション停止の確認</value>
+    <comment>history.stop_review.title</comment>
+  </data>
+  <data name="history_subtitle" xml:space="preserve">
+    <value>車両との接続をセッション単位で振り返れます。</value>
+    <comment>history.subtitle</comment>
+  </data>
+  <data name="history_summary_connected" xml:space="preserve">
+    <value>接続中</value>
+    <comment>history.summary.connected</comment>
+  </data>
+  <data name="history_summary_distance" xml:space="preserve">
+    <value>総走行距離</value>
+    <comment>history.summary.distance</comment>
+  </data>
+  <data name="history_summary_duration" xml:space="preserve">
+    <value>総走行時間</value>
+    <comment>history.summary.duration</comment>
+  </data>
+  <data name="history_summary_total" xml:space="preserve">
+    <value>総セッション</value>
+    <comment>history.summary.total</comment>
+  </data>
+  <data name="history_title" xml:space="preserve">
+    <value>接続履歴</value>
+    <comment>history.title</comment>
+  </data>
+  <data name="history_training_badge" xml:space="preserve">
+    <value>TRAINING ARCHIVE</value>
+    <comment>history.training.badge</comment>
+  </data>
+  <data name="history_training_integrity_pending" xml:space="preserve">
+    <value>未確認</value>
+    <comment>history.training.integrity.pending</comment>
+  </data>
+  <data name="history_training_integrity_title" xml:space="preserve">
+    <value>整合性</value>
+    <comment>history.training.integrity.title</comment>
+  </data>
+  <data name="history_training_integrity_verified" xml:space="preserve">
+    <value>検証済み</value>
+    <comment>history.training.integrity.verified</comment>
+  </data>
+  <data name="history_training_lineage_body" xml:space="preserve">
+    <value>デコード値と将来の特徴量は派生データです。元のRawバイトは変更しません。</value>
+    <comment>history.training.lineage.body</comment>
+  </data>
+  <data name="history_training_lineage_title" xml:space="preserve">
+    <value>不変のソース来歴</value>
+    <comment>history.training.lineage.title</comment>
+  </data>
+  <data name="history_training_pending" xml:space="preserve">
+    <value>準備未完了</value>
+    <comment>history.training.pending</comment>
+  </data>
+  <data name="history_training_pending_body" xml:space="preserve">
+    <value>車両関連付け、Mac内Rawログ、一致する取込受領証が揃うと学習対象にできます。</value>
+    <comment>history.training.pending.body</comment>
+  </data>
+  <data name="history_training_raw_title" xml:space="preserve">
+    <value>未デコードRaw</value>
+    <comment>history.training.raw.title</comment>
+  </data>
+  <data name="history_training_ready" xml:space="preserve">
+    <value>学習準備完了</value>
+    <comment>history.training.ready</comment>
+  </data>
+  <data name="history_training_ready_body" xml:space="preserve">
+    <value>このセッションはMacへ永続保存済みです。車両単位で将来の学習データ生成対象にできます。</value>
+    <comment>history.training.ready.body</comment>
+  </data>
+  <data name="history_training_scope" xml:space="preserve">
+    <value>抽出キー</value>
+    <comment>history.training.scope</comment>
+  </data>
+  <data name="history_training_title" xml:space="preserve">
+    <value>車両単位の学習データ</value>
+    <comment>history.training.title</comment>
+  </data>
+  <data name="history_training_vehicle_title" xml:space="preserve">
+    <value>車両スコープ</value>
+    <comment>history.training.vehicle.title</comment>
+  </data>
+  <data name="history_training_vehicle_unassigned" xml:space="preserve">
+    <value>未割当て</value>
+    <comment>history.training.vehicle.unassigned</comment>
+  </data>
+  <data name="history_upload_button" xml:space="preserve">
+    <value>iCloudにアップロード</value>
+    <comment>history.upload.button</comment>
+  </data>
+  <data name="history_upload_error_dismiss" xml:space="preserve">
+    <value>閉じる</value>
+    <comment>history.upload.error.dismiss</comment>
+  </data>
+  <data name="history_upload_error_message" xml:space="preserve">
+    <value>セッションはこの端末に残っています。iCloud接続を確認してから再試行してください。</value>
+    <comment>history.upload.error.message</comment>
+  </data>
+  <data name="history_upload_error_title" xml:space="preserve">
+    <value>アップロードできませんでした</value>
+    <comment>history.upload.error.title</comment>
+  </data>
+  <data name="history_upload_in_progress" xml:space="preserve">
+    <value>iCloudにアップロード中</value>
+    <comment>history.upload.in_progress</comment>
+  </data>
+  <data name="history_upload_retry" xml:space="preserve">
+    <value>アップロードを再試行</value>
+    <comment>history.upload.retry</comment>
+  </data>
+  <data name="history_upload_retry_description" xml:space="preserve">
+    <value>iCloud接続を確認し、このセッションをもう一度送信します。</value>
+    <comment>history.upload.retry.description</comment>
+  </data>
+  <data name="history_vehicle_pending" xml:space="preserve">
+    <value>車両を識別中</value>
+    <comment>history.vehicle.pending</comment>
+  </data>
+  <data name="history_vehicle_sessions" xml:space="preserve">
+    <value>セッション</value>
+    <comment>history.vehicle.sessions</comment>
+  </data>
+  <data name="history_vehicle_unassigned" xml:space="preserve">
+    <value>車両未関連付け</value>
+    <comment>history.vehicle.unassigned</comment>
+  </data>
+  <data name="history_warning_interrupted" xml:space="preserve">
+    <value>要確認セッション</value>
+    <comment>history.warning.interrupted</comment>
+  </data>
+  <data name="home_action_connect" xml:space="preserve">
+    <value>接続する</value>
+    <comment>home.action.connect</comment>
+  </data>
+  <data name="home_action_connect_unavailable" xml:space="preserve">
+    <value>接続機能は次の実装範囲で有効になります。</value>
+    <comment>home.action.connect_unavailable</comment>
+  </data>
+  <data name="home_action_disconnect" xml:space="preserve">
+    <value>切断する</value>
+    <comment>home.action.disconnect</comment>
+  </data>
+  <data name="home_action_setup_adapter" xml:space="preserve">
+    <value>アダプターを設定</value>
+    <comment>home.action.setup_adapter</comment>
+  </data>
+  <data name="home_action_setup_hint" xml:space="preserve">
+    <value>最初に使用するアダプターを選択してください。</value>
+    <comment>home.action.setup_hint</comment>
+  </data>
+  <data name="home_adapter_detected" xml:space="preserve">
+    <value>デフォルトアダプターを検出済み</value>
+    <comment>home.adapter.detected</comment>
+  </data>
+  <data name="home_adapter_eyebrow" xml:space="preserve">
+    <value>DEFAULT ADAPTER</value>
+    <comment>home.adapter.eyebrow</comment>
+  </data>
+  <data name="home_adapter_not_configured" xml:space="preserve">
+    <value>アダプターが未設定です</value>
+    <comment>home.adapter.not_configured</comment>
+  </data>
+  <data name="home_adapter_not_detected" xml:space="preserve">
+    <value>デフォルトアダプターが検出されませんでした。再度設定してください。</value>
+    <comment>home.adapter.not_detected</comment>
+  </data>
+  <data name="home_adapter_setup_required" xml:space="preserve">
+    <value>接続前に設定が必要です</value>
+    <comment>home.adapter.setup_required</comment>
+  </data>
+  <data name="home_eyebrow" xml:space="preserve">
+    <value>DRIVE CONSOLE</value>
+    <comment>home.eyebrow</comment>
+  </data>
+  <data name="home_future_caption" xml:space="preserve">
+    <value>今後、テレメトリーや分析モジュールをこのHOMEへ追加予定です。</value>
+    <comment>home.future.caption</comment>
+  </data>
+  <data name="home_subtitle" xml:space="preserve">
+    <value>走行セッションを始める前に、診断アダプターの準備を確認します。</value>
+    <comment>home.subtitle</comment>
+  </data>
+  <data name="home_title" xml:space="preserve">
+    <value>次のドライブを、ここから。</value>
+    <comment>home.title</comment>
+  </data>
+  <data name="ios_navigation_history" xml:space="preserve">
+    <value>履歴</value>
+    <comment>ios.navigation.history</comment>
+  </data>
+  <data name="ios_navigation_home" xml:space="preserve">
+    <value>ホーム</value>
+    <comment>ios.navigation.home</comment>
+  </data>
+  <data name="ios_navigation_live_log" xml:space="preserve">
+    <value>ライブ</value>
+    <comment>ios.navigation.live_log</comment>
+  </data>
+  <data name="ios_navigation_maintenance" xml:space="preserve">
+    <value>整備</value>
+    <comment>ios.navigation.maintenance</comment>
+  </data>
+  <data name="ios_navigation_settings" xml:space="preserve">
+    <value>設定</value>
+    <comment>ios.navigation.settings</comment>
+  </data>
+  <data name="ios_settings_adapter_connection_state_connected" xml:space="preserve">
+    <value>接続済み</value>
+    <comment>ios.settings.adapter.connection_state.connected</comment>
+  </data>
+  <data name="ios_settings_adapter_connection_state_connecting" xml:space="preserve">
+    <value>接続中</value>
+    <comment>ios.settings.adapter.connection_state.connecting</comment>
+  </data>
+  <data name="ios_settings_adapter_connection_state_disconnected" xml:space="preserve">
+    <value>未接続</value>
+    <comment>ios.settings.adapter.connection_state.disconnected</comment>
+  </data>
+  <data name="ios_settings_adapter_connection_state_disconnecting" xml:space="preserve">
+    <value>切断中</value>
+    <comment>ios.settings.adapter.connection_state.disconnecting</comment>
+  </data>
+  <data name="ios_settings_adapter_details_advertisement_local_name" xml:space="preserve">
+    <value>Advertisement Local Name</value>
+    <comment>ios.settings.adapter.details.advertisement_local_name</comment>
+  </data>
+  <data name="ios_settings_adapter_details_available" xml:space="preserve">
+    <value>あり</value>
+    <comment>ios.settings.adapter.details.available</comment>
+  </data>
+  <data name="ios_settings_adapter_details_confirm_hint" xml:space="preserve">
+    <value>車両接続を開始せず、この機器をプライマリーアダプター候補に設定します。</value>
+    <comment>ios.settings.adapter.details.confirm_hint</comment>
+  </data>
+  <data name="ios_settings_adapter_details_connection_state" xml:space="preserve">
+    <value>検出時の接続状態</value>
+    <comment>ios.settings.adapter.details.connection_state</comment>
+  </data>
+  <data name="ios_settings_adapter_details_display_name" xml:space="preserve">
+    <value>表示名称</value>
+    <comment>ios.settings.adapter.details.display_name</comment>
+  </data>
+  <data name="ios_settings_adapter_details_manufacturer_data" xml:space="preserve">
+    <value>Manufacturer Data</value>
+    <comment>ios.settings.adapter.details.manufacturer_data</comment>
+  </data>
+  <data name="ios_settings_adapter_details_not_available" xml:space="preserve">
+    <value>なし</value>
+    <comment>ios.settings.adapter.details.not_available</comment>
+  </data>
+  <data name="ios_settings_adapter_details_peripheral_uuid" xml:space="preserve">
+    <value>Peripheral UUID</value>
+    <comment>ios.settings.adapter.details.peripheral_uuid</comment>
+  </data>
+  <data name="ios_settings_adapter_details_secondary_confirm_hint" xml:space="preserve">
+    <value>車両接続を開始せず、この機器を受信専用セカンダリーアダプター候補に設定します。</value>
+    <comment>ios.settings.adapter.details.secondary_confirm_hint</comment>
+  </data>
+  <data name="ios_settings_adapter_details_secondary_notice" xml:space="preserve">
+    <value>ここでは受信専用セカンダリーアダプター候補を設定します。車両への接続は開始しません。</value>
+    <comment>ios.settings.adapter.details.secondary_notice</comment>
+  </data>
+  <data name="ios_settings_adapter_details_service_uuids" xml:space="preserve">
+    <value>広告Service UUID</value>
+    <comment>ios.settings.adapter.details.service_uuids</comment>
+  </data>
+  <data name="ios_settings_adapter_selector_empty_description" xml:space="preserve">
+    <value>周辺のBluetooth Low Energyアダプターが見つかりませんでした。アダプターを探索可能な状態にして再探索してください。</value>
+    <comment>ios.settings.adapter.selector.empty.description</comment>
+  </data>
+  <data name="ios_settings_adapter_selector_failed_description" xml:space="preserve">
+    <value>Bluetooth探索を完了できませんでした。再探索してください。</value>
+    <comment>ios.settings.adapter.selector.failed.description</comment>
+  </data>
+  <data name="ios_settings_adapter_selector_inspect_hint" xml:space="preserve">
+    <value>設定前にBluetooth接続情報を表示します。</value>
+    <comment>ios.settings.adapter.selector.inspect_hint</comment>
+  </data>
+  <data name="ios_settings_adapter_selector_searching" xml:space="preserve">
+    <value>周辺のBluetooth Low Energyアダプターを探索中…</value>
+    <comment>ios.settings.adapter.selector.searching</comment>
+  </data>
+  <data name="ios_settings_adapter_selector_title" xml:space="preserve">
+    <value>Bluetoothアダプターを選択</value>
+    <comment>ios.settings.adapter.selector.title</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_powered_off_description" xml:space="preserve">
+    <value>設定でBluetoothをオンにしてから再探索してください。</value>
+    <comment>ios.settings.adapter.unavailable.powered_off.description</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_powered_off_title" xml:space="preserve">
+    <value>Bluetoothがオフです</value>
+    <comment>ios.settings.adapter.unavailable.powered_off.title</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_unauthorized_description" xml:space="preserve">
+    <value>設定でRevTorque InsightのBluetooth利用を許可してから再探索してください。</value>
+    <comment>ios.settings.adapter.unavailable.unauthorized.description</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_unauthorized_title" xml:space="preserve">
+    <value>Bluetoothが許可されていません</value>
+    <comment>ios.settings.adapter.unavailable.unauthorized.title</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_unsupported_description" xml:space="preserve">
+    <value>この環境ではBluetooth Low Energy探索を利用できません。</value>
+    <comment>ios.settings.adapter.unavailable.unsupported.description</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_unsupported_title" xml:space="preserve">
+    <value>Bluetoothに対応していません</value>
+    <comment>ios.settings.adapter.unavailable.unsupported.title</comment>
+  </data>
+  <data name="ios_shell_tagline" xml:space="preserve">
+    <value>MOBILE COCKPIT</value>
+    <comment>ios.shell.tagline</comment>
+  </data>
+  <data name="km" xml:space="preserve">
+    <value>km</value>
+    <comment>km</comment>
+  </data>
+  <data name="maintenance_add_fastener" xml:space="preserve">
+    <value>ネジを追加</value>
+    <comment>maintenance.add.fastener</comment>
+  </data>
+  <data name="maintenance_add_fastener_group" xml:space="preserve">
+    <value>締結グループを追加</value>
+    <comment>maintenance.add.fastener_group</comment>
+  </data>
+  <data name="maintenance_add_photo" xml:space="preserve">
+    <value>写真を追加</value>
+    <comment>maintenance.add.photo</comment>
+  </data>
+  <data name="maintenance_add_work_item" xml:space="preserve">
+    <value>作業項目を追加</value>
+    <comment>maintenance.add.work_item</comment>
+  </data>
+  <data name="maintenance_cancel" xml:space="preserve">
+    <value>キャンセル</value>
+    <comment>maintenance.cancel</comment>
+  </data>
+  <data name="maintenance_component_air_conditioning" xml:space="preserve">
+    <value>空調系</value>
+    <comment>maintenance.component.air_conditioning</comment>
+  </data>
+  <data name="maintenance_component_air_filter" xml:space="preserve">
+    <value>エアフィルター</value>
+    <comment>maintenance.component.air_filter</comment>
+  </data>
+  <data name="maintenance_component_auxiliary_battery" xml:space="preserve">
+    <value>補機バッテリー</value>
+    <comment>maintenance.component.auxiliary_battery</comment>
+  </data>
+  <data name="maintenance_component_belts" xml:space="preserve">
+    <value>ベルト類</value>
+    <comment>maintenance.component.belts</comment>
+  </data>
+  <data name="maintenance_component_body_frame" xml:space="preserve">
+    <value>ボディ／フレーム</value>
+    <comment>maintenance.component.body_frame</comment>
+  </data>
+  <data name="maintenance_component_brake_pads" xml:space="preserve">
+    <value>ブレーキパッド</value>
+    <comment>maintenance.component.brake_pads</comment>
+  </data>
+  <data name="maintenance_component_braking_system" xml:space="preserve">
+    <value>ブレーキシステム</value>
+    <comment>maintenance.component.braking_system</comment>
+  </data>
+  <data name="maintenance_component_bulbs" xml:space="preserve">
+    <value>灯火類</value>
+    <comment>maintenance.component.bulbs</comment>
+  </data>
+  <data name="maintenance_component_coolant" xml:space="preserve">
+    <value>冷却液</value>
+    <comment>maintenance.component.coolant</comment>
+  </data>
+  <data name="maintenance_component_cooling_system" xml:space="preserve">
+    <value>冷却系</value>
+    <comment>maintenance.component.cooling_system</comment>
+  </data>
+  <data name="maintenance_component_differential_fluid" xml:space="preserve">
+    <value>デファレンシャルオイル</value>
+    <comment>maintenance.component.differential_fluid</comment>
+  </data>
+  <data name="maintenance_component_driveline" xml:space="preserve">
+    <value>駆動系</value>
+    <comment>maintenance.component.driveline</comment>
+  </data>
+  <data name="maintenance_component_electrical" xml:space="preserve">
+    <value>電装系</value>
+    <comment>maintenance.component.electrical</comment>
+  </data>
+  <data name="maintenance_component_engine_assembly" xml:space="preserve">
+    <value>エンジン本体</value>
+    <comment>maintenance.component.engine_assembly</comment>
+  </data>
+  <data name="maintenance_component_engine_oil" xml:space="preserve">
+    <value>エンジンオイル</value>
+    <comment>maintenance.component.engine_oil</comment>
+  </data>
+  <data name="maintenance_component_exhaust" xml:space="preserve">
+    <value>排気系</value>
+    <comment>maintenance.component.exhaust</comment>
+  </data>
+  <data name="maintenance_component_fuel_system" xml:space="preserve">
+    <value>燃料系</value>
+    <comment>maintenance.component.fuel_system</comment>
+  </data>
+  <data name="maintenance_component_high_voltage_battery" xml:space="preserve">
+    <value>高電圧バッテリー</value>
+    <comment>maintenance.component.high_voltage_battery</comment>
+  </data>
+  <data name="maintenance_component_oil_filter" xml:space="preserve">
+    <value>オイルフィルター</value>
+    <comment>maintenance.component.oil_filter</comment>
+  </data>
+  <data name="maintenance_component_other" xml:space="preserve">
+    <value>その他</value>
+    <comment>maintenance.component.other</comment>
+  </data>
+  <data name="maintenance_component_safety_system" xml:space="preserve">
+    <value>安全装置</value>
+    <comment>maintenance.component.safety_system</comment>
+  </data>
+  <data name="maintenance_component_spark_plugs" xml:space="preserve">
+    <value>スパークプラグ</value>
+    <comment>maintenance.component.spark_plugs</comment>
+  </data>
+  <data name="maintenance_component_steering" xml:space="preserve">
+    <value>ステアリング</value>
+    <comment>maintenance.component.steering</comment>
+  </data>
+  <data name="maintenance_component_suspension" xml:space="preserve">
+    <value>サスペンション</value>
+    <comment>maintenance.component.suspension</comment>
+  </data>
+  <data name="maintenance_component_tires" xml:space="preserve">
+    <value>タイヤ</value>
+    <comment>maintenance.component.tires</comment>
+  </data>
+  <data name="maintenance_component_traction_motor" xml:space="preserve">
+    <value>駆動モーター／発電機</value>
+    <comment>maintenance.component.traction_motor</comment>
+  </data>
+  <data name="maintenance_component_transmission" xml:space="preserve">
+    <value>トランスミッション本体</value>
+    <comment>maintenance.component.transmission</comment>
+  </data>
+  <data name="maintenance_component_transmission_fluid" xml:space="preserve">
+    <value>トランスミッションフルード</value>
+    <comment>maintenance.component.transmission_fluid</comment>
+  </data>
+  <data name="maintenance_component_wipers" xml:space="preserve">
+    <value>ワイパー</value>
+    <comment>maintenance.component.wipers</comment>
+  </data>
+  <data name="maintenance_delete" xml:space="preserve">
+    <value>整備記録を削除</value>
+    <comment>maintenance.delete</comment>
+  </data>
+  <data name="maintenance_empty_message" xml:space="preserve">
+    <value>選択した車両の整備記録を作成してください。</value>
+    <comment>maintenance.empty.message</comment>
+  </data>
+  <data name="maintenance_empty_title" xml:space="preserve">
+    <value>整備記録はまだありません</value>
+    <comment>maintenance.empty.title</comment>
+  </data>
+  <data name="maintenance_error_delete" xml:space="preserve">
+    <value>削除は端末内に保存され、後で同期されます。</value>
+    <comment>maintenance.error.delete</comment>
+  </data>
+  <data name="maintenance_error_load" xml:space="preserve">
+    <value>端末内の整備記録を読み込めませんでした。</value>
+    <comment>maintenance.error.load</comment>
+  </data>
+  <data name="maintenance_error_photo" xml:space="preserve">
+    <value>選択した写真を読み込めませんでした。</value>
+    <comment>maintenance.error.photo</comment>
+  </data>
+  <data name="maintenance_error_required" xml:space="preserve">
+    <value>表題と1件以上の作業項目を入力してください。</value>
+    <comment>maintenance.error.required</comment>
+  </data>
+  <data name="maintenance_error_save" xml:space="preserve">
+    <value>整備記録を保存できませんでした。</value>
+    <comment>maintenance.error.save</comment>
+  </data>
+  <data name="maintenance_error_sync" xml:space="preserve">
+    <value>端末内に保存しました。Cloud同期は再試行されます。</value>
+    <comment>maintenance.error.sync</comment>
+  </data>
+  <data name="maintenance_error_vehicle_required" xml:space="preserve">
+    <value>先に車両を登録して選択してください。</value>
+    <comment>maintenance.error.vehicle_required</comment>
+  </data>
+  <data name="maintenance_fastener_confirm" xml:space="preserve">
+    <value>締結を記録</value>
+    <comment>maintenance.fastener.confirm</comment>
+  </data>
+  <data name="maintenance_fastener_guidance" xml:space="preserve">
+    <value>外したネジを全て記録し、組立時はトルク、工具、担当者、日時、写真証跡を残してください。</value>
+    <comment>maintenance.fastener.guidance</comment>
+  </data>
+  <data name="maintenance_fastener_link_photo" xml:space="preserve">
+    <value>最新写真を紐付け</value>
+    <comment>maintenance.fastener.link_photo</comment>
+  </data>
+  <data name="maintenance_field_component" xml:space="preserve">
+    <value>部品／消耗品</value>
+    <comment>maintenance.field.component</comment>
+  </data>
+  <data name="maintenance_field_expected_count" xml:space="preserve">
+    <value>想定本数</value>
+    <comment>maintenance.field.expected_count</comment>
+  </data>
+  <data name="maintenance_field_fastener_group" xml:space="preserve">
+    <value>締結グループ名</value>
+    <comment>maintenance.field.fastener_group</comment>
+  </data>
+  <data name="maintenance_field_fastener_position" xml:space="preserve">
+    <value>ネジの正確な位置</value>
+    <comment>maintenance.field.fastener_position</comment>
+  </data>
+  <data name="maintenance_field_item_notes" xml:space="preserve">
+    <value>項目ごとの作業詳細</value>
+    <comment>maintenance.field.item_notes</comment>
+  </data>
+  <data name="maintenance_field_location" xml:space="preserve">
+    <value>場所</value>
+    <comment>maintenance.field.location</comment>
+  </data>
+  <data name="maintenance_field_manufacturer" xml:space="preserve">
+    <value>メーカー</value>
+    <comment>maintenance.field.manufacturer</comment>
+  </data>
+  <data name="maintenance_field_notes" xml:space="preserve">
+    <value>詳しい作業記録</value>
+    <comment>maintenance.field.notes</comment>
+  </data>
+  <data name="maintenance_field_odometer" xml:space="preserve">
+    <value>走行距離（km）</value>
+    <comment>maintenance.field.odometer</comment>
+  </data>
+  <data name="maintenance_field_operation" xml:space="preserve">
+    <value>作業種別</value>
+    <comment>maintenance.field.operation</comment>
+  </data>
+  <data name="maintenance_field_part_name" xml:space="preserve">
+    <value>部品名</value>
+    <comment>maintenance.field.part_name</comment>
+  </data>
+  <data name="maintenance_field_performed_at" xml:space="preserve">
+    <value>作業日時</value>
+    <comment>maintenance.field.performed_at</comment>
+  </data>
+  <data name="maintenance_field_product_name" xml:space="preserve">
+    <value>製品名</value>
+    <comment>maintenance.field.product_name</comment>
+  </data>
+  <data name="maintenance_field_quantity" xml:space="preserve">
+    <value>数量</value>
+    <comment>maintenance.field.quantity</comment>
+  </data>
+  <data name="maintenance_field_removal_notes" xml:space="preserve">
+    <value>分解順序・保管場所・所見</value>
+    <comment>maintenance.field.removal_notes</comment>
+  </data>
+  <data name="maintenance_field_removed_count" xml:space="preserve">
+    <value>回収本数</value>
+    <comment>maintenance.field.removed_count</comment>
+  </data>
+  <data name="maintenance_field_specification" xml:space="preserve">
+    <value>規格・粘度・型番</value>
+    <comment>maintenance.field.specification</comment>
+  </data>
+  <data name="maintenance_field_technician" xml:space="preserve">
+    <value>担当者</value>
+    <comment>maintenance.field.technician</comment>
+  </data>
+  <data name="maintenance_field_title" xml:space="preserve">
+    <value>表題</value>
+    <comment>maintenance.field.title</comment>
+  </data>
+  <data name="maintenance_field_tool" xml:space="preserve">
+    <value>使用工具</value>
+    <comment>maintenance.field.tool</comment>
+  </data>
+  <data name="maintenance_field_torque" xml:space="preserve">
+    <value>締付トルク（N·m）</value>
+    <comment>maintenance.field.torque</comment>
+  </data>
+  <data name="maintenance_field_unit" xml:space="preserve">
+    <value>単位</value>
+    <comment>maintenance.field.unit</comment>
+  </data>
+  <data name="maintenance_filter" xml:space="preserve">
+    <value>絞り込み</value>
+    <comment>maintenance.filter</comment>
+  </data>
+  <data name="maintenance_filter_all" xml:space="preserve">
+    <value>すべて</value>
+    <comment>maintenance.filter.all</comment>
+  </data>
+  <data name="maintenance_kind_heavy" xml:space="preserve">
+    <value>重整備</value>
+    <comment>maintenance.kind.heavy</comment>
+  </data>
+  <data name="maintenance_kind_heavy_hint" xml:space="preserve">
+    <value>専門修理・オーバーホール証跡</value>
+    <comment>maintenance.kind.heavy.hint</comment>
+  </data>
+  <data name="maintenance_kind_light" xml:space="preserve">
+    <value>軽整備</value>
+    <comment>maintenance.kind.light</comment>
+  </data>
+  <data name="maintenance_kind_light_hint" xml:space="preserve">
+    <value>消耗品を素早く、製品情報まで記録</value>
+    <comment>maintenance.kind.light.hint</comment>
+  </data>
+  <data name="maintenance_operation_adjustment" xml:space="preserve">
+    <value>調整</value>
+    <comment>maintenance.operation.adjustment</comment>
+  </data>
+  <data name="maintenance_operation_cleaning" xml:space="preserve">
+    <value>清掃</value>
+    <comment>maintenance.operation.cleaning</comment>
+  </data>
+  <data name="maintenance_operation_diagnosis" xml:space="preserve">
+    <value>診断</value>
+    <comment>maintenance.operation.diagnosis</comment>
+  </data>
+  <data name="maintenance_operation_fabrication" xml:space="preserve">
+    <value>加工・製作</value>
+    <comment>maintenance.operation.fabrication</comment>
+  </data>
+  <data name="maintenance_operation_inspection" xml:space="preserve">
+    <value>点検</value>
+    <comment>maintenance.operation.inspection</comment>
+  </data>
+  <data name="maintenance_operation_overhaul" xml:space="preserve">
+    <value>オーバーホール</value>
+    <comment>maintenance.operation.overhaul</comment>
+  </data>
+  <data name="maintenance_operation_repair" xml:space="preserve">
+    <value>修理</value>
+    <comment>maintenance.operation.repair</comment>
+  </data>
+  <data name="maintenance_operation_replacement" xml:space="preserve">
+    <value>交換</value>
+    <comment>maintenance.operation.replacement</comment>
+  </data>
+  <data name="maintenance_overview_message" xml:space="preserve">
+    <value>日常の消耗品交換は素早く、オーバーホールはネジ1本まで証跡を残せます。</value>
+    <comment>maintenance.overview.message</comment>
+  </data>
+  <data name="maintenance_overview_title" xml:space="preserve">
+    <value>すべての車両に、完全な整備履歴を</value>
+    <comment>maintenance.overview.title</comment>
+  </data>
+  <data name="maintenance_remove" xml:space="preserve">
+    <value>項目を削除</value>
+    <comment>maintenance.remove</comment>
+  </data>
+  <data name="maintenance_remove_group" xml:space="preserve">
+    <value>グループを削除</value>
+    <comment>maintenance.remove.group</comment>
+  </data>
+  <data name="maintenance_save" xml:space="preserve">
+    <value>保存</value>
+    <comment>maintenance.save</comment>
+  </data>
+  <data name="maintenance_section_fasteners" xml:space="preserve">
+    <value>分解・締結トルク証跡</value>
+    <comment>maintenance.section.fasteners</comment>
+  </data>
+  <data name="maintenance_section_overview" xml:space="preserve">
+    <value>基本情報</value>
+    <comment>maintenance.section.overview</comment>
+  </data>
+  <data name="maintenance_section_photos" xml:space="preserve">
+    <value>写真エビデンス</value>
+    <comment>maintenance.section.photos</comment>
+  </data>
+  <data name="maintenance_section_work_items" xml:space="preserve">
+    <value>部品と作業内容</value>
+    <comment>maintenance.section.work_items</comment>
+  </data>
+  <data name="maintenance_subtitle" xml:space="preserve">
+    <value>車両ごとの整備エビデンス</value>
+    <comment>maintenance.subtitle</comment>
+  </data>
+  <data name="maintenance_sync" xml:space="preserve">
+    <value>整備データを同期</value>
+    <comment>maintenance.sync</comment>
+  </data>
+  <data name="maintenance_syncing" xml:space="preserve">
+    <value>iPhoneとMacを同期中…</value>
+    <comment>maintenance.syncing</comment>
+  </data>
+  <data name="maintenance_vehicle" xml:space="preserve">
+    <value>対象車両</value>
+    <comment>maintenance.vehicle</comment>
+  </data>
+  <data name="maintenance_vehicle_empty" xml:space="preserve">
+    <value>先にGarageで車両を登録してください。</value>
+    <comment>maintenance.vehicle.empty</comment>
+  </data>
+  <data name="obd_pid_01_00_name" xml:space="preserve">
+    <value>未確認（PID 0x00）</value>
+    <comment>obd.pid.01.00.name</comment>
+  </data>
+  <data name="obd_pid_01_01_name" xml:space="preserve">
+    <value>未確認（PID 0x01）</value>
+    <comment>obd.pid.01.01.name</comment>
+  </data>
+  <data name="obd_pid_01_02_name" xml:space="preserve">
+    <value>未確認（PID 0x02）</value>
+    <comment>obd.pid.01.02.name</comment>
+  </data>
+  <data name="obd_pid_01_03_name" xml:space="preserve">
+    <value>未確認（PID 0x03）</value>
+    <comment>obd.pid.01.03.name</comment>
+  </data>
+  <data name="obd_pid_01_04_name" xml:space="preserve">
+    <value>計算エンジン負荷</value>
+    <comment>obd.pid.01.04.name</comment>
+  </data>
+  <data name="obd_pid_01_05_name" xml:space="preserve">
+    <value>エンジン冷却水温</value>
+    <comment>obd.pid.01.05.name</comment>
+  </data>
+  <data name="obd_pid_01_06_name" xml:space="preserve">
+    <value>短期燃料補正 バンク1</value>
+    <comment>obd.pid.01.06.name</comment>
+  </data>
+  <data name="obd_pid_01_07_name" xml:space="preserve">
+    <value>長期燃料補正 バンク1</value>
+    <comment>obd.pid.01.07.name</comment>
+  </data>
+  <data name="obd_pid_01_08_name" xml:space="preserve">
+    <value>短期燃料補正 バンク2</value>
+    <comment>obd.pid.01.08.name</comment>
+  </data>
+  <data name="obd_pid_01_09_name" xml:space="preserve">
+    <value>長期燃料補正 バンク2</value>
+    <comment>obd.pid.01.09.name</comment>
+  </data>
+  <data name="obd_pid_01_0A_name" xml:space="preserve">
+    <value>燃料圧力</value>
+    <comment>obd.pid.01.0A.name</comment>
+  </data>
+  <data name="obd_pid_01_0B_name" xml:space="preserve">
+    <value>吸気マニホールド圧力</value>
+    <comment>obd.pid.01.0B.name</comment>
+  </data>
+  <data name="obd_pid_01_0C_name" xml:space="preserve">
+    <value>エンジン回転数</value>
+    <comment>obd.pid.01.0C.name</comment>
+  </data>
+  <data name="obd_pid_01_0D_name" xml:space="preserve">
+    <value>車速</value>
+    <comment>obd.pid.01.0D.name</comment>
+  </data>
+  <data name="obd_pid_01_0E_name" xml:space="preserve">
+    <value>点火時期進角</value>
+    <comment>obd.pid.01.0E.name</comment>
+  </data>
+  <data name="obd_pid_01_0F_name" xml:space="preserve">
+    <value>吸気温度</value>
+    <comment>obd.pid.01.0F.name</comment>
+  </data>
+  <data name="obd_pid_01_10_name" xml:space="preserve">
+    <value>吸入空気流量</value>
+    <comment>obd.pid.01.10.name</comment>
+  </data>
+  <data name="obd_pid_01_11_name" xml:space="preserve">
+    <value>絶対スロットル位置</value>
+    <comment>obd.pid.01.11.name</comment>
+  </data>
+  <data name="obd_pid_01_12_name" xml:space="preserve">
+    <value>未確認（PID 0x12）</value>
+    <comment>obd.pid.01.12.name</comment>
+  </data>
+  <data name="obd_pid_01_13_name" xml:space="preserve">
+    <value>未確認（PID 0x13）</value>
+    <comment>obd.pid.01.13.name</comment>
+  </data>
+  <data name="obd_pid_01_14_name" xml:space="preserve">
+    <value>O2センサー B1S1 電圧</value>
+    <comment>obd.pid.01.14.name</comment>
+  </data>
+  <data name="obd_pid_01_15_name" xml:space="preserve">
+    <value>O2センサー B1S2 電圧</value>
+    <comment>obd.pid.01.15.name</comment>
+  </data>
+  <data name="obd_pid_01_16_name" xml:space="preserve">
+    <value>O2センサー B1S3 電圧</value>
+    <comment>obd.pid.01.16.name</comment>
+  </data>
+  <data name="obd_pid_01_17_name" xml:space="preserve">
+    <value>O2センサー B1S4 電圧</value>
+    <comment>obd.pid.01.17.name</comment>
+  </data>
+  <data name="obd_pid_01_18_name" xml:space="preserve">
+    <value>O2センサー B2S1 電圧</value>
+    <comment>obd.pid.01.18.name</comment>
+  </data>
+  <data name="obd_pid_01_19_name" xml:space="preserve">
+    <value>O2センサー B2S2 電圧</value>
+    <comment>obd.pid.01.19.name</comment>
+  </data>
+  <data name="obd_pid_01_1A_name" xml:space="preserve">
+    <value>O2センサー B2S3 電圧</value>
+    <comment>obd.pid.01.1A.name</comment>
+  </data>
+  <data name="obd_pid_01_1B_name" xml:space="preserve">
+    <value>O2センサー B2S4 電圧</value>
+    <comment>obd.pid.01.1B.name</comment>
+  </data>
+  <data name="obd_pid_01_1C_name" xml:space="preserve">
+    <value>未確認（PID 0x1C）</value>
+    <comment>obd.pid.01.1C.name</comment>
+  </data>
+  <data name="obd_pid_01_1D_name" xml:space="preserve">
+    <value>未確認（PID 0x1D）</value>
+    <comment>obd.pid.01.1D.name</comment>
+  </data>
+  <data name="obd_pid_01_1E_name" xml:space="preserve">
+    <value>未確認（PID 0x1E）</value>
+    <comment>obd.pid.01.1E.name</comment>
+  </data>
+  <data name="obd_pid_01_1F_name" xml:space="preserve">
+    <value>エンジン始動後時間</value>
+    <comment>obd.pid.01.1F.name</comment>
+  </data>
+  <data name="obd_pid_01_20_name" xml:space="preserve">
+    <value>未確認（PID 0x20）</value>
+    <comment>obd.pid.01.20.name</comment>
+  </data>
+  <data name="obd_pid_01_21_name" xml:space="preserve">
+    <value>MIL点灯中の走行距離</value>
+    <comment>obd.pid.01.21.name</comment>
+  </data>
+  <data name="obd_pid_01_22_name" xml:space="preserve">
+    <value>マニホールド相対燃料レール圧</value>
+    <comment>obd.pid.01.22.name</comment>
+  </data>
+  <data name="obd_pid_01_23_name" xml:space="preserve">
+    <value>燃料レールゲージ圧</value>
+    <comment>obd.pid.01.23.name</comment>
+  </data>
+  <data name="obd_pid_01_24_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー1）</value>
+    <comment>obd.pid.01.24.name</comment>
+  </data>
+  <data name="obd_pid_01_25_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー2）</value>
+    <comment>obd.pid.01.25.name</comment>
+  </data>
+  <data name="obd_pid_01_26_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー3）</value>
+    <comment>obd.pid.01.26.name</comment>
+  </data>
+  <data name="obd_pid_01_27_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー4）</value>
+    <comment>obd.pid.01.27.name</comment>
+  </data>
+  <data name="obd_pid_01_28_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー5）</value>
+    <comment>obd.pid.01.28.name</comment>
+  </data>
+  <data name="obd_pid_01_29_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー6）</value>
+    <comment>obd.pid.01.29.name</comment>
+  </data>
+  <data name="obd_pid_01_2A_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー7）</value>
+    <comment>obd.pid.01.2A.name</comment>
+  </data>
+  <data name="obd_pid_01_2B_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー8）</value>
+    <comment>obd.pid.01.2B.name</comment>
+  </data>
+  <data name="obd_pid_01_2C_name" xml:space="preserve">
+    <value>指示EGR</value>
+    <comment>obd.pid.01.2C.name</comment>
+  </data>
+  <data name="obd_pid_01_2D_name" xml:space="preserve">
+    <value>EGR誤差</value>
+    <comment>obd.pid.01.2D.name</comment>
+  </data>
+  <data name="obd_pid_01_2E_name" xml:space="preserve">
+    <value>指示蒸発ガスパージ</value>
+    <comment>obd.pid.01.2E.name</comment>
+  </data>
+  <data name="obd_pid_01_2F_name" xml:space="preserve">
+    <value>燃料残量</value>
+    <comment>obd.pid.01.2F.name</comment>
+  </data>
+  <data name="obd_pid_01_30_name" xml:space="preserve">
+    <value>コード消去後暖機回数</value>
+    <comment>obd.pid.01.30.name</comment>
+  </data>
+  <data name="obd_pid_01_31_name" xml:space="preserve">
+    <value>コード消去後走行距離</value>
+    <comment>obd.pid.01.31.name</comment>
+  </data>
+  <data name="obd_pid_01_32_name" xml:space="preserve">
+    <value>蒸発ガス系圧力</value>
+    <comment>obd.pid.01.32.name</comment>
+  </data>
+  <data name="obd_pid_01_33_name" xml:space="preserve">
+    <value>絶対大気圧</value>
+    <comment>obd.pid.01.33.name</comment>
+  </data>
+  <data name="obd_pid_01_34_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー1・電流式）</value>
+    <comment>obd.pid.01.34.name</comment>
+  </data>
+  <data name="obd_pid_01_35_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー2・電流式）</value>
+    <comment>obd.pid.01.35.name</comment>
+  </data>
+  <data name="obd_pid_01_36_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー3・電流式）</value>
+    <comment>obd.pid.01.36.name</comment>
+  </data>
+  <data name="obd_pid_01_37_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー4・電流式）</value>
+    <comment>obd.pid.01.37.name</comment>
+  </data>
+  <data name="obd_pid_01_38_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー5・電流式）</value>
+    <comment>obd.pid.01.38.name</comment>
+  </data>
+  <data name="obd_pid_01_39_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー6・電流式）</value>
+    <comment>obd.pid.01.39.name</comment>
+  </data>
+  <data name="obd_pid_01_3A_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー7・電流式）</value>
+    <comment>obd.pid.01.3A.name</comment>
+  </data>
+  <data name="obd_pid_01_3B_name" xml:space="preserve">
+    <value>空燃比当量比（O2センサー8・電流式）</value>
+    <comment>obd.pid.01.3B.name</comment>
+  </data>
+  <data name="obd_pid_01_3C_name" xml:space="preserve">
+    <value>触媒温度 B1S1</value>
+    <comment>obd.pid.01.3C.name</comment>
+  </data>
+  <data name="obd_pid_01_3D_name" xml:space="preserve">
+    <value>触媒温度 B2S1</value>
+    <comment>obd.pid.01.3D.name</comment>
+  </data>
+  <data name="obd_pid_01_3E_name" xml:space="preserve">
+    <value>触媒温度 B1S2</value>
+    <comment>obd.pid.01.3E.name</comment>
+  </data>
+  <data name="obd_pid_01_3F_name" xml:space="preserve">
+    <value>触媒温度 B2S2</value>
+    <comment>obd.pid.01.3F.name</comment>
+  </data>
+  <data name="obd_pid_01_40_name" xml:space="preserve">
+    <value>未確認（PID 0x40）</value>
+    <comment>obd.pid.01.40.name</comment>
+  </data>
+  <data name="obd_pid_01_41_name" xml:space="preserve">
+    <value>未確認（PID 0x41）</value>
+    <comment>obd.pid.01.41.name</comment>
+  </data>
+  <data name="obd_pid_01_42_name" xml:space="preserve">
+    <value>制御モジュール電圧</value>
+    <comment>obd.pid.01.42.name</comment>
+  </data>
+  <data name="obd_pid_01_43_name" xml:space="preserve">
+    <value>絶対負荷値</value>
+    <comment>obd.pid.01.43.name</comment>
+  </data>
+  <data name="obd_pid_01_44_name" xml:space="preserve">
+    <value>指示当量比</value>
+    <comment>obd.pid.01.44.name</comment>
+  </data>
+  <data name="obd_pid_01_45_name" xml:space="preserve">
+    <value>相対スロットル位置</value>
+    <comment>obd.pid.01.45.name</comment>
+  </data>
+  <data name="obd_pid_01_46_name" xml:space="preserve">
+    <value>外気温</value>
+    <comment>obd.pid.01.46.name</comment>
+  </data>
+  <data name="obd_pid_01_47_name" xml:space="preserve">
+    <value>絶対スロットル位置B</value>
+    <comment>obd.pid.01.47.name</comment>
+  </data>
+  <data name="obd_pid_01_48_name" xml:space="preserve">
+    <value>絶対スロットル位置C</value>
+    <comment>obd.pid.01.48.name</comment>
+  </data>
+  <data name="obd_pid_01_49_name" xml:space="preserve">
+    <value>アクセルペダル位置D</value>
+    <comment>obd.pid.01.49.name</comment>
+  </data>
+  <data name="obd_pid_01_4A_name" xml:space="preserve">
+    <value>アクセルペダル位置E</value>
+    <comment>obd.pid.01.4A.name</comment>
+  </data>
+  <data name="obd_pid_01_4B_name" xml:space="preserve">
+    <value>アクセルペダル位置F</value>
+    <comment>obd.pid.01.4B.name</comment>
+  </data>
+  <data name="obd_pid_01_4C_name" xml:space="preserve">
+    <value>指示スロットルアクチュエータ</value>
+    <comment>obd.pid.01.4C.name</comment>
+  </data>
+  <data name="obd_pid_01_4D_name" xml:space="preserve">
+    <value>MIL点灯中の稼働時間</value>
+    <comment>obd.pid.01.4D.name</comment>
+  </data>
+  <data name="obd_pid_01_4E_name" xml:space="preserve">
+    <value>DTC消去後の経過時間</value>
+    <comment>obd.pid.01.4E.name</comment>
+  </data>
+  <data name="obd_pid_01_4F_name" xml:space="preserve">
+    <value>未確認（PID 0x4F）</value>
+    <comment>obd.pid.01.4F.name</comment>
+  </data>
+  <data name="obd_pid_01_50_name" xml:space="preserve">
+    <value>MAF最大流量</value>
+    <comment>obd.pid.01.50.name</comment>
+  </data>
+  <data name="obd_pid_01_51_name" xml:space="preserve">
+    <value>未確認（PID 0x51）</value>
+    <comment>obd.pid.01.51.name</comment>
+  </data>
+  <data name="obd_pid_01_52_name" xml:space="preserve">
+    <value>エタノール燃料割合</value>
+    <comment>obd.pid.01.52.name</comment>
+  </data>
+  <data name="obd_pid_01_53_name" xml:space="preserve">
+    <value>蒸発ガス系絶対圧力</value>
+    <comment>obd.pid.01.53.name</comment>
+  </data>
+  <data name="obd_pid_01_54_name" xml:space="preserve">
+    <value>蒸発ガス系圧力</value>
+    <comment>obd.pid.01.54.name</comment>
+  </data>
+  <data name="obd_pid_01_55_name" xml:space="preserve">
+    <value>未確認（PID 0x55）</value>
+    <comment>obd.pid.01.55.name</comment>
+  </data>
+  <data name="obd_pid_01_56_name" xml:space="preserve">
+    <value>未確認（PID 0x56）</value>
+    <comment>obd.pid.01.56.name</comment>
+  </data>
+  <data name="obd_pid_01_57_name" xml:space="preserve">
+    <value>未確認（PID 0x57）</value>
+    <comment>obd.pid.01.57.name</comment>
+  </data>
+  <data name="obd_pid_01_58_name" xml:space="preserve">
+    <value>未確認（PID 0x58）</value>
+    <comment>obd.pid.01.58.name</comment>
+  </data>
+  <data name="obd_pid_01_59_name" xml:space="preserve">
+    <value>燃料レール絶対圧力</value>
+    <comment>obd.pid.01.59.name</comment>
+  </data>
+  <data name="obd_pid_01_5A_name" xml:space="preserve">
+    <value>相対アクセルペダル位置</value>
+    <comment>obd.pid.01.5A.name</comment>
+  </data>
+  <data name="obd_pid_01_5B_name" xml:space="preserve">
+    <value>ハイブリッドバッテリー残存寿命</value>
+    <comment>obd.pid.01.5B.name</comment>
+  </data>
+  <data name="obd_pid_01_5C_name" xml:space="preserve">
+    <value>エンジンオイル温度</value>
+    <comment>obd.pid.01.5C.name</comment>
+  </data>
+  <data name="obd_pid_01_5D_name" xml:space="preserve">
+    <value>燃料噴射時期</value>
+    <comment>obd.pid.01.5D.name</comment>
+  </data>
+  <data name="obd_pid_01_5E_name" xml:space="preserve">
+    <value>エンジン燃料流量</value>
+    <comment>obd.pid.01.5E.name</comment>
+  </data>
+  <data name="obd_pid_01_5F_name" xml:space="preserve">
+    <value>未確認（PID 0x5F）</value>
+    <comment>obd.pid.01.5F.name</comment>
+  </data>
+  <data name="obd_pid_01_60_name" xml:space="preserve">
+    <value>未確認（PID 0x60）</value>
+    <comment>obd.pid.01.60.name</comment>
+  </data>
+  <data name="obd_pid_01_61_name" xml:space="preserve">
+    <value>要求エンジントルク割合</value>
+    <comment>obd.pid.01.61.name</comment>
+  </data>
+  <data name="obd_pid_01_62_name" xml:space="preserve">
+    <value>実エンジントルク割合</value>
+    <comment>obd.pid.01.62.name</comment>
+  </data>
+  <data name="obd_pid_01_63_name" xml:space="preserve">
+    <value>エンジン基準トルク</value>
+    <comment>obd.pid.01.63.name</comment>
+  </data>
+  <data name="obd_pid_01_64_name" xml:space="preserve">
+    <value>未確認（PID 0x64）</value>
+    <comment>obd.pid.01.64.name</comment>
+  </data>
+  <data name="obd_pid_01_65_name" xml:space="preserve">
+    <value>未確認（PID 0x65）</value>
+    <comment>obd.pid.01.65.name</comment>
+  </data>
+  <data name="obd_pid_01_66_name" xml:space="preserve">
+    <value>未確認（PID 0x66）</value>
+    <comment>obd.pid.01.66.name</comment>
+  </data>
+  <data name="obd_pid_01_67_name" xml:space="preserve">
+    <value>未確認（PID 0x67）</value>
+    <comment>obd.pid.01.67.name</comment>
+  </data>
+  <data name="obd_pid_01_68_name" xml:space="preserve">
+    <value>未確認（PID 0x68）</value>
+    <comment>obd.pid.01.68.name</comment>
+  </data>
+  <data name="obd_pid_01_69_name" xml:space="preserve">
+    <value>未確認（PID 0x69）</value>
+    <comment>obd.pid.01.69.name</comment>
+  </data>
+  <data name="obd_pid_01_6A_name" xml:space="preserve">
+    <value>未確認（PID 0x6A）</value>
+    <comment>obd.pid.01.6A.name</comment>
+  </data>
+  <data name="obd_pid_01_6B_name" xml:space="preserve">
+    <value>未確認（PID 0x6B）</value>
+    <comment>obd.pid.01.6B.name</comment>
+  </data>
+  <data name="obd_pid_01_6C_name" xml:space="preserve">
+    <value>未確認（PID 0x6C）</value>
+    <comment>obd.pid.01.6C.name</comment>
+  </data>
+  <data name="obd_pid_01_6D_name" xml:space="preserve">
+    <value>未確認（PID 0x6D）</value>
+    <comment>obd.pid.01.6D.name</comment>
+  </data>
+  <data name="obd_pid_01_6E_name" xml:space="preserve">
+    <value>未確認（PID 0x6E）</value>
+    <comment>obd.pid.01.6E.name</comment>
+  </data>
+  <data name="obd_pid_01_6F_name" xml:space="preserve">
+    <value>未確認（PID 0x6F）</value>
+    <comment>obd.pid.01.6F.name</comment>
+  </data>
+  <data name="obd_pid_01_70_name" xml:space="preserve">
+    <value>未確認（PID 0x70）</value>
+    <comment>obd.pid.01.70.name</comment>
+  </data>
+  <data name="obd_pid_01_71_name" xml:space="preserve">
+    <value>未確認（PID 0x71）</value>
+    <comment>obd.pid.01.71.name</comment>
+  </data>
+  <data name="obd_pid_01_72_name" xml:space="preserve">
+    <value>未確認（PID 0x72）</value>
+    <comment>obd.pid.01.72.name</comment>
+  </data>
+  <data name="obd_pid_01_73_name" xml:space="preserve">
+    <value>未確認（PID 0x73）</value>
+    <comment>obd.pid.01.73.name</comment>
+  </data>
+  <data name="obd_pid_01_74_name" xml:space="preserve">
+    <value>未確認（PID 0x74）</value>
+    <comment>obd.pid.01.74.name</comment>
+  </data>
+  <data name="obd_pid_01_75_name" xml:space="preserve">
+    <value>未確認（PID 0x75）</value>
+    <comment>obd.pid.01.75.name</comment>
+  </data>
+  <data name="obd_pid_01_76_name" xml:space="preserve">
+    <value>未確認（PID 0x76）</value>
+    <comment>obd.pid.01.76.name</comment>
+  </data>
+  <data name="obd_pid_01_77_name" xml:space="preserve">
+    <value>未確認（PID 0x77）</value>
+    <comment>obd.pid.01.77.name</comment>
+  </data>
+  <data name="obd_pid_01_78_name" xml:space="preserve">
+    <value>未確認（PID 0x78）</value>
+    <comment>obd.pid.01.78.name</comment>
+  </data>
+  <data name="obd_pid_01_79_name" xml:space="preserve">
+    <value>未確認（PID 0x79）</value>
+    <comment>obd.pid.01.79.name</comment>
+  </data>
+  <data name="obd_pid_01_7A_name" xml:space="preserve">
+    <value>未確認（PID 0x7A）</value>
+    <comment>obd.pid.01.7A.name</comment>
+  </data>
+  <data name="obd_pid_01_7B_name" xml:space="preserve">
+    <value>未確認（PID 0x7B）</value>
+    <comment>obd.pid.01.7B.name</comment>
+  </data>
+  <data name="obd_pid_01_7C_name" xml:space="preserve">
+    <value>DPF温度</value>
+    <comment>obd.pid.01.7C.name</comment>
+  </data>
+  <data name="obd_pid_01_7D_name" xml:space="preserve">
+    <value>未確認（PID 0x7D）</value>
+    <comment>obd.pid.01.7D.name</comment>
+  </data>
+  <data name="obd_pid_01_7E_name" xml:space="preserve">
+    <value>未確認（PID 0x7E）</value>
+    <comment>obd.pid.01.7E.name</comment>
+  </data>
+  <data name="obd_pid_01_7F_name" xml:space="preserve">
+    <value>未確認（PID 0x7F）</value>
+    <comment>obd.pid.01.7F.name</comment>
+  </data>
+  <data name="obd_pid_01_80_name" xml:space="preserve">
+    <value>未確認（PID 0x80）</value>
+    <comment>obd.pid.01.80.name</comment>
+  </data>
+  <data name="obd_pid_01_81_name" xml:space="preserve">
+    <value>未確認（PID 0x81）</value>
+    <comment>obd.pid.01.81.name</comment>
+  </data>
+  <data name="obd_pid_01_82_name" xml:space="preserve">
+    <value>未確認（PID 0x82）</value>
+    <comment>obd.pid.01.82.name</comment>
+  </data>
+  <data name="obd_pid_01_83_name" xml:space="preserve">
+    <value>未確認（PID 0x83）</value>
+    <comment>obd.pid.01.83.name</comment>
+  </data>
+  <data name="obd_pid_01_84_name" xml:space="preserve">
+    <value>未確認（PID 0x84）</value>
+    <comment>obd.pid.01.84.name</comment>
+  </data>
+  <data name="obd_pid_01_85_name" xml:space="preserve">
+    <value>未確認（PID 0x85）</value>
+    <comment>obd.pid.01.85.name</comment>
+  </data>
+  <data name="obd_pid_01_86_name" xml:space="preserve">
+    <value>未確認（PID 0x86）</value>
+    <comment>obd.pid.01.86.name</comment>
+  </data>
+  <data name="obd_pid_01_87_name" xml:space="preserve">
+    <value>未確認（PID 0x87）</value>
+    <comment>obd.pid.01.87.name</comment>
+  </data>
+  <data name="obd_pid_01_88_name" xml:space="preserve">
+    <value>未確認（PID 0x88）</value>
+    <comment>obd.pid.01.88.name</comment>
+  </data>
+  <data name="obd_pid_01_89_name" xml:space="preserve">
+    <value>未確認（PID 0x89）</value>
+    <comment>obd.pid.01.89.name</comment>
+  </data>
+  <data name="obd_pid_01_8A_name" xml:space="preserve">
+    <value>未確認（PID 0x8A）</value>
+    <comment>obd.pid.01.8A.name</comment>
+  </data>
+  <data name="obd_pid_01_8B_name" xml:space="preserve">
+    <value>未確認（PID 0x8B）</value>
+    <comment>obd.pid.01.8B.name</comment>
+  </data>
+  <data name="obd_pid_01_8C_name" xml:space="preserve">
+    <value>未確認（PID 0x8C）</value>
+    <comment>obd.pid.01.8C.name</comment>
+  </data>
+  <data name="obd_pid_01_8D_name" xml:space="preserve">
+    <value>スロットル位置G</value>
+    <comment>obd.pid.01.8D.name</comment>
+  </data>
+  <data name="obd_pid_01_8E_name" xml:space="preserve">
+    <value>エンジン摩擦トルク割合</value>
+    <comment>obd.pid.01.8E.name</comment>
+  </data>
+  <data name="obd_pid_01_8F_name" xml:space="preserve">
+    <value>未確認（PID 0x8F）</value>
+    <comment>obd.pid.01.8F.name</comment>
+  </data>
+  <data name="obd_pid_01_90_name" xml:space="preserve">
+    <value>未確認（PID 0x90）</value>
+    <comment>obd.pid.01.90.name</comment>
+  </data>
+  <data name="obd_pid_01_91_name" xml:space="preserve">
+    <value>未確認（PID 0x91）</value>
+    <comment>obd.pid.01.91.name</comment>
+  </data>
+  <data name="obd_pid_01_92_name" xml:space="preserve">
+    <value>未確認（PID 0x92）</value>
+    <comment>obd.pid.01.92.name</comment>
+  </data>
+  <data name="obd_pid_01_93_name" xml:space="preserve">
+    <value>未確認（PID 0x93）</value>
+    <comment>obd.pid.01.93.name</comment>
+  </data>
+  <data name="obd_pid_01_94_name" xml:space="preserve">
+    <value>未確認（PID 0x94）</value>
+    <comment>obd.pid.01.94.name</comment>
+  </data>
+  <data name="obd_pid_01_98_name" xml:space="preserve">
+    <value>未確認（PID 0x98）</value>
+    <comment>obd.pid.01.98.name</comment>
+  </data>
+  <data name="obd_pid_01_99_name" xml:space="preserve">
+    <value>未確認（PID 0x99）</value>
+    <comment>obd.pid.01.99.name</comment>
+  </data>
+  <data name="obd_pid_01_9A_name" xml:space="preserve">
+    <value>未確認（PID 0x9A）</value>
+    <comment>obd.pid.01.9A.name</comment>
+  </data>
+  <data name="obd_pid_01_9B_name" xml:space="preserve">
+    <value>未確認（PID 0x9B）</value>
+    <comment>obd.pid.01.9B.name</comment>
+  </data>
+  <data name="obd_pid_01_9C_name" xml:space="preserve">
+    <value>未確認（PID 0x9C）</value>
+    <comment>obd.pid.01.9C.name</comment>
+  </data>
+  <data name="obd_pid_01_9D_name" xml:space="preserve">
+    <value>未確認（PID 0x9D）</value>
+    <comment>obd.pid.01.9D.name</comment>
+  </data>
+  <data name="obd_pid_01_9E_name" xml:space="preserve">
+    <value>未確認（PID 0x9E）</value>
+    <comment>obd.pid.01.9E.name</comment>
+  </data>
+  <data name="obd_pid_01_9F_name" xml:space="preserve">
+    <value>未確認（PID 0x9F）</value>
+    <comment>obd.pid.01.9F.name</comment>
+  </data>
+  <data name="obd_pid_01_A0_name" xml:space="preserve">
+    <value>未確認（PID 0xA0）</value>
+    <comment>obd.pid.01.A0.name</comment>
+  </data>
+  <data name="obd_pid_01_A1_name" xml:space="preserve">
+    <value>未確認（PID 0xA1）</value>
+    <comment>obd.pid.01.A1.name</comment>
+  </data>
+  <data name="obd_pid_01_A2_name" xml:space="preserve">
+    <value>シリンダー燃料量</value>
+    <comment>obd.pid.01.A2.name</comment>
+  </data>
+  <data name="obd_pid_01_A3_name" xml:space="preserve">
+    <value>未確認（PID 0xA3）</value>
+    <comment>obd.pid.01.A3.name</comment>
+  </data>
+  <data name="obd_pid_01_A4_name" xml:space="preserve">
+    <value>トランスミッション実ギア比</value>
+    <comment>obd.pid.01.A4.name</comment>
+  </data>
+  <data name="obd_pid_01_A5_name" xml:space="preserve">
+    <value>ディーゼル排気液噴射指令</value>
+    <comment>obd.pid.01.A5.name</comment>
+  </data>
+  <data name="obd_pid_01_A6_name" xml:space="preserve">
+    <value>総走行距離</value>
+    <comment>obd.pid.01.A6.name</comment>
+  </data>
+  <data name="obd_pid_01_A7_name" xml:space="preserve">
+    <value>未確認（PID 0xA7）</value>
+    <comment>obd.pid.01.A7.name</comment>
+  </data>
+  <data name="obd_pid_01_A8_name" xml:space="preserve">
+    <value>未確認（PID 0xA8）</value>
+    <comment>obd.pid.01.A8.name</comment>
+  </data>
+  <data name="obd_pid_01_C0_name" xml:space="preserve">
+    <value>未確認（PID 0xC0）</value>
+    <comment>obd.pid.01.C0.name</comment>
+  </data>
+  <data name="obd_pid_absolute_barometric_pressure" xml:space="preserve">
+    <value>絶対大気圧</value>
+    <comment>obd.pid.absolute_barometric_pressure</comment>
+  </data>
+  <data name="obd_pid_absolute_load_value" xml:space="preserve">
+    <value>絶対負荷値</value>
+    <comment>obd.pid.absolute_load_value</comment>
+  </data>
+  <data name="obd_pid_absolute_throttle_position" xml:space="preserve">
+    <value>絶対スロットル位置</value>
+    <comment>obd.pid.absolute_throttle_position</comment>
+  </data>
+  <data name="obd_pid_absolute_throttle_position_b" xml:space="preserve">
+    <value>絶対スロットル位置B</value>
+    <comment>obd.pid.absolute_throttle_position_b</comment>
+  </data>
+  <data name="obd_pid_absolute_throttle_position_c" xml:space="preserve">
+    <value>絶対スロットル位置C</value>
+    <comment>obd.pid.absolute_throttle_position_c</comment>
+  </data>
+  <data name="obd_pid_accelerator_pedal_position_d" xml:space="preserve">
+    <value>アクセルペダル位置D</value>
+    <comment>obd.pid.accelerator_pedal_position_d</comment>
+  </data>
+  <data name="obd_pid_accelerator_pedal_position_e" xml:space="preserve">
+    <value>アクセルペダル位置E</value>
+    <comment>obd.pid.accelerator_pedal_position_e</comment>
+  </data>
+  <data name="obd_pid_accelerator_pedal_position_f" xml:space="preserve">
+    <value>アクセルペダル位置F</value>
+    <comment>obd.pid.accelerator_pedal_position_f</comment>
+  </data>
+  <data name="obd_pid_ambient_air_temperature" xml:space="preserve">
+    <value>外気温</value>
+    <comment>obd.pid.ambient_air_temperature</comment>
+  </data>
+  <data name="obd_pid_calculated_engine_load" xml:space="preserve">
+    <value>計算エンジン負荷</value>
+    <comment>obd.pid.calculated_engine_load</comment>
+  </data>
+  <data name="obd_pid_catalyst_temperature_b1s1" xml:space="preserve">
+    <value>触媒温度 B1S1</value>
+    <comment>obd.pid.catalyst_temperature_b1s1</comment>
+  </data>
+  <data name="obd_pid_catalyst_temperature_b1s2" xml:space="preserve">
+    <value>触媒温度 B1S2</value>
+    <comment>obd.pid.catalyst_temperature_b1s2</comment>
+  </data>
+  <data name="obd_pid_catalyst_temperature_b2s1" xml:space="preserve">
+    <value>触媒温度 B2S1</value>
+    <comment>obd.pid.catalyst_temperature_b2s1</comment>
+  </data>
+  <data name="obd_pid_catalyst_temperature_b2s2" xml:space="preserve">
+    <value>触媒温度 B2S2</value>
+    <comment>obd.pid.catalyst_temperature_b2s2</comment>
+  </data>
+  <data name="obd_pid_commanded_egr" xml:space="preserve">
+    <value>指示EGR</value>
+    <comment>obd.pid.commanded_egr</comment>
+  </data>
+  <data name="obd_pid_commanded_equivalence_ratio" xml:space="preserve">
+    <value>指示当量比</value>
+    <comment>obd.pid.commanded_equivalence_ratio</comment>
+  </data>
+  <data name="obd_pid_commanded_evaporative_purge" xml:space="preserve">
+    <value>指示蒸発ガスパージ</value>
+    <comment>obd.pid.commanded_evaporative_purge</comment>
+  </data>
+  <data name="obd_pid_commanded_throttle_actuator" xml:space="preserve">
+    <value>指示スロットルアクチュエータ</value>
+    <comment>obd.pid.commanded_throttle_actuator</comment>
+  </data>
+  <data name="obd_pid_control_module_voltage" xml:space="preserve">
+    <value>制御モジュール電圧</value>
+    <comment>obd.pid.control_module_voltage</comment>
+  </data>
+  <data name="obd_pid_distance_since_codes_cleared" xml:space="preserve">
+    <value>コード消去後走行距離</value>
+    <comment>obd.pid.distance_since_codes_cleared</comment>
+  </data>
+  <data name="obd_pid_distance_with_mil_on" xml:space="preserve">
+    <value>MIL点灯中の走行距離</value>
+    <comment>obd.pid.distance_with_mil_on</comment>
+  </data>
+  <data name="obd_pid_egr_error" xml:space="preserve">
+    <value>EGR誤差</value>
+    <comment>obd.pid.egr_error</comment>
+  </data>
+  <data name="obd_pid_engine_coolant_temperature" xml:space="preserve">
+    <value>エンジン冷却水温</value>
+    <comment>obd.pid.engine_coolant_temperature</comment>
+  </data>
+  <data name="obd_pid_engine_speed" xml:space="preserve">
+    <value>エンジン回転数</value>
+    <comment>obd.pid.engine_speed</comment>
+  </data>
+  <data name="obd_pid_evap_system_vapor_pressure" xml:space="preserve">
+    <value>蒸発ガス系圧力</value>
+    <comment>obd.pid.evap_system_vapor_pressure</comment>
+  </data>
+  <data name="obd_pid_fuel_pressure" xml:space="preserve">
+    <value>燃料圧力</value>
+    <comment>obd.pid.fuel_pressure</comment>
+  </data>
+  <data name="obd_pid_fuel_rail_gauge_pressure" xml:space="preserve">
+    <value>燃料レールゲージ圧</value>
+    <comment>obd.pid.fuel_rail_gauge_pressure</comment>
+  </data>
+  <data name="obd_pid_fuel_rail_pressure_relative" xml:space="preserve">
+    <value>マニホールド相対燃料レール圧</value>
+    <comment>obd.pid.fuel_rail_pressure_relative</comment>
+  </data>
+  <data name="obd_pid_fuel_tank_level" xml:space="preserve">
+    <value>燃料残量</value>
+    <comment>obd.pid.fuel_tank_level</comment>
+  </data>
+  <data name="obd_pid_help_diagnostics_correlation" xml:space="preserve">
+    <value>電圧、回転数、車速、DTC状態、MIL状態、暖機回数、関連する時間・距離項目と比較してください。</value>
+    <comment>obd.pid.help.diagnostics.correlation</comment>
+  </data>
+  <data name="obd_pid_help_diagnostics_high" xml:space="preserve">
+    <value>高値の意味は項目と運転履歴に依存します。電源値では充電系、時間・距離では診断発生後の経過を確認してください。</value>
+    <comment>obd.pid.help.diagnostics.high</comment>
+  </data>
+  <data name="obd_pid_help_diagnostics_low" xml:space="preserve">
+    <value>低値の意味は項目と運転履歴に依存します。電源値ではバッテリー・配線、時間・距離では直近リセットを確認してください。</value>
+    <comment>obd.pid.help.diagnostics.low</comment>
+  </data>
+  <data name="obd_pid_help_diagnostics_summary" xml:space="preserve">
+    <value>運転時間、距離、電源、診断または複合状態を表します。</value>
+    <comment>obd.pid.help.diagnostics.summary</comment>
+  </data>
+  <data name="obd_pid_help_driving_correlation" xml:space="preserve">
+    <value>車速、回転数、負荷、アクセル位置、スロットル各系統、要求値と実値を比較してください。</value>
+    <comment>obd.pid.help.driving.correlation</comment>
+  </data>
+  <data name="obd_pid_help_driving_high" xml:space="preserve">
+    <value>高値は運転操作に沿う場合がありますが、要求と実位置の差や張り付きは制御系・センサー異常の可能性があります。</value>
+    <comment>obd.pid.help.driving.high</comment>
+  </data>
+  <data name="obd_pid_help_driving_low" xml:space="preserve">
+    <value>低値は運転操作に沿う場合がありますが、要求に追従しない場合は入力・アクチュエーター・センサー異常の可能性があります。</value>
+    <comment>obd.pid.help.driving.low</comment>
+  </data>
+  <data name="obd_pid_help_driving_summary" xml:space="preserve">
+    <value>車速または運転者入力とアクチュエーター位置を表します。</value>
+    <comment>obd.pid.help.driving.summary</comment>
+  </data>
+  <data name="obd_pid_help_engine_correlation" xml:space="preserve">
+    <value>回転数、車速、スロットル、吸気量、燃料補正、各温度と比較してください。</value>
+    <comment>obd.pid.help.engine.correlation</comment>
+  </data>
+  <data name="obd_pid_help_engine_high" xml:space="preserve">
+    <value>運転条件に対して高い場合は大きな負荷、過剰な要求、吸排気や制御の異常が考えられます。</value>
+    <comment>obd.pid.help.engine.high</comment>
+  </data>
+  <data name="obd_pid_help_engine_low" xml:space="preserve">
+    <value>運転条件に対して低い場合は出力不足、入力不足、失火、センサーや制御の異常が考えられます。</value>
+    <comment>obd.pid.help.engine.low</comment>
+  </data>
+  <data name="obd_pid_help_engine_summary" xml:space="preserve">
+    <value>エンジンの負荷、回転または点火状態を表します。</value>
+    <comment>obd.pid.help.engine.summary</comment>
+  </data>
+  <data name="obd_pid_help_fuelAndAir_correlation" xml:space="preserve">
+    <value>負荷、回転数、スロットル、吸気圧・吸気量、燃料補正、酸素センサー相互を比較してください。</value>
+    <comment>obd.pid.help.fuelAndAir.correlation</comment>
+  </data>
+  <data name="obd_pid_help_fuelAndAir_high" xml:space="preserve">
+    <value>高値は高負荷、過濃・過薄補正、圧力異常、吸気制限、噴射やセンサー異常の可能性があります。</value>
+    <comment>obd.pid.help.fuelAndAir.high</comment>
+  </data>
+  <data name="obd_pid_help_fuelAndAir_low" xml:space="preserve">
+    <value>低値は燃料不足、漏れ、圧力不足、吸気計測不足、噴射やセンサー異常の可能性があります。</value>
+    <comment>obd.pid.help.fuelAndAir.low</comment>
+  </data>
+  <data name="obd_pid_help_fuelAndAir_summary" xml:space="preserve">
+    <value>燃料供給、吸気、排気、酸素センサーの状態を表します。</value>
+    <comment>obd.pid.help.fuelAndAir.summary</comment>
+  </data>
+  <data name="obd_pid_help_temperature_correlation" xml:space="preserve">
+    <value>負荷、回転数、車速、吸気量、燃料補正、関連する別の温度センサーと比較してください。</value>
+    <comment>obd.pid.help.temperature.correlation</comment>
+  </data>
+  <data name="obd_pid_help_temperature_high" xml:space="preserve">
+    <value>高値は高負荷、冷却不足、吸気加熱、触媒負荷、またはセンサー異常の可能性があります。</value>
+    <comment>obd.pid.help.temperature.high</comment>
+  </data>
+  <data name="obd_pid_help_temperature_low" xml:space="preserve">
+    <value>低値は暖機不足、外気条件、サーモスタット、配線、またはセンサー異常の可能性があります。</value>
+    <comment>obd.pid.help.temperature.low</comment>
+  </data>
+  <data name="obd_pid_help_temperature_summary" xml:space="preserve">
+    <value>車両の温度センサーまたは熱状態を表します。</value>
+    <comment>obd.pid.help.temperature.summary</comment>
+  </data>
+  <data name="obd_pid_help_unconfirmed_correlation" xml:space="preserve">
+    <value>同時刻の回転数、負荷、温度、燃料・吸気系の値と、車両固有の整備資料を併せて確認してください。</value>
+    <comment>obd.pid.help.unconfirmed.correlation</comment>
+  </data>
+  <data name="obd_pid_help_unconfirmed_high" xml:space="preserve">
+    <value>数値化していないため高値判定は行いません。整備資料と実車条件を確認してください。</value>
+    <comment>obd.pid.help.unconfirmed.high</comment>
+  </data>
+  <data name="obd_pid_help_unconfirmed_low" xml:space="preserve">
+    <value>数値化していないため低値判定は行いません。整備資料と実車条件を確認してください。</value>
+    <comment>obd.pid.help.unconfirmed.low</comment>
+  </data>
+  <data name="obd_pid_help_unconfirmed_summary" xml:space="preserve">
+    <value>このPIDの変換式は未確認です。生データを推測して数値表示しません。</value>
+    <comment>obd.pid.help.unconfirmed.summary</comment>
+  </data>
+  <data name="obd_pid_intake_air_temperature" xml:space="preserve">
+    <value>吸気温度</value>
+    <comment>obd.pid.intake_air_temperature</comment>
+  </data>
+  <data name="obd_pid_intake_manifold_pressure" xml:space="preserve">
+    <value>吸気マニホールド圧力</value>
+    <comment>obd.pid.intake_manifold_pressure</comment>
+  </data>
+  <data name="obd_pid_long_term_fuel_trim_bank_1" xml:space="preserve">
+    <value>長期燃料補正 バンク1</value>
+    <comment>obd.pid.long_term_fuel_trim_bank_1</comment>
+  </data>
+  <data name="obd_pid_long_term_fuel_trim_bank_2" xml:space="preserve">
+    <value>長期燃料補正 バンク2</value>
+    <comment>obd.pid.long_term_fuel_trim_bank_2</comment>
+  </data>
+  <data name="obd_pid_mass_air_flow_rate" xml:space="preserve">
+    <value>吸入空気流量</value>
+    <comment>obd.pid.mass_air_flow_rate</comment>
+  </data>
+  <data name="obd_pid_odometer" xml:space="preserve">
+    <value>総走行距離</value>
+    <comment>obd.pid.odometer</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b1s1_voltage" xml:space="preserve">
+    <value>O2センサー B1S1 電圧</value>
+    <comment>obd.pid.oxygen_sensor_b1s1_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b1s2_voltage" xml:space="preserve">
+    <value>O2センサー B1S2 電圧</value>
+    <comment>obd.pid.oxygen_sensor_b1s2_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b1s3_voltage" xml:space="preserve">
+    <value>O2センサー B1S3 電圧</value>
+    <comment>obd.pid.oxygen_sensor_b1s3_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b1s4_voltage" xml:space="preserve">
+    <value>O2センサー B1S4 電圧</value>
+    <comment>obd.pid.oxygen_sensor_b1s4_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b2s1_voltage" xml:space="preserve">
+    <value>O2センサー B2S1 電圧</value>
+    <comment>obd.pid.oxygen_sensor_b2s1_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b2s2_voltage" xml:space="preserve">
+    <value>O2センサー B2S2 電圧</value>
+    <comment>obd.pid.oxygen_sensor_b2s2_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b2s3_voltage" xml:space="preserve">
+    <value>O2センサー B2S3 電圧</value>
+    <comment>obd.pid.oxygen_sensor_b2s3_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b2s4_voltage" xml:space="preserve">
+    <value>O2センサー B2S4 電圧</value>
+    <comment>obd.pid.oxygen_sensor_b2s4_voltage</comment>
+  </data>
+  <data name="obd_pid_relative_throttle_position" xml:space="preserve">
+    <value>相対スロットル位置</value>
+    <comment>obd.pid.relative_throttle_position</comment>
+  </data>
+  <data name="obd_pid_run_time_since_engine_start" xml:space="preserve">
+    <value>エンジン始動後時間</value>
+    <comment>obd.pid.run_time_since_engine_start</comment>
+  </data>
+  <data name="obd_pid_short_term_fuel_trim_bank_1" xml:space="preserve">
+    <value>短期燃料補正 バンク1</value>
+    <comment>obd.pid.short_term_fuel_trim_bank_1</comment>
+  </data>
+  <data name="obd_pid_short_term_fuel_trim_bank_2" xml:space="preserve">
+    <value>短期燃料補正 バンク2</value>
+    <comment>obd.pid.short_term_fuel_trim_bank_2</comment>
+  </data>
+  <data name="obd_pid_time_run_with_mil_on" xml:space="preserve">
+    <value>MIL点灯中の稼働時間</value>
+    <comment>obd.pid.time_run_with_mil_on</comment>
+  </data>
+  <data name="obd_pid_timing_advance" xml:space="preserve">
+    <value>点火時期進角</value>
+    <comment>obd.pid.timing_advance</comment>
+  </data>
+  <data name="obd_pid_vehicle_speed" xml:space="preserve">
+    <value>車速</value>
+    <comment>obd.pid.vehicle_speed</comment>
+  </data>
+  <data name="obd_pid_warmups_since_codes_cleared" xml:space="preserve">
+    <value>コード消去後暖機回数</value>
+    <comment>obd.pid.warmups_since_codes_cleared</comment>
+  </data>
+  <data name="obd_pid_zd8_21_02_correlation" xml:space="preserve">
+    <value>同一セッションの開始値と終了値を比較し、別車両やリセット履歴とは混在させないでください。</value>
+    <comment>obd.pid.zd8.21.02.correlation</comment>
+  </data>
+  <data name="obd_pid_zd8_21_02_name" xml:space="preserve">
+    <value>走行距離</value>
+    <comment>obd.pid.zd8.21.02.name</comment>
+  </data>
+  <data name="obd_pid_zd8_21_02_summary" xml:space="preserve">
+    <value>エンジンECUが報告するZD8専用の累積走行距離です。</value>
+    <comment>obd.pid.zd8.21.02.summary</comment>
+  </data>
+  <data name="obd_pid_zd8_21_17_correlation" xml:space="preserve">
+    <value>同じ外気・走行条件で車速や走行時間と合わせて比較してください。</value>
+    <comment>obd.pid.zd8.21.17.correlation</comment>
+  </data>
+  <data name="obd_pid_zd8_21_17_high" xml:space="preserve">
+    <value>高値だけで故障とは判断できません。安全に負荷を下げ、車両取扱説明書または専門点検の案内に従ってください。</value>
+    <comment>obd.pid.zd8.21.17.high</comment>
+  </data>
+  <data name="obd_pid_zd8_21_17_low" xml:space="preserve">
+    <value>低値は外気温や暖機状態を反映する場合があります。経過時間と走行条件を確認してください。</value>
+    <comment>obd.pid.zd8.21.17.low</comment>
+  </data>
+  <data name="obd_pid_zd8_21_17_name" xml:space="preserve">
+    <value>AT油温</value>
+    <comment>obd.pid.zd8.21.17.name</comment>
+  </data>
+  <data name="obd_pid_zd8_21_17_summary" xml:space="preserve">
+    <value>変速機ECUが報告するZD8 AT車専用のAT油温です。</value>
+    <comment>obd.pid.zd8.21.17.summary</comment>
+  </data>
+  <data name="settings_adapter_description" xml:space="preserve">
+    <value>選択したプライマリーアダプターは次回以降のデフォルトとして保存されます。</value>
+    <comment>settings.adapter.description</comment>
+  </data>
+  <data name="settings_adapter_details_assignment_conflict" xml:space="preserve">
+    <value>このデバイスは別の接続役割に設定済みです。異なる物理アダプターを選択してください。</value>
+    <comment>settings.adapter.details.assignment_conflict</comment>
+  </data>
+  <data name="settings_adapter_details_confirm" xml:space="preserve">
+    <value>このアダプターを設定</value>
+    <comment>settings.adapter.details.confirm</comment>
+  </data>
+  <data name="settings_adapter_details_decline" xml:space="preserve">
+    <value>設定しない</value>
+    <comment>settings.adapter.details.decline</comment>
+  </data>
+  <data name="settings_adapter_details_identifier" xml:space="preserve">
+    <value>システム識別子</value>
+    <comment>settings.adapter.details.identifier</comment>
+  </data>
+  <data name="settings_adapter_details_manufacturer" xml:space="preserve">
+    <value>メーカー</value>
+    <comment>settings.adapter.details.manufacturer</comment>
+  </data>
+  <data name="settings_adapter_details_notice" xml:space="preserve">
+    <value>ここではプライマリーアダプター候補を設定します。車両への接続は開始しません。</value>
+    <comment>settings.adapter.details.notice</comment>
+  </data>
+  <data name="settings_adapter_details_product" xml:space="preserve">
+    <value>製品名</value>
+    <comment>settings.adapter.details.product</comment>
+  </data>
+  <data name="settings_adapter_details_product_id" xml:space="preserve">
+    <value>製品ID</value>
+    <comment>settings.adapter.details.product_id</comment>
+  </data>
+  <data name="settings_adapter_details_serial" xml:space="preserve">
+    <value>シリアル番号</value>
+    <comment>settings.adapter.details.serial</comment>
+  </data>
+  <data name="settings_adapter_details_title" xml:space="preserve">
+    <value>接続情報</value>
+    <comment>settings.adapter.details.title</comment>
+  </data>
+  <data name="settings_adapter_details_transport" xml:space="preserve">
+    <value>接続モード</value>
+    <comment>settings.adapter.details.transport</comment>
+  </data>
+  <data name="settings_adapter_details_unknown" xml:space="preserve">
+    <value>システムから取得できません</value>
+    <comment>settings.adapter.details.unknown</comment>
+  </data>
+  <data name="settings_adapter_details_vendor_id" xml:space="preserve">
+    <value>ベンダーID</value>
+    <comment>settings.adapter.details.vendor_id</comment>
+  </data>
+  <data name="settings_adapter_eyebrow" xml:space="preserve">
+    <value>CONNECTION</value>
+    <comment>settings.adapter.eyebrow</comment>
+  </data>
+  <data name="settings_adapter_not_selected" xml:space="preserve">
+    <value>未選択</value>
+    <comment>settings.adapter.not_selected</comment>
+  </data>
+  <data name="settings_adapter_primary" xml:space="preserve">
+    <value>プライマリーアダプター</value>
+    <comment>settings.adapter.primary</comment>
+  </data>
+  <data name="settings_adapter_receive_only" xml:space="preserve">
+    <value>受信専用</value>
+    <comment>settings.adapter.receive_only</comment>
+  </data>
+  <data name="settings_adapter_required" xml:space="preserve">
+    <value>必須</value>
+    <comment>settings.adapter.required</comment>
+  </data>
+  <data name="settings_adapter_secondary" xml:space="preserve">
+    <value>セカンダリーアダプター</value>
+    <comment>settings.adapter.secondary</comment>
+  </data>
+  <data name="settings_adapter_select" xml:space="preserve">
+    <value>選択</value>
+    <comment>settings.adapter.select</comment>
+  </data>
+  <data name="settings_adapter_selector_cancel" xml:space="preserve">
+    <value>キャンセル</value>
+    <comment>settings.adapter.selector.cancel</comment>
+  </data>
+  <data name="settings_adapter_selector_description" xml:space="preserve">
+    <value>USBまたはBluetoothを選び、接続済みデバイスの接続情報を確認します。</value>
+    <comment>settings.adapter.selector.description</comment>
+  </data>
+  <data name="settings_adapter_selector_empty_description" xml:space="preserve">
+    <value>このデバイスにアダプターを接続してから再度お試しください。</value>
+    <comment>settings.adapter.selector.empty.description</comment>
+  </data>
+  <data name="settings_adapter_selector_empty_title" xml:space="preserve">
+    <value>接続済みデバイスがありません</value>
+    <comment>settings.adapter.selector.empty.title</comment>
+  </data>
+  <data name="settings_adapter_selector_failed_description" xml:space="preserve">
+    <value>接続方式、Bluetoothの状態、macOSの権限を確認して再探索してください。</value>
+    <comment>settings.adapter.selector.failed.description</comment>
+  </data>
+  <data name="settings_adapter_selector_failed_title" xml:space="preserve">
+    <value>探索を利用できません</value>
+    <comment>settings.adapter.selector.failed.title</comment>
+  </data>
+  <data name="settings_adapter_selector_mode" xml:space="preserve">
+    <value>接続モード</value>
+    <comment>settings.adapter.selector.mode</comment>
+  </data>
+  <data name="settings_adapter_selector_refresh" xml:space="preserve">
+    <value>再探索</value>
+    <comment>settings.adapter.selector.refresh</comment>
+  </data>
+  <data name="settings_adapter_selector_searching" xml:space="preserve">
+    <value>このMacに接続済みのデバイスを確認中…</value>
+    <comment>settings.adapter.selector.searching</comment>
+  </data>
+  <data name="settings_adapter_selector_secondary_title" xml:space="preserve">
+    <value>セカンダリーアダプターを選択</value>
+    <comment>settings.adapter.selector.secondary.title</comment>
+  </data>
+  <data name="settings_adapter_selector_title" xml:space="preserve">
+    <value>プライマリーアダプターを選択</value>
+    <comment>settings.adapter.selector.title</comment>
+  </data>
+  <data name="settings_adapter_title" xml:space="preserve">
+    <value>アダプター</value>
+    <comment>settings.adapter.title</comment>
+  </data>
+  <data name="settings_adapter_transport_bluetooth" xml:space="preserve">
+    <value>Bluetooth</value>
+    <comment>settings.adapter.transport.bluetooth</comment>
+  </data>
+  <data name="settings_adapter_transport_usb" xml:space="preserve">
+    <value>USB</value>
+    <comment>settings.adapter.transport.usb</comment>
+  </data>
+  <data name="settings_adapter_unavailable_close" xml:space="preserve">
+    <value>閉じる</value>
+    <comment>settings.adapter.unavailable.close</comment>
+  </data>
+  <data name="settings_adapter_unavailable_description" xml:space="preserve">
+    <value>アダプター検出機能はまだ接続されていません。デバイスは選択されていません。</value>
+    <comment>settings.adapter.unavailable.description</comment>
+  </data>
+  <data name="settings_appearance_dark" xml:space="preserve">
+    <value>ダーク</value>
+    <comment>settings.appearance.dark</comment>
+  </data>
+  <data name="settings_appearance_description" xml:space="preserve">
+    <value>利用環境に合わせてコックピットの外観を整えます。</value>
+    <comment>settings.appearance.description</comment>
+  </data>
+  <data name="settings_appearance_eyebrow" xml:space="preserve">
+    <value>APPEARANCE</value>
+    <comment>settings.appearance.eyebrow</comment>
+  </data>
+  <data name="settings_appearance_light" xml:space="preserve">
+    <value>ライト</value>
+    <comment>settings.appearance.light</comment>
+  </data>
+  <data name="settings_appearance_system" xml:space="preserve">
+    <value>システム</value>
+    <comment>settings.appearance.system</comment>
+  </data>
+  <data name="settings_appearance_title" xml:space="preserve">
+    <value>外観モード</value>
+    <comment>settings.appearance.title</comment>
+  </data>
+  <data name="settings_language_description" xml:space="preserve">
+    <value>インターフェースの言語をすぐに切り替えます。</value>
+    <comment>settings.language.description</comment>
+  </data>
+  <data name="settings_language_english" xml:space="preserve">
+    <value>English</value>
+    <comment>settings.language.english</comment>
+  </data>
+  <data name="settings_language_eyebrow" xml:space="preserve">
+    <value>LANGUAGE</value>
+    <comment>settings.language.eyebrow</comment>
+  </data>
+  <data name="settings_language_japanese" xml:space="preserve">
+    <value>日本語</value>
+    <comment>settings.language.japanese</comment>
+  </data>
+  <data name="settings_language_spanish" xml:space="preserve">
+    <value>Español</value>
+    <comment>settings.language.spanish</comment>
+  </data>
+  <data name="settings_language_title" xml:space="preserve">
+    <value>言語</value>
+    <comment>settings.language.title</comment>
+  </data>
+  <data name="settings_more_caption" xml:space="preserve">
+    <value>RevTorque Insightの進化に合わせて設定項目を追加していきます。</value>
+    <comment>settings.more.caption</comment>
+  </data>
+  <data name="settings_storage_coming_soon" xml:space="preserve">
+    <value>今後のアップデートで実装予定</value>
+    <comment>settings.storage.coming_soon</comment>
+  </data>
+  <data name="settings_storage_description" xml:space="preserve">
+    <value>ログ容量や保持方法を今後ここで確認できるようにします。</value>
+    <comment>settings.storage.description</comment>
+  </data>
+  <data name="settings_storage_eyebrow" xml:space="preserve">
+    <value>STORAGE</value>
+    <comment>settings.storage.eyebrow</comment>
+  </data>
+  <data name="settings_storage_title" xml:space="preserve">
+    <value>ストレージ</value>
+    <comment>settings.storage.title</comment>
+  </data>
+  <data name="settings_subtitle" xml:space="preserve">
+    <value>運転と作業のスタイルに合わせてRevTorque Insightを整えます。</value>
+    <comment>settings.subtitle</comment>
+  </data>
+  <data name="settings_title" xml:space="preserve">
+    <value>設定</value>
+    <comment>settings.title</comment>
+  </data>
+  <data name="settings_upload_automatic" xml:space="preserve">
+    <value>セッション終了時に自動アップロード</value>
+    <comment>settings.upload.automatic</comment>
+  </data>
+  <data name="settings_upload_description" xml:space="preserve">
+    <value>OFFの場合、未アップロードのセッションだけ接続履歴に手動アップロードボタンを表示します。</value>
+    <comment>settings.upload.description</comment>
+  </data>
+  <data name="settings_upload_eyebrow" xml:space="preserve">
+    <value>iCLOUD</value>
+    <comment>settings.upload.eyebrow</comment>
+  </data>
+  <data name="settings_upload_title" xml:space="preserve">
+    <value>セッションのアップロード</value>
+    <comment>settings.upload.title</comment>
+  </data>
+  <data name="shell_destination_placeholder" xml:space="preserve">
+    <value>機能の内容はここに表示されます。</value>
+    <comment>shell.destination.placeholder</comment>
+  </data>
+  <data name="sidebar_brand_tagline" xml:space="preserve">
+    <value>DRIVE INTELLIGENCE</value>
+    <comment>sidebar.brand.tagline</comment>
+  </data>
+  <data name="sidebar_connection_history" xml:space="preserve">
+    <value>接続履歴</value>
+    <comment>sidebar.connection_history</comment>
+  </data>
+  <data name="sidebar_connection_history_subtitle" xml:space="preserve">
+    <value>セッションと走行記録</value>
+    <comment>sidebar.connection_history.subtitle</comment>
+  </data>
+  <data name="sidebar_footer_caption" xml:space="preserve">
+    <value>モダン・ドライビング・ワークスペース</value>
+    <comment>sidebar.footer.caption</comment>
+  </data>
+  <data name="sidebar_garage" xml:space="preserve">
+    <value>Garage</value>
+    <comment>sidebar.garage</comment>
+  </data>
+  <data name="sidebar_garage_subtitle" xml:space="preserve">
+    <value>車両とプロフィール</value>
+    <comment>sidebar.garage.subtitle</comment>
+  </data>
+  <data name="sidebar_home" xml:space="preserve">
+    <value>ホーム</value>
+    <comment>sidebar.home</comment>
+  </data>
+  <data name="sidebar_home_subtitle" xml:space="preserve">
+    <value>概要とハイライト</value>
+    <comment>sidebar.home.subtitle</comment>
+  </data>
+  <data name="sidebar_live_log" xml:space="preserve">
+    <value>リアルタイムログ出力</value>
+    <comment>sidebar.live_log</comment>
+  </data>
+  <data name="sidebar_live_log_subtitle" xml:space="preserve">
+    <value>車両信号をライブ表示</value>
+    <comment>sidebar.live_log.subtitle</comment>
+  </data>
+  <data name="sidebar_maintenance" xml:space="preserve">
+    <value>整備</value>
+    <comment>sidebar.maintenance</comment>
+  </data>
+  <data name="sidebar_maintenance_subtitle" xml:space="preserve">
+    <value>整備インサイト</value>
+    <comment>sidebar.maintenance.subtitle</comment>
+  </data>
+  <data name="sidebar_section_navigation" xml:space="preserve">
+    <value>NAVIGATION</value>
+    <comment>sidebar.section.navigation</comment>
+  </data>
+  <data name="sidebar_settings" xml:space="preserve">
+    <value>設定</value>
+    <comment>sidebar.settings</comment>
+  </data>
+  <data name="sidebar_settings_subtitle" xml:space="preserve">
+    <value>ワークスペースを調整</value>
+    <comment>sidebar.settings.subtitle</comment>
+  </data>
+  <data name="telemetry_category_diagnostics" xml:space="preserve">
+    <value>稼働・診断</value>
+    <comment>telemetry.category.diagnostics</comment>
+  </data>
+  <data name="telemetry_category_driving" xml:space="preserve">
+    <value>走行・操作</value>
+    <comment>telemetry.category.driving</comment>
+  </data>
+  <data name="telemetry_category_engine" xml:space="preserve">
+    <value>エンジン</value>
+    <comment>telemetry.category.engine</comment>
+  </data>
+  <data name="telemetry_category_fuelAndAir" xml:space="preserve">
+    <value>燃料・吸排気</value>
+    <comment>telemetry.category.fuelAndAir</comment>
+  </data>
+  <data name="telemetry_category_temperature" xml:space="preserve">
+    <value>温度</value>
+    <comment>telemetry.category.temperature</comment>
+  </data>
+  <data name="telemetry_disconnected_connection_lost" xml:space="preserve">
+    <value>アダプターとの接続が失われたため、安全に収集を終了しました。</value>
+    <comment>telemetry.disconnected.connection_lost</comment>
+  </data>
+  <data name="telemetry_disconnected_no_response" xml:space="preserve">
+    <value>車両応答がなくなりました。イグニッションオフの可能性があるため、安全に収集を終了しました。</value>
+    <comment>telemetry.disconnected.no_response</comment>
+  </data>
+  <data name="telemetry_error_pid_catalog_unavailable" xml:space="preserve">
+    <value>PID定義データベースを利用できません。センサー要求は送信していません。</value>
+    <comment>telemetry.error.pid_catalog_unavailable</comment>
+  </data>
+  <data name="telemetry_error_read_failed" xml:space="preserve">
+    <value>主要PIDを取得できません。アダプターと車両状態を確認してください。</value>
+    <comment>telemetry.error.read_failed</comment>
+  </data>
+  <data name="telemetry_error_unavailable" xml:space="preserve">
+    <value>このプラットフォームでは検証済みPID読取を利用できません。</value>
+    <comment>telemetry.error.unavailable</comment>
+  </data>
+  <data name="telemetry_eyebrow" xml:space="preserve">
+    <value>OBD LIVE CHECK</value>
+    <comment>telemetry.eyebrow</comment>
+  </data>
+  <data name="telemetry_help_correlation" xml:space="preserve">
+    <value>相関する項目</value>
+    <comment>telemetry.help.correlation</comment>
+  </data>
+  <data name="telemetry_help_high" xml:space="preserve">
+    <value>高すぎる場合</value>
+    <comment>telemetry.help.high</comment>
+  </data>
+  <data name="telemetry_help_low" xml:space="preserve">
+    <value>低すぎる場合</value>
+    <comment>telemetry.help.low</comment>
+  </data>
+  <data name="telemetry_help_open" xml:space="preserve">
+    <value>項目の説明を表示</value>
+    <comment>telemetry.help.open</comment>
+  </data>
+  <data name="telemetry_help_summary" xml:space="preserve">
+    <value>概要</value>
+    <comment>telemetry.help.summary</comment>
+  </data>
+  <data name="telemetry_read" xml:space="preserve">
+    <value>主要PIDを取得</value>
+    <comment>telemetry.read</comment>
+  </data>
+  <data name="telemetry_refresh" xml:space="preserve">
+    <value>再取得</value>
+    <comment>telemetry.refresh</comment>
+  </data>
+  <data name="telemetry_retry" xml:space="preserve">
+    <value>リアルタイム取得を再試行</value>
+    <comment>telemetry.retry</comment>
+  </data>
+  <data name="telemetry_section_all" xml:space="preserve">
+    <value>すべての現在値</value>
+    <comment>telemetry.section.all</comment>
+  </data>
+  <data name="telemetry_section_brz" xml:space="preserve">
+    <value>BRZ専用テレメトリ</value>
+    <comment>telemetry.section.brz</comment>
+  </data>
+  <data name="telemetry_section_now" xml:space="preserve">
+    <value>いまの走行</value>
+    <comment>telemetry.section.now</comment>
+  </data>
+  <data name="telemetry_status_polling" xml:space="preserve">
+    <value>画面外でも標準OBDポーリングを継続中</value>
+    <comment>telemetry.status.polling</comment>
+  </data>
+  <data name="telemetry_status_reading" xml:space="preserve">
+    <value>対応PIDを確認中…</value>
+    <comment>telemetry.status.reading</comment>
+  </data>
+  <data name="telemetry_status_responding_count" xml:space="preserve">
+    <value>応答中のPID</value>
+    <comment>telemetry.status.responding_count</comment>
+  </data>
+  <data name="telemetry_status_stopping" xml:space="preserve">
+    <value>収集を終了し、接続を閉じています…</value>
+    <comment>telemetry.status.stopping</comment>
+  </data>
+  <data name="telemetry_status_waiting_for_connection" xml:space="preserve">
+    <value>ホームの接続ボタンから取得を開始してください。</value>
+    <comment>telemetry.status.waiting_for_connection</comment>
+  </data>
+  <data name="telemetry_subtitle" xml:space="preserve">
+    <value>登録済みPIDを全件確認し、応答した項目の現在値を表示します。</value>
+    <comment>telemetry.subtitle</comment>
+  </data>
+  <data name="telemetry_title" xml:space="preserve">
+    <value>リアルタイムPID値</value>
+    <comment>telemetry.title</comment>
+  </data>
+  <data name="vehicle_specific_pid_badge____xe13c5098" xml:space="preserve">
+    <value>%@専用PID</value>
+    <comment>vehicle_specific_pid.badge %@</comment>
+  </data>
+  <data name="k___xbda05058" xml:space="preserve">
+    <value>—</value>
+    <comment>—</comment>
+  </data>
+</root>

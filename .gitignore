@@ -10,3 +10,6 @@ appsettings.Local.json
 *.local.json
 # 性能測定の出力
 BenchmarkResults/
+
+# Claude Code の作業ツリー
+.claude/worktrees/

@@ -21,4 +21,7 @@
     <Project Path="tests/ProjectZD8.Data.Tests/ProjectZD8.Data.Tests.csproj" />
     <Project Path="tests/ProjectZD8.Domain.Tests/ProjectZD8.Domain.Tests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/ProjectZD8.LogStoreBenchmark/ProjectZD8.LogStoreBenchmark.csproj" />
+  </Folder>
 </Solution>

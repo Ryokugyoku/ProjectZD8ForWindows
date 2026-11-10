@@ -1,0 +1,26 @@
+# main への push と pull request で、全プロジェクトのビルドとテストを行う。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: dotnet build ProjectZD8ForWindows.slnx -p:Platform=x64
+
+      - name: Test
+        run: dotnet test ProjectZD8ForWindows.slnx -p:Platform=x64 --no-build

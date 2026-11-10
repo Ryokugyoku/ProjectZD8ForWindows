@@ -1,7 +1,7 @@
 # ProjectZD8ForWindows 進捗
 
 最終更新: 2026-11-10
-README 確認済みのコミット: ae15a35（＋未コミットの画面の作り直しを反映済み）
+README 確認済みのコミット: ef7c619（＋未コミットの Store 公開の準備を反映済み）
 
 ## 概要
 - iOS/macOS アプリ「RevTorque Insight」（GitHub: Ryokugyoku/ProjectZD8、Swift/SwiftUI）を Windows（WinUI 3 / .NET 10）向けに作り直す。iOS 版と CloudKit で同期する。
@@ -23,6 +23,7 @@ README 確認済みのコミット: ae15a35（＋未コミットの画面の作�
 - 確かめていない：実機の OBD アダプター（USB シリアル・RFCOMM・BLE の接続と送受信、探索、到来の監視）、実際の CloudKit と Apple のサインイン（テストは偽の HTTP 応答だけ）、本物の車、電源断での fsync の効き目、ARM64 と x86 のビルド、狭いウインドウ（640×420）、写真の取り込み、停止確認・Raw の解放・セッション削除の各ダイアログ、Release ビルド（トリミングあり）での起動。
 
 ## 直近の作業
+- 2026-11-10: Microsoft Store のベータ公開の準備と自動リリースを作った（開発者の依頼）。GitHub Actions の CI（ビルドとテスト）と Release（タグで Store に提出）、scripts/Set-PackageIdentity.ps1、docs/STORE_RELEASE.md。Store 用の .msixupload を手元で作れることを確かめた（シンボルを付けると dotnet CLI では失敗するので外した）。トリミングした Release が起動直後に落ちたので、トリミングを止めて、起動とウインドウの応答を確かめた（画面の操作は未）。ワークフローは GitHub ではまだ動かしていない。
 - 2026-11-10: LICENSE（PolyForm Noncommercial 1.0.0）を足し、GitHub に公開リポジトリとして上げた。
 - 2026-11-10: 画面を Windows 向けに作り直した（開発者の依頼「ボタンが若干不便」）。原因：多くの画面がモデルの変化（ライブ取得・ログ読込み・アダプター探索で 1 秒に何度も）のたびにボタンを作り直し、押してから離すまでにボタンが消えてクリックが取りこぼされていた。対策：RenderGate（押している最中・メニューやドロップダウンを開いている間は作り直しを待たせる）と、描く内容の鍵が変わったときだけ作り直す方式を全画面に入れた。あわせて、ナビを 1 行・設定を下に、全画面共通の接続バー（接続・切断・ライブ表示）、戻る（ボタン・Alt+←・マウスの戻る）、履歴のパンくずと広い幅での一覧・詳細の 2 列、右クリックメニュー（セッション・整備記録・車両）、整備の「新しい記録」メニューと ListView、Ctrl+S・F5、設定を Windows 11 の設定アプリ風の行に。不具合も直した：車両の編集で写真を選ぶと入力が消えていた、PID 収集設定でスイッチを切り替えるたびに一覧が先頭に戻っていた。整備記録の削除に確認ダイアログを足した（モデルは確認なしで消すため）。ビルド警告 0、テスト 522 件合格、起動して応答することまで確認（画面の目視は未）。
 - 2026-11-10: Sign in with Apple と iCloud 同期を「近日対応（Coming Soon）」にした（開発者の指示）。機能フラグ AppleSignIn:Enabled（既定 false）を足し、ログイン画面と設定画面に押せないボタンと「近日対応」の印を出した。有効にしたときに、ローカルモードのデータを最初の Apple アカウントへ引き継ぐ処理（SqliteAccountDataReassignment と LocalAccountDataAdoptingAuthorizationPort）を作った。切り替えと引き継ぎのテスト 28 件を追加。docs/CLOUD_SETUP.md に有効にする手順のチェックリストを書いた。起動してログイン画面と設定画面（日本語・英語）を目で確かめた（screenshots/coming-soon/）。
@@ -32,6 +33,8 @@ README 確認済みのコミット: ae15a35（＋未コミットの画面の作�
 - 2026-11-10: iOS 版の CloudKit と認証の実装を調べ、Windows から同期する方式を設計した（下の「同期の設計メモ」）。
 
 ## 次にやること
+- Microsoft Store のベータ公開（docs/STORE_RELEASE.md の順に）。開発者の作業：①ロゴを作る（Assets/ はテンプレートの × 印のまま。審査で落ちる）、②プライバシーポリシーの URL、③Partner Center でアプリ名を予約し、製品 ID の値を `scripts/Set-PackageIdentity.ps1` でマニフェストに入れてコミットする（今は Publisher="CN=ryoku" の仮の値）、④既知のユーザー グループ、⑤Actions の「Release」を手で動かして作った .msixupload で最初の提出を手で行う（プライベート対象ユーザー）、⑥Entra のアプリと GitHub の Secrets・Variables（STORE_PRODUCT_ID など）を登録する。そのあとはタグ v1.2.3 の push で自動提出。
+- GitHub Actions のワークフローはまだ GitHub 上で一度も動かしていない。push したら CI と Release（手動実行、submit なし）が通るか確かめる。
 - 画面の作り直し（2026-11-10）を目で確かめる：接続バーの接続・切断、履歴の 2 列（幅 1100 以上）とパンくず・戻る、右クリックメニュー、整備の「新しい記録」と ↑↓ の選択、設定の行、ライブ取得中に分類ボタンを連打してもクリックが届くこと、暗い外観・英語・狭い幅（640）。
 - Services ID が発行されたら、docs/CLOUD_SETUP.md の「0. 有効にする手順（チェックリスト）」を順に進め、最後に AppleSignIn:Enabled を true にする。
 - 開発者の準備（docs/CLOUD_SETUP.md）：Apple Developer で Services ID とリダイレクト先の https ドメインを用意し、docs/web/ のページを置く。CloudKit Console で API トークン（Sign In Callback）を作り、AccountSettings と AccountSessionRevocation のスキーマを Production に反映する。appsettings.Local.json を置く。
@@ -40,7 +43,8 @@ README 確認済みのコミット: ae15a35（＋未コミットの画面の作�
 - iOS 版の設定とログアウト通知を CloudKit 化する（ProjectZD8 リポジトリ側の作業。下の設計案）。それまで設定とログアウト通知は iOS と同期しない。
 - 画面の細部：ローカルモードでも Garage の副題（「iPhone と同期します」）と整備の最終同期時刻（雲の記号つき）がクラウドに保存したように見える。ローカルモードでは出し分ける。
 - Application.Tests の中のメモリ上の代用リポジトリと PID 定義の写しを、Data の実装に置き換える（Application.Tests から Data を参照する）。未移植の往復テスト（testRoundTripBetweenIPhoneAndMacPreservesSharedArchiveMetadata）を移す。
-- ARM64 と x86 のビルド、Release（トリミングあり）での起動を確かめる。
+- ARM64 と x86 のビルドを確かめる（Store に出すのは今は x64 だけ）。
+- JSON を System.Text.Json のソース生成に移せば、トリミングを戻せるかもしれない（パッケージを小さくする）。急がない。
 
 ## 同期の設計メモ（iOS 版の実装から確認したこと）
 - コンテナは iCloud.Ryokugyoku.ProjectZD8 の private database（default zone）。
@@ -69,6 +73,11 @@ README 確認済みのコミット: ae15a35（＋未コミットの画面の作�
 - CloudKit Console で、スキーマを本番環境（Production）に反映する必要がある（開発者の作業）。
 
 ## 検討事項・未決定
+- Store の審査で、ログイン画面と設定画面の押せない「近日対応」ボタンが「機能が完全でない」と指摘されるかもしれない。指摘されたら、Coming Soon の間はボタンを隠すか → 開発者に確認。
+- 配布する CPU：今は x64 だけ。ARM64（Snapdragon の PC）も出すか → 開発者に確認。出すなら、ワークフローで ARM64 も作り、2 つの .msixupload を同じ提出に入れる工夫が要る（msstore publish は 1 ファイル）。
+- GitHub のリリースは、ベータの間は pre-release にしている。一般公開のあとに外すか。
+- .msixupload にシンボルが入らない（dotnet CLI では作れない）。Store のクラッシュ解析が読みにくい。要るなら Visual Studio の MSBuild でビルドする。
+- Windows App Certification Kit（WACK）は手元で動かしていない。Store の審査で同じ検査がある。
 - 画面の作り直しで、iOS 版と違う所：ホームの補足（ナビの 2 行目）はツールチップへ、詳細・解析の「戻る」ボタンはパンくずとシェルの戻るへ、設定の言語・外観はボタンの並びからドロップダウンへ、整備記録の削除は確認ダイアログを挟む。Windows の慣習に合わせたが、iOS と揃えたい所があるか → 開発者に確認。
 - 車両の編集で写真を選んだとき、iOS 版は下書きを置き換える（入力が消える）実装に見える。Windows 版は入力を残すようにした。iOS 側も直すか → 開発者に確認。
 - ローカルモードのデータの引き継ぎの注意点：①確認なしで自動で引き継ぐ（決定事項を参照）。②付け替え先に同じ ID の車両があれば上書きしない（元の持ち主に残る）。③引き継いだ走行ログが iCloud に上がるのは、自動アップロードの設定が有効なときだけ（無効なら履歴に手動アップロードのボタンが出る）。
@@ -95,9 +104,12 @@ README 確認済みのコミット: ae15a35（＋未コミットの画面の作�
   - Swift でクラッシュする入力（PID 定義の重複、範囲の min>max）は C# ではクラッシュしない（エラー表示・false になる）。
   - SessionLogAnalysisModel は表示用の配列をバッチごとにコピーする（とても長いログで遅くなる可能性）。
   - 計算式の中の漢数字（一 など）を Swift は数字として扱うが .NET は扱わない。double の NaN 同士の比較が等しくなる。日時の精度が 100ns 単位。
-- リモート（GitHub）にはまだ push していない。git の user.name / user.email は未設定（コミットは -c で Ryokugyoku を指定）。
+- GitHub（Ryokugyoku/ProjectZD8ForWindows）に push 済み。git の user.name / user.email は未設定（コミットは -c で Ryokugyoku を指定）。
 
 ## 決定事項
+- 2026-11-10: ベータ版は Microsoft Store のプライベート対象ユーザー（既知のユーザー グループ）で配る。一般公開のあとはパッケージ フライト（開発者の依頼「指定したユーザーのみにテスト公開」）。最初の提出だけ Partner Center で手で行う（Store の API は既存の提出を元にしか作れないため）。
+- 2026-11-10: リリースは GitHub Actions で自動にする（開発者の依頼）。タグ v1.2.3 の push で、テスト → x64 の .msixupload → GitHub の pre-release → msstore CLI（microsoft/microsoft-store-apppublisher）で Store に提出。パッケージのバージョンはタグから作る（1.2.3.0）。STORE_PRODUCT_ID が空なら提出しない。仮の Publisher のままなら提出しない。
+- 2026-11-10: Release でもトリミングしない（PublishTrimmed=False）。トリミングした Release のパッケージが起動直後に落ちた（Microsoft.UI.Xaml.dll、0xc000027b）。トリミングなしなら起動する。パッケージは約 80 MB。
 - 2026-11-10: Windows 版も iOS 版と同じ PolyForm Noncommercial License 1.0.0 にし、GitHub に公開リポジトリ（ProjectZD8ForWindows）として置く（開発者の指示）。LICENSE は iOS 版と同じ文面。
 - 2026-11-10: 画面は Windows の慣習を優先してよい（開発者の指示「機能を保てばレイアウトは大きく変えてよい」）。モデルが頻繁に変わる画面では、押している最中に作り直さない（RenderGate）ことを全画面の決まりにする。
 - 2026-11-10: ローカルモードのデータは、この PC で最初に Apple でサインインしたアカウントへ、確認のダイアログなしで自動で引き継ぐ（開発者の判断）。Windows のユーザーごとに 1 人が使う前提。家族で 1 台の PC を共有すると、先にサインインした人のアカウントに入る。

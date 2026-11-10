@@ -78,7 +78,11 @@
   <PropertyGroup>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
-    <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
+    <!--
+      トリミングはしない。テンプレートの既定（Release で True）のままだと、Store 用のパッケージが起動直後に
+      Microsoft.UI.Xaml.dll で落ちる（0xc000027b、2026-11-10 に確認）。System.Text.Json のリフレクション
+      （車両・整備記録・CloudKit の JSON）も IL2026 の警告どおり壊れうる。JSON をソース生成に移してから見直す。
+    -->
+    <PublishTrimmed>False</PublishTrimmed>
   </PropertyGroup>
 </Project>

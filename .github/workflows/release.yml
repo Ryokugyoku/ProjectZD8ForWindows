@@ -1,0 +1,133 @@
+# タグ v1.2.3 を push すると、テスト → Store 用パッケージ（.msixupload）の作成 → GitHub のリリース →
+# Microsoft Store への提出、を行う。手順と必要な設定は docs/STORE_RELEASE.md。
+#
+# リポジトリの Variables（Settings → Secrets and variables → Actions → Variables）：
+#   STORE_IDENTITY_NAME / STORE_PUBLISHER / STORE_PUBLISHER_DISPLAY_NAME
+#       Partner Center の「製品 ID」の値。Package.appxmanifest にコミット済みなら不要。
+#   STORE_PRODUCT_ID    Store の製品 ID（9N... の 12 文字）。空なら Store には提出しない。
+#   STORE_FLIGHT_ID     パッケージ フライトに出すときのフライト ID。空なら通常の提出。
+# Secrets：
+#   PARTNER_CENTER_TENANT_ID / PARTNER_CENTER_SELLER_ID / PARTNER_CENTER_CLIENT_ID / PARTNER_CENTER_CLIENT_SECRET
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: バージョン（例 1.2.3。パッケージは 1.2.3.0 になる）
+        required: true
+      submit:
+        description: Microsoft Store に提出する
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      PLATFORM: x64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Decide version
+        id: version
+        shell: pwsh
+        env:
+          RAW_VERSION: ${{ github.event_name == 'push' && github.ref_name || inputs.version }}
+        run: |
+          $v = $env:RAW_VERSION -replace '^v', ''
+          if ($v -notmatch '^\d{1,5}\.\d{1,5}\.\d{1,5}$') { throw "タグは v1.2.3 の形にする：'$env:RAW_VERSION'" }
+          "package=$v.0" >> $env:GITHUB_OUTPUT
+          "tag=v$v" >> $env:GITHUB_OUTPUT
+
+      - name: Set package identity and version
+        shell: pwsh
+        env:
+          STORE_IDENTITY_NAME: ${{ vars.STORE_IDENTITY_NAME }}
+          STORE_PUBLISHER: ${{ vars.STORE_PUBLISHER }}
+          STORE_PUBLISHER_DISPLAY_NAME: ${{ vars.STORE_PUBLISHER_DISPLAY_NAME }}
+        run: >
+          ./scripts/Set-PackageIdentity.ps1
+          -Version '${{ steps.version.outputs.package }}'
+          -IdentityName $env:STORE_IDENTITY_NAME
+          -Publisher $env:STORE_PUBLISHER
+          -PublisherDisplayName $env:STORE_PUBLISHER_DISPLAY_NAME
+
+      - name: Test
+        run: dotnet test ProjectZD8ForWindows.slnx -p:Platform=${{ env.PLATFORM }}
+
+      - name: Build Store package
+        shell: pwsh
+        run: |
+          # 開発者の秘密の設定がパッケージに入らないようにする（csproj はこのファイルがあると同梱する）。
+          if (Test-Path appsettings.Local.json) { throw 'appsettings.Local.json はパッケージに入れない' }
+          $out = Join-Path $env:RUNNER_TEMP 'AppPackages\'
+          # シンボル付きの .msixupload は dotnet CLI では作れない（mspdbcmf.exe がない）ので、シンボルは付けない。
+          dotnet publish ProjectZD8ForWindows.csproj -c Release `
+            -p:Platform=$env:PLATFORM -r "win-$($env:PLATFORM.ToLowerInvariant())" `
+            -p:GenerateAppxPackageOnBuild=true -p:UapAppxPackageBuildMode=StoreUpload `
+            -p:AppxBundle=Never -p:AppxPackageSigningEnabled=false -p:AppxSymbolPackageEnabled=false `
+            "-p:AppxPackageDir=$out"
+          if ($LASTEXITCODE -ne 0) { throw 'パッケージの作成に失敗' }
+          $upload = Get-ChildItem $out -Filter *.msixupload | Select-Object -First 1
+          if (-not $upload) { throw '.msixupload が見つからない' }
+          "UPLOAD_PATH=$($upload.FullName)" >> $env:GITHUB_ENV
+          Write-Host "$($upload.Name) ($([math]::Round($upload.Length / 1MB, 1)) MB)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store-package-${{ steps.version.outputs.tag }}
+          path: ${{ env.UPLOAD_PATH }}
+          if-no-files-found: error
+
+      - name: Create GitHub release
+        if: github.event_name == 'push'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # ベータの間は pre-release にする。.msixupload は署名なしで、Store に提出するためだけのもの。
+          gh release create '${{ steps.version.outputs.tag }}' $env:UPLOAD_PATH --generate-notes --prerelease
+
+      - name: Set up Microsoft Store Developer CLI
+        if: vars.STORE_PRODUCT_ID != '' && (github.event_name == 'push' || inputs.submit)
+        uses: microsoft/microsoft-store-apppublisher@v1.1
+
+      - name: Submit to Microsoft Store
+        if: vars.STORE_PRODUCT_ID != '' && (github.event_name == 'push' || inputs.submit)
+        shell: pwsh
+        env:
+          TENANT_ID: ${{ secrets.PARTNER_CENTER_TENANT_ID }}
+          SELLER_ID: ${{ secrets.PARTNER_CENTER_SELLER_ID }}
+          CLIENT_ID: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
+          PRODUCT_ID: ${{ vars.STORE_PRODUCT_ID }}
+          FLIGHT_ID: ${{ vars.STORE_FLIGHT_ID }}
+        run: |
+          foreach ($name in 'TENANT_ID', 'SELLER_ID', 'CLIENT_ID', 'CLIENT_SECRET') {
+            if (-not [Environment]::GetEnvironmentVariable($name)) { throw "Secret PARTNER_CENTER_$name がない" }
+          }
+          # 仮の Identity のまま提出しない（Partner Center の値と違うと受け付けられない）。
+          $identity = ([xml](Get-Content Package.appxmanifest -Raw)).Package.Identity
+          if ($identity.Publisher -notmatch '^CN=[0-9A-Fa-f-]{36}$') {
+            throw "Package.appxmanifest の Publisher が Partner Center の値になっていない：$($identity.Publisher)"
+          }
+          msstore reconfigure --tenantId $env:TENANT_ID --sellerId $env:SELLER_ID --clientId $env:CLIENT_ID --clientSecret $env:CLIENT_SECRET
+          if ($LASTEXITCODE -ne 0) { throw 'msstore reconfigure に失敗' }
+          $publishArgs = @('publish', '.', '--inputFile', $env:UPLOAD_PATH, '--appId', $env:PRODUCT_ID)
+          if ($env:FLIGHT_ID) { $publishArgs += @('--flightId', $env:FLIGHT_ID) }
+          msstore @publishArgs
+          if ($LASTEXITCODE -ne 0) { throw 'msstore publish に失敗' }

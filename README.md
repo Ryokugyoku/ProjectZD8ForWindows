@@ -20,6 +20,7 @@ CloudKit Web Services を通じて iOS 版とデータを同期します。
 | `scripts/ConvertXcstrings.cs` | iOS 版の `Localizable.xcstrings` と `Strings/WindowsOnly.xcstrings` から `.resw` を作る |
 | `docs/PORTING_CONVENTIONS.md` | Swift から C# に移すときの規約 |
 | `docs/CLOUD_SETUP.md`、`docs/web/` | iCloud 同期と Sign in with Apple の準備（開発者向け）と、サインイン後に戻るページの見本 |
+| `docs/STORE_RELEASE.md`、`.github/workflows/`、`scripts/Set-PackageIdentity.ps1` | Microsoft Store への公開（プライベート対象ユーザーでのベータ配布）と、GitHub Actions のビルド・テスト・自動リリース |
 
 アプリ本体の csproj はリポジトリのルートにあるので、`src/`・`tests/`・`tools/`・`scripts/` の中のファイルはアプリのビルド対象から外しています。
 技術的な識別子（名前空間、プロジェクト名）は、iOS 版と同じく `ProjectZD8` を使います。
@@ -76,6 +77,15 @@ dotnet test ProjectZD8ForWindows.slnx -p:Platform=x64
 
 アプリ本体は Visual Studio で `ProjectZD8ForWindows.slnx` を開き、プラットフォーム（x64 など）を選んで実行します。
 コマンドラインでは、ビルドしたあと `Add-AppxPackage -Register bin\x64\Debug\net10.0-windows10.0.19041.0\win-x64\AppxManifest.xml` で登録してスタートメニューから起動できます。
+
+Release ビルドはトリミングしません（トリミングすると起動直後に落ちるため）。
+
+## リリース
+
+タグ `v1.2.3` を push すると、GitHub Actions がテストし、Store 用のパッケージ（x64 の `.msixupload`）を作り、Microsoft Store に提出します。
+今はプライベート対象ユーザー（指定した Microsoft アカウントだけ）に向けたベータ配布です。最初の 1 回の手作業と必要な設定は [docs/STORE_RELEASE.md](docs/STORE_RELEASE.md) を見てください。
+
+## 翻訳と性能測定
 
 翻訳を作り直すとき（iOS 版を `..\ProjectZD8` に clone してあるとき）：
 

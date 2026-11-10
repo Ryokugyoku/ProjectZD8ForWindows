@@ -19,7 +19,9 @@ namespace ProjectZD8ForWindows.Platform.Windows.Features.VehicleManagement.Views
 /// </summary>
 /// <remarks>
 /// 入力中の値は画面の一時的な下書きとして持ち、保存のときに <see cref="VehicleManagementAction.VehicleSaved"/> で送ります。
-/// モデルの編集中の車両が変わったら（写真を選んだときなど）、iOS 版と同じく下書きをそれに置き換えます。
+/// モデルの編集中の車両が変わったら（写真を選んだときなど）、変わった写真だけを下書きへ取り込み、入力中の名前などは残します
+/// （<see cref="ApplyExternalChange"/>。以前は下書きごと置き換えていたので、写真を選ぶと入力が消えていた）。
+/// 保存は Ctrl+S でもできます。
 /// </remarks>
 public sealed partial class WindowsVehicleEditorView : UserControl
 {
@@ -27,7 +29,10 @@ public sealed partial class WindowsVehicleEditorView : UserControl
     private readonly Action<VehicleManagementAction> _send;
 
     /// <summary>モデルの編集中の車両です。</summary>
-    private readonly VehicleProfile _vehicle;
+    private VehicleProfile _vehicle;
+
+    /// <summary>写真の枠です。</summary>
+    private readonly Grid _photoFrame = new() { Height = 360, CornerRadius = new CornerRadius(20) };
 
     /// <summary>画面の一時的な状態：入力中の下書きです。</summary>
     private VehicleProfile _draft;
@@ -65,6 +70,11 @@ public sealed partial class WindowsVehicleEditorView : UserControl
         _saveButton.Content = saveContent;
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(_saveButton, LocalizedText.Get("garage.save"));
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(_saveButton, "windows-vehicle-editor-save");
+        _saveButton.KeyboardAccelerators.Add(new Microsoft.UI.Xaml.Input.KeyboardAccelerator
+        {
+            Key = global::Windows.System.VirtualKey.S,
+            Modifiers = global::Windows.System.VirtualKeyModifiers.Control,
+        });
         _saveButton.Click += (_, _) => _send(new VehicleManagementAction.VehicleSaved(_draft));
         _photoTitle = Typography.Text(string.Empty, "SubtitleTextBlockStyle", new SolidColorBrush(Color.FromArgb(255, 255, 255, 255)));
 
@@ -140,7 +150,40 @@ public sealed partial class WindowsVehicleEditorView : UserControl
     /// <returns>表示の要素。</returns>
     private StackPanel PhotoPanel()
     {
-        var frame = new Grid { Height = 360, CornerRadius = new CornerRadius(20) };
+        RenderPhotoFrame();
+        var choose = new Button { Content = new GlyphLabel(FluentSymbol.Camera, LocalizedText.Get("garage.photo.choose")), HorizontalAlignment = HorizontalAlignment.Stretch, MinHeight = 40 };
+        choose.Click += async (_, _) =>
+        {
+            if (await ImageFilePicker.PickAsync(XamlRoot) is { } url)
+            {
+                _send(new VehicleManagementAction.PhotoSelected(url));
+            }
+        };
+        var stack = new StackPanel { Spacing = 15 };
+        stack.Children.Add(_photoFrame);
+        stack.Children.Add(choose);
+        return stack;
+    }
+
+    /// <summary>
+    /// モデル側で車両が変わったとき（写真を選んだときなど）に、入力中の内容を残したまま取り込みます。
+    /// </summary>
+    /// <remarks>責務: 写真だけを下書きへ写して描き直します。名前などの入力中の欄は作り直しません。</remarks>
+    /// <param name="vehicle">モデル側の最新の車両。</param>
+    public void ApplyExternalChange(VehicleProfile vehicle)
+    {
+        _vehicle = vehicle;
+        _draft = _draft with { PhotoData = vehicle.PhotoData };
+        RenderPhotoFrame();
+    }
+
+    /// <summary>写真の枠を描きます。</summary>
+    /// <remarks>責務: 下書きの写真（なければグラデーションと車の記号）と、名前・識別子の帯を枠に入れます。</remarks>
+    private void RenderPhotoFrame()
+    {
+        var frame = _photoFrame;
+        frame.Children.Clear();
+        frame.Background = null;
         if (_draft.PhotoData is { } data)
         {
             frame.Children.Add(BytesImage.Create(data, 800));
@@ -160,21 +203,10 @@ public sealed partial class WindowsVehicleEditorView : UserControl
         shade.GradientStops.Add(new GradientStop { Color = Color.FromArgb(209, 0, 0, 0), Offset = 1 });
         frame.Children.Add(new Border { Background = shade });
         var caption = new StackPanel { Spacing = 4, VerticalAlignment = VerticalAlignment.Bottom, Padding = new Thickness(18) };
+        (_photoTitle.Parent as Panel)?.Children.Remove(_photoTitle);
         caption.Children.Add(_photoTitle);
         caption.Children.Add(Typography.Text(_draft.DisplayIdentifier, "MonospaceCaptionTextStyle", new SolidColorBrush(Color.FromArgb(178, 255, 255, 255)), wraps: false));
         frame.Children.Add(caption);
-        var choose = new Button { Content = new GlyphLabel(FluentSymbol.Camera, LocalizedText.Get("garage.photo.choose")), HorizontalAlignment = HorizontalAlignment.Stretch, MinHeight = 40 };
-        choose.Click += async (_, _) =>
-        {
-            if (await ImageFilePicker.PickAsync(XamlRoot) is { } url)
-            {
-                _send(new VehicleManagementAction.PhotoSelected(url));
-            }
-        };
-        var stack = new StackPanel { Spacing = 15 };
-        stack.Children.Add(frame);
-        stack.Children.Add(choose);
-        return stack;
     }
 
     /// <summary>入力のカードの列を作ります。</summary>

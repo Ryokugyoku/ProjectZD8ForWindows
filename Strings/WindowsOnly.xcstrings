@@ -131,6 +131,102 @@
         "es" : { "stringUnit" : { "state" : "translated", "value" : "Ahora no" } },
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "あとで" } }
       }
+    },
+    "windows.shell.connection.connected" : {
+      "comment" : "Windows 版だけ。画面上部の接続バー：車両に接続していて、ライブ取得中のとき。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connected" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Conectado" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "接続中" } }
+      }
+    },
+    "windows.shell.connection.disconnecting" : {
+      "comment" : "Windows 版だけ。画面上部の接続バー：切断の処理中。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Disconnecting…" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Desconectando…" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "切断しています…" } }
+      }
+    },
+    "windows.shell.open_live" : {
+      "comment" : "Windows 版だけ。画面上部の接続バー：リアルタイムログの画面を開くボタン。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open live view" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ver en directo" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ライブを表示" } }
+      }
+    },
+    "windows.maintenance.new" : {
+      "comment" : "Windows 版だけ。整備記録の一覧の上の「新規」ボタン（軽整備・重整備を選ぶメニューを開く）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New record" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nuevo registro" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "新しい記録" } }
+      }
+    },
+    "windows.history.open_detail" : {
+      "comment" : "Windows 版だけ。接続履歴のセッションの右クリックメニュー：詳細を開く。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open details" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrir detalles" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "詳細を開く" } }
+      }
+    },
+    "windows.history.select_session" : {
+      "comment" : "Windows 版だけ。接続履歴を 2 列で出すとき、右側にセッションを選ぶ前に出す案内。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Select a session to see its details here." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Selecciona una sesión para ver sus detalles aquí." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "セッションを選ぶと、ここに詳細が表示されます。" } }
+      }
+    },
+    "windows.settings.group.general" : {
+      "comment" : "Windows 版だけ。設定画面の見出し：言語と外観。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "General" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "General" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "全般" } }
+      }
+    },
+    "windows.settings.group.connection" : {
+      "comment" : "Windows 版だけ。設定画面の見出し：アダプター。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connection" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Conexión" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "接続" } }
+      }
+    },
+    "windows.settings.group.data" : {
+      "comment" : "Windows 版だけ。設定画面の見出し：アップロードと iCloud 同期。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Data and sync" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Datos y sincronización" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "データと同期" } }
+      }
+    },
+    "windows.settings.group.account" : {
+      "comment" : "Windows 版だけ。設定画面の見出し：アカウントの削除。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Account" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuenta" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "アカウント" } }
+      }
+    },
+    "windows.maintenance.delete.title" : {
+      "comment" : "Windows 版だけ。整備記録を削除する前の確認ダイアログの題。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete this service record?" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Eliminar este registro de mantenimiento?" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "この整備記録を削除しますか？" } }
+      }
+    },
+    "windows.maintenance.delete.message" : {
+      "comment" : "Windows 版だけ。整備記録を削除する前の確認ダイアログの本文。%@ は記録の題。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "“%@” will be deleted. This can't be undone." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Se eliminará «%@». Esta acción no se puede deshacer." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "「%@」を削除します。この操作は取り消せません。" } }
+      }
     }
   },
   "version" : "1.0"

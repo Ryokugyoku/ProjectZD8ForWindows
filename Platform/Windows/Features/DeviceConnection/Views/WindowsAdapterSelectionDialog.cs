@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ProjectZD8.Domain.ValueObjects;
@@ -29,6 +30,15 @@ public sealed class WindowsAdapterSelectionDialog
     /// <summary>通信方式の選択を画面の都合で変えている最中かどうかです。</summary>
     private bool _isRendering;
 
+    /// <summary>中身を描いたダイアログです。</summary>
+    private ContentDialog? _renderedDialog;
+
+    /// <summary>最後に描いた中身の鍵です。</summary>
+    private string? _renderedKey;
+
+    /// <summary>ダイアログの中で押している最中の作り直しを待たせる仕組みです。</summary>
+    private RenderGate? _gate;
+
     /// <summary>操作の送り先を指定して作ります。</summary>
     /// <param name="send">設定画面の操作の送り先。</param>
     public WindowsAdapterSelectionDialog(Action<WindowsSettingsAction> send)
@@ -53,6 +63,24 @@ public sealed class WindowsAdapterSelectionDialog
             _ => _send(new WindowsSettingsAction.AdapterSelectionCancelled()));
         if (_dialog.Current is { } dialog && state.PresentedAdapterSlot is { } slot)
         {
+            // 中身に関係のある所が変わったときだけ、押している最中でなければ作り直す（探索の結果が届くたびに候補のボタンが消えないように）。
+            var key = string.Join(
+                "|",
+                new object?[] { slot, state.InspectedAdapter?.SystemIdentifier, state.HasAdapterAssignmentConflict, state.AdapterDiscoveryStatus, state.AdapterTransportMode }
+                    .Concat(state.DiscoveredAdapters.Select(adapter => (object)$"{adapter.SystemIdentifier}:{adapter.DisplayName}")));
+            if (!ReferenceEquals(dialog, _renderedDialog))
+            {
+                _renderedDialog = dialog;
+                _renderedKey = null;
+                _gate = new RenderGate(dialog, watchesPopups: false);
+            }
+
+            if (key == _renderedKey || _gate?.TryDefer(() => Render(_state, dialog.XamlRoot)) == true)
+            {
+                return;
+            }
+
+            _renderedKey = key;
             _isRendering = true;
             if (state.InspectedAdapter is { } adapter)
             {

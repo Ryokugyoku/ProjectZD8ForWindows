@@ -40,6 +40,15 @@ public sealed class WindowsVehiclePIDSettingsDialog
     /// <summary>画面の一時的な状態：絞り込みです。</summary>
     private WindowsPIDCollectionFilter _filter = WindowsPIDCollectionFilter.All;
 
+    /// <summary>出している行の記号とスイッチです（作り直さずに値だけを合わせるため）。</summary>
+    private readonly Dictionary<OBDPIDRequest, (FontIcon Icon, ToggleSwitch Toggle)> _rows = [];
+
+    /// <summary>最後に作った一覧の並びの鍵です。</summary>
+    private string? _listKey;
+
+    /// <summary>スイッチを画面の都合で動かしている最中かどうかです。</summary>
+    private bool _isUpdating;
+
     /// <summary>操作の送り先を指定して作ります。</summary>
     /// <param name="send">車両管理の操作の送り先。</param>
     public WindowsVehiclePIDSettingsDialog(Action<VehicleManagementAction> send)
@@ -72,6 +81,8 @@ public sealed class WindowsVehiclePIDSettingsDialog
     {
         _query = string.Empty;
         _filter = WindowsPIDCollectionFilter.All;
+        _listKey = null;
+        _rows.Clear();
         var body = new StackPanel { Spacing = 14, Width = 600 };
         _summary = Typography.Text(string.Empty, "SecondaryCaptionTextStyle");
         body.Children.Add(_summary);
@@ -118,8 +129,33 @@ public sealed class WindowsVehiclePIDSettingsDialog
         }
 
         _summary.Text = LocalizedText.Format("garage.pid_settings.summary %lld %lld", _items.Count(item => item.IsEnabled), _items.Count);
-        _listHost.Children.Clear();
         var filtered = _items.Where(item => _filter.Matches(item) && MatchesQuery(item)).ToList();
+        var key = string.Join(",", filtered.Select(item => ServicePIDText(item.Id))) + "|" + _query;
+        if (key == _listKey && filtered.Count > 0)
+        {
+            // 並びが同じなら作り直さず、スイッチと記号だけを合わせる（スクロールの位置と、切り替えたスイッチを保つ）。
+            _isUpdating = true;
+            foreach (var item in filtered)
+            {
+                if (_rows.TryGetValue(item.Id, out var row))
+                {
+                    if (row.Toggle.IsOn != item.IsEnabled)
+                    {
+                        row.Toggle.IsOn = item.IsEnabled;
+                    }
+
+                    row.Icon.Glyph = item.IsEnabled ? FluentSymbol.Pulse : FluentSymbol.Pause;
+                    row.Icon.Foreground = DesignTokens.Foreground(item.IsEnabled ? Tone.Success : Tone.Neutral);
+                }
+            }
+
+            _isUpdating = false;
+            return;
+        }
+
+        _listKey = key;
+        _rows.Clear();
+        _listHost.Children.Clear();
         if (filtered.Count == 0)
         {
             _listHost.Children.Add(new ContentUnavailablePanel(
@@ -145,13 +181,14 @@ public sealed class WindowsVehiclePIDSettingsDialog
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.Children.Add(new FontIcon
+        var icon = new FontIcon
         {
             Glyph = item.IsEnabled ? FluentSymbol.Pulse : FluentSymbol.Pause,
             FontSize = 16,
             Foreground = DesignTokens.Foreground(item.IsEnabled ? Tone.Success : Tone.Neutral),
             VerticalAlignment = VerticalAlignment.Center,
-        });
+        };
+        grid.Children.Add(icon);
         var texts = new StackPanel { Spacing = 3 };
         texts.Children.Add(Typography.Text(Name(item), "BodyStrongTextBlockStyle"));
         texts.Children.Add(Typography.Text(ServicePIDText(item.Id), "MonospaceCaptionTextStyle", wraps: false));
@@ -172,9 +209,16 @@ public sealed class WindowsVehiclePIDSettingsDialog
             MinWidth = 0,
         };
         var request = item.Id;
-        toggle.Toggled += (_, _) => _send(new VehicleManagementAction.PidCollectionChanged(request, toggle.IsOn));
+        toggle.Toggled += (_, _) =>
+        {
+            if (!_isUpdating)
+            {
+                _send(new VehicleManagementAction.PidCollectionChanged(request, toggle.IsOn));
+            }
+        };
         Grid.SetColumn(toggle, 3);
         grid.Children.Add(toggle);
+        _rows[request] = (icon, toggle);
         return grid;
     }
 

@@ -29,8 +29,8 @@ public sealed partial class WindowsSessionLogAnalysisView : UserControl
     /// <summary>解析のモデルです。</summary>
     private readonly SessionLogAnalysisModel _model;
 
-    /// <summary>セッション詳細へ戻る処理です。</summary>
-    private readonly Action _back;
+    /// <summary>操作中の作り直しを待たせる仕組みです（読込みの進み具合で 1 秒に何度も描き直すため）。</summary>
+    private readonly RenderGate _gate;
 
     /// <summary>ページの中身です。</summary>
     private readonly StackPanel _page = new() { Spacing = 20 };
@@ -50,13 +50,13 @@ public sealed partial class WindowsSessionLogAnalysisView : UserControl
     /// <summary>セッションとモデルを受け取って解析画面を作ります。</summary>
     /// <param name="session">解析するセッション。</param>
     /// <param name="model">解析のモデル。</param>
-    /// <param name="back">セッション詳細へ戻る処理。</param>
-    public WindowsSessionLogAnalysisView(ConnectionSession session, SessionLogAnalysisModel model, Action back)
+    /// <remarks>セッション詳細へ戻るのは、接続履歴の画面のパンくずとシェルの戻る操作で行います。</remarks>
+    public WindowsSessionLogAnalysisView(ConnectionSession session, SessionLogAnalysisModel model)
     {
         _session = session;
         _model = model;
-        _back = back;
         Content = _page;
+        _gate = new RenderGate(this);
         Loaded += (_, _) =>
         {
             _model.PropertyChanged += OnModelChanged;
@@ -80,19 +80,19 @@ public sealed partial class WindowsSessionLogAnalysisView : UserControl
     private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => Render();
 
     /// <summary>解析画面を描きます。</summary>
-    /// <remarks>責務: 戻る、見出し、件数の要約、表示の切り替え、選んだ表示の中身を作ります。</remarks>
+    /// <remarks>責務: 見出し、件数の要約、表示の切り替え、選んだ表示の中身を作ります。押している最中やドロップダウンを開いている間は待ちます。</remarks>
     private void Render()
     {
+        if (_gate.TryDefer(Render))
+        {
+            return;
+        }
+
         _isRendering = true;
         var state = _model.State;
         _selectedSeriesID ??= state.PidSeries.FirstOrDefault()?.Id;
         _selectedRelationshipID ??= state.Relationships.FirstOrDefault()?.Id;
         _page.Children.Clear();
-        var back = new Button { Content = new FontIcon { Glyph = FluentSymbol.Back, FontSize = 14 }, Width = 44, Height = 44 };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(back, LocalizedText.Get("analysis.back.session"));
-        ToolTipService.SetToolTip(back, LocalizedText.Get("analysis.back.session"));
-        back.Click += (_, _) => _back();
-        _page.Children.Add(back);
         _page.Children.Add(Hero());
         _page.Children.Add(Summary(state));
         _page.Children.Add(ModePicker());

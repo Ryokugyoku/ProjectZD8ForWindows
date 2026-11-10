@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
@@ -15,10 +16,20 @@ namespace ProjectZD8ForWindows.Platform.Windows.Features.Maintenance.Views;
 /// <summary>
 /// 整備記録の画面です。左に車両ごとの記録の時系列、右に概要か編集を出します（iOS 版の <c>MacOSMaintenanceView</c>）。
 /// </summary>
+/// <remarks>
+/// 左の一覧は Windows の ListView なので、選んでいる記録が強調され、↑↓ キーでも選べます。右クリックで編集・削除ができます。
+/// 「新しい記録」のメニューは一覧の上にいつも出しておき、編集中でもすぐに次の記録を作れます。
+/// </remarks>
 public sealed partial class WindowsMaintenanceView : UserControl
 {
     /// <summary>整備記録のモデルです。</summary>
     private readonly MaintenanceModel _model;
+
+    /// <summary>操作中の作り直しを待たせる仕組みです。</summary>
+    private readonly RenderGate _gate;
+
+    /// <summary>削除の確認です。</summary>
+    private readonly StateBoundDialog _deletionDialog = new();
 
     /// <summary>表示中の編集画面です（同じ記録の編集中は作り直さない）。</summary>
     private WindowsMaintenanceEditorView? _editor;
@@ -26,38 +37,72 @@ public sealed partial class WindowsMaintenanceView : UserControl
     /// <summary>描いている最中かどうかです（描画中のイベントを無視するため）。</summary>
     private bool _isRendering;
 
+    /// <summary>最後に描いた時系列の鍵です（編集中の入力のたびに一覧を作り直さないため）。</summary>
+    private string? _timelineKey;
+
+    /// <summary>削除を確かめている記録です。</summary>
+    private MaintenanceRecord? _deletionCandidate;
+
     /// <summary>整備記録のモデルを受け取って画面を作ります。</summary>
     /// <param name="model">整備記録のモデル。</param>
     public WindowsMaintenanceView(MaintenanceModel model)
     {
         _model = model;
         InitializeComponent();
+        _gate = new RenderGate(this);
         Loaded += (_, _) =>
         {
             _model.PropertyChanged += OnModelChanged;
+            _timelineKey = null;
             Render();
         };
         Unloaded += (_, _) => _model.PropertyChanged -= OnModelChanged;
     }
 
+    /// <summary>
+    /// 整備記録を削除してよいか尋ねます。
+    /// </summary>
+    /// <remarks>責務: 取り消せない削除の前に、記録の題を入れた確認を出します（モデルは確かめずに消すため、画面で確かめる）。</remarks>
+    /// <param name="dialog">確認を出し入れする仕組み。</param>
+    /// <param name="xamlRoot">出す先。</param>
+    /// <param name="title">記録の題。</param>
+    /// <param name="key">確認の鍵（記録）。</param>
+    /// <param name="closed">閉じたときの処理。削除してよいなら true を受け取る。</param>
+    public static void SyncDeletionDialog(StateBoundDialog dialog, XamlRoot? xamlRoot, string? title, object? key, Action<bool> closed)
+    {
+        dialog.Sync(key is not null, key, xamlRoot, () => new ContentDialog
+        {
+            Title = LocalizedText.Get("windows.maintenance.delete.title"),
+            Content = Typography.Text(LocalizedText.Format("windows.maintenance.delete.message", title ?? string.Empty), "BodyTextBlockStyle"),
+            PrimaryButtonText = LocalizedText.Get("maintenance.delete"),
+            PrimaryButtonStyle = DesignTokens.Style("DangerButtonStyle"),
+            CloseButtonText = LocalizedText.Get("maintenance.cancel"),
+            DefaultButton = ContentDialogButton.Close,
+        }, result => closed(result == ContentDialogResult.Primary));
+    }
+
     /// <summary>モデルが変わったときの処理です。</summary>
-    /// <remarks>責務: 画面を描き直します。</remarks>
     /// <param name="sender">送り元。</param>
     /// <param name="e">変更の内容。</param>
     private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => Render();
 
     /// <summary>画面を描きます。</summary>
-    /// <remarks>責務: 時系列の列と、編集中なら編集画面、そうでなければ概要を出します。</remarks>
+    /// <remarks>責務: 時系列（変わったときだけ）と、右側の概要か編集を描き、削除の確認を合わせます。</remarks>
     private void Render()
     {
-        _isRendering = true;
         var state = _model.State;
-        RenderTimeline(state);
+        _isRendering = true;
+        if (TimelineKey(state) != _timelineKey && !_gate.TryDefer(Render))
+        {
+            _timelineKey = TimelineKey(state);
+            RenderTimeline(state);
+        }
+
         if (state.Draft is { } draft)
         {
             if (_editor is null || !_editor.Shows(draft))
             {
-                _editor = new WindowsMaintenanceEditorView(draft, _model);
+                _editor = new WindowsMaintenanceEditorView(draft, _model, RequestDeletion);
                 DetailHost.Child = _editor;
             }
 
@@ -69,27 +114,74 @@ public sealed partial class WindowsMaintenanceView : UserControl
             DetailHost.Child = Overview(state);
         }
 
+        SelectCurrentRecord(state);
         _isRendering = false;
+        SyncDeletionDialog(_deletionDialog, XamlRoot, _deletionCandidate?.Title, _deletionCandidate?.Id, confirmed =>
+        {
+            var candidate = _deletionCandidate;
+            _deletionCandidate = null;
+            if (confirmed && candidate is not null)
+            {
+                _model.Send(new MaintenanceAction.DeleteRequested(candidate.Id));
+            }
+        });
     }
 
-    /// <summary>時系列の列を描きます。</summary>
-    /// <remarks>責務: 題、同期のボタン、車両と種類の絞り込み、同期の状態、記録の行を作ります。</remarks>
+    /// <summary>記録の削除を確かめます。</summary>
+    /// <param name="id">記録。</param>
+    private void RequestDeletion(MaintenanceRecordID id)
+    {
+        _deletionCandidate = _model.State.Records.FirstOrDefault(record => record.Id == id)
+            ?? _model.State.VisibleRecords.FirstOrDefault(record => record.Id == id);
+        if (_deletionCandidate is null)
+        {
+            _model.Send(new MaintenanceAction.DeleteRequested(id));
+            return;
+        }
+
+        Render();
+    }
+
+    /// <summary>時系列を作り直すかを見分ける鍵を作ります。</summary>
+    /// <param name="state">整備記録の状態。</param>
+    /// <returns>鍵。</returns>
+    private static string TimelineKey(MaintenanceState state) => string.Join(
+        "|",
+        new object?[]
+        {
+            state.Phase == MaintenanceStatePhase.Syncing,
+            state.Draft is null ? state.FailureKey : null,
+            state.SelectedVehicleID,
+            state.KindFilter,
+            state.Draft is null,
+        }
+        .Concat(state.Vehicles.Select(vehicle => (object)$"{vehicle.Id}:{vehicle.Name}"))
+        .Concat(state.VisibleRecords.Select(record => (object)$"{record.Id}:{record.Title}:{record.PerformedAt.UtcTicks}:{record.Kind}:{record.WorkItems.Count}:{record.Photos.Count}")));
+
+    /// <summary>時系列を描きます。</summary>
+    /// <remarks>責務: 見出しと「新しい記録」・同期のボタン、車両の選択、種類の絞り込み、同期の状態、記録の一覧を作ります。</remarks>
     /// <param name="state">整備記録の状態。</param>
     private void RenderTimeline(MaintenanceState state)
     {
         TimelineHeader.Children.Clear();
-        var head = new Grid();
+        var head = new Grid { ColumnSpacing = 6 };
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         var titles = new StackPanel { Spacing = 3 };
         titles.Children.Add(Typography.Text(LocalizedText.Get("sidebar.maintenance"), "SubtitleTextBlockStyle"));
         titles.Children.Add(Typography.Text(LocalizedText.Get("maintenance.subtitle"), "SecondaryCaptionTextStyle"));
         head.Children.Add(titles);
+        var create = NewRecordButton(state);
+        Grid.SetColumn(create, 1);
+        head.Children.Add(create);
         var sync = new Button { Content = new FontIcon { Glyph = FluentSymbol.Refresh, FontSize = 14 }, IsEnabled = state.Phase != MaintenanceStatePhase.Syncing, VerticalAlignment = VerticalAlignment.Top };
-        ToolTipService.SetToolTip(sync, LocalizedText.Get("maintenance.sync"));
+        ToolTipService.SetToolTip(sync, LocalizedText.Get("maintenance.sync") + " (F5)");
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(sync, LocalizedText.Get("maintenance.sync"));
         sync.Click += (_, _) => _model.Send(new MaintenanceAction.RefreshRequested());
-        Grid.SetColumn(sync, 1);
+        sync.KeyboardAccelerators.Add(new Microsoft.UI.Xaml.Input.KeyboardAccelerator { Key = global::Windows.System.VirtualKey.F5 });
+        sync.KeyboardAcceleratorPlacementMode = Microsoft.UI.Xaml.Input.KeyboardAcceleratorPlacementMode.Hidden;
+        Grid.SetColumn(sync, 2);
         head.Children.Add(sync);
         TimelineHeader.Children.Add(head);
 
@@ -146,48 +238,118 @@ public sealed partial class WindowsMaintenanceView : UserControl
             TimelineHeader.Children.Add(new GlyphLabel(FluentSymbol.Cloud, LocalizedText.Get(failureKey), "CaptionTextBlockStyle", DesignTokens.Foreground(Tone.Caution)));
         }
 
-        RecordList.Children.Clear();
+        RecordList.Items.Clear();
         foreach (var record in state.VisibleRecords)
         {
-            RecordList.Children.Add(RecordRow(record));
+            RecordList.Items.Add(RecordRow(record));
         }
 
-        if (state.VisibleRecords.Count == 0)
-        {
-            RecordList.Children.Add(new ContentUnavailablePanel(FluentSymbol.Repair, LocalizedText.Get("maintenance.empty.title")));
-        }
+        EmptyHost.Content = state.VisibleRecords.Count == 0
+            ? new ContentUnavailablePanel(FluentSymbol.Repair, LocalizedText.Get("maintenance.empty.title"))
+            : null;
     }
 
-    /// <summary>記録の行を作ります。</summary>
-    /// <remarks>責務: 種類の記号・題・実施日・作業と写真の数を出し、押すと編集を始めるボタンを作ります。</remarks>
-    /// <param name="record">整備記録。</param>
+    /// <summary>「新しい記録」のボタン（軽整備・重整備を選ぶメニュー）を作ります。</summary>
+    /// <param name="state">整備記録の状態。</param>
     /// <returns>ボタン。</returns>
-    private Button RecordRow(MaintenanceRecord record)
+    private DropDownButton NewRecordButton(MaintenanceState state)
     {
-        var grid = new Grid { ColumnSpacing = 11 };
+        var menu = new MenuFlyout { Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedRight };
+        foreach (var kind in MaintenanceKindRawValue.AllCases)
+        {
+            var item = new MenuFlyoutItem
+            {
+                Text = LocalizedText.Get(kind.LocalizationKey()),
+                Icon = new FontIcon { Glyph = KindGlyph(kind), Foreground = DesignTokens.Foreground(KindTone(kind)) },
+            };
+            var selected = kind;
+            item.Click += (_, _) => _model.Send(new MaintenanceAction.CreateRequested(selected));
+            menu.Items.Add(item);
+        }
+
+        var button = new DropDownButton
+        {
+            Content = new FontIcon { Glyph = FluentSymbol.Add, FontSize = 14 },
+            Flyout = menu,
+            IsEnabled = state.SelectedVehicleID is not null,
+            VerticalAlignment = VerticalAlignment.Top,
+            Style = DesignTokens.Style("AccentButtonStyle"),
+        };
+        ToolTipService.SetToolTip(button, LocalizedText.Get("windows.maintenance.new"));
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, LocalizedText.Get("windows.maintenance.new"));
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-maintenance-new");
+        return button;
+    }
+
+    /// <summary>記録の 1 行を作ります。</summary>
+    /// <param name="record">記録。</param>
+    /// <returns>一覧の項目。</returns>
+    private ListViewItem RecordRow(MaintenanceRecord record)
+    {
+        var grid = new Grid { ColumnSpacing = 11, Padding = new Thickness(0, 8, 0, 8) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.Children.Add(IconTile.Create(KindGlyph(record.Kind), KindTone(record.Kind), 32));
-        var texts = new StackPanel { Spacing = 3 };
+        var texts = new StackPanel { Spacing = 2 };
         texts.Children.Add(Typography.Text(record.Title, "BodyStrongTextBlockStyle", wraps: false));
         texts.Children.Add(Typography.Text(DateText.DateOnly(record.PerformedAt), "SecondaryCaptionTextStyle"));
         texts.Children.Add(Typography.Text(LocalizedText.Format("%lld · %lld", record.WorkItems.Count, record.Photos.Count), "SecondaryCaptionTextStyle"));
         Grid.SetColumn(texts, 1);
         grid.Children.Add(texts);
-        var chevron = new FontIcon { Glyph = FluentSymbol.ChevronRight, FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
-        Grid.SetColumn(chevron, 2);
-        grid.Children.Add(chevron);
-        var button = new Button { Content = grid, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(12) };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, record.Title);
-        button.Click += (_, _) => _model.Send(new MaintenanceAction.EditRequested(record.Id));
-        return button;
+        var id = record.Id;
+        grid.Tag = id;
+        var item = new ListViewItem
+        {
+            Content = grid,
+            Tag = id,
+            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+            ContextFlyout = new ContextMenu()
+                .Item(FluentSymbol.Edit, LocalizedText.Get("garage.edit"), () => _model.Send(new MaintenanceAction.EditRequested(id)))
+                .Separator()
+                .Item(FluentSymbol.Delete, LocalizedText.Get("maintenance.delete"), () => RequestDeletion(id), Tone.Danger)
+                .Build(),
+        };
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(item, record.Title);
+        return item;
     }
 
-    /// <summary>概要（編集していないとき）を作ります。</summary>
-    /// <remarks>責務: 説明と、軽整備・重整備の記録を始めるボタン、最後に同期した日時を出します。</remarks>
+    /// <summary>一覧の選択を、編集中の記録に合わせます。</summary>
     /// <param name="state">整備記録の状態。</param>
-    /// <returns>表示の要素。</returns>
+    private void SelectCurrentRecord(MaintenanceState state)
+    {
+        var editing = state.Draft?.RecordID;
+        var target = RecordList.Items.OfType<ListViewItem>().FirstOrDefault(item => editing is { } id && item.Tag is MaintenanceRecordID tag && tag == id);
+        if (!ReferenceEquals(RecordList.SelectedItem, target))
+        {
+            RecordList.SelectedItem = target;
+        }
+    }
+
+    /// <summary>記録を押したときの処理です（選び直しでなくても、押せば編集を開く）。</summary>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">押した項目。</param>
+    private void OnRecordClicked(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is FrameworkElement { Tag: MaintenanceRecordID id } && _model.State.Draft?.RecordID != id)
+        {
+            _model.Send(new MaintenanceAction.EditRequested(id));
+        }
+    }
+
+    /// <summary>キーボード（↑↓）で選び直したときの処理です。</summary>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">選択の変化。</param>
+    private void OnRecordSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_isRendering && RecordList.SelectedItem is ListViewItem { Tag: MaintenanceRecordID id } && _model.State.Draft?.RecordID != id)
+        {
+            _model.Send(new MaintenanceAction.EditRequested(id));
+        }
+    }
+
+    /// <summary>右側の概要（記録を選んでいないとき）を作ります。</summary>
+    /// <param name="state">整備記録の状態。</param>
+    /// <returns>概要。</returns>
     private ScrollViewer Overview(MaintenanceState state)
     {
         var stack = new StackPanel { Spacing = 24, Padding = new Thickness(42), VerticalAlignment = VerticalAlignment.Center, MaxWidth = 720, HorizontalAlignment = HorizontalAlignment.Left };
@@ -230,15 +392,13 @@ public sealed partial class WindowsMaintenanceView : UserControl
         return new ScrollViewer { Content = stack, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
     }
 
-    /// <summary>整備の種類の記号を返します。</summary>
-    /// <remarks>責務: 軽整備をしずく、重整備をレンチの記号へ変換します。</remarks>
-    /// <param name="kind">整備の種類。</param>
-    /// <returns>記号の文字。</returns>
+    /// <summary>整備の種類の記号です。</summary>
+    /// <param name="kind">種類。</param>
+    /// <returns>記号。</returns>
     public static string KindGlyph(MaintenanceKind kind) => kind == MaintenanceKind.Light ? FluentSymbol.Drop : FluentSymbol.Repair;
 
-    /// <summary>整備の種類の色の役割を返します。</summary>
-    /// <remarks>責務: 軽整備を青、重整備をオレンジ（iOS 版と同じ）へ変換します。</remarks>
-    /// <param name="kind">整備の種類。</param>
-    /// <returns>色の役割。</returns>
+    /// <summary>整備の種類の色です。</summary>
+    /// <param name="kind">種類。</param>
+    /// <returns>色。</returns>
     public static Tone KindTone(MaintenanceKind kind) => kind == MaintenanceKind.Light ? Tone.Accent : Tone.Caution;
 }

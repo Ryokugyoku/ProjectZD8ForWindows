@@ -24,6 +24,12 @@ public sealed partial class WindowsHomeView : UserControl
     /// <summary>ホームの操作の送り先です。</summary>
     private readonly Action<WindowsHomeAction> _send;
 
+    /// <summary>操作中の作り直しを待たせる仕組みです。</summary>
+    private readonly RenderGate _gate;
+
+    /// <summary>最後に描いた内容の鍵です。同じなら描き直しません（ライブ取得の値が変わるたびにボタンを作り直さないため）。</summary>
+    private string? _renderKey;
+
     /// <summary>モデルと操作の送り先を受け取ってホーム画面を作ります。</summary>
     /// <param name="settings">設定画面の表示モデル。</param>
     /// <param name="liveTelemetry">ライブ取得のモデル。</param>
@@ -34,6 +40,7 @@ public sealed partial class WindowsHomeView : UserControl
         _liveTelemetry = liveTelemetry;
         _send = send;
         InitializeComponent();
+        _gate = new RenderGate(this);
         Loaded += (_, _) =>
         {
             _settings.PropertyChanged += OnModelChanged;
@@ -54,6 +61,23 @@ public sealed partial class WindowsHomeView : UserControl
         };
     }
 
+    /// <summary>描く内容が変わったかを見分ける鍵を作ります。</summary>
+    /// <param name="state">ホームの状態。</param>
+    /// <returns>鍵。</returns>
+    private string RenderKey(WindowsHomeState state)
+    {
+        var availability = state.DefaultAdapterAvailability;
+        return string.Join(
+            "|",
+            availability.DisplayName,
+            availability.IsDetected,
+            availability.HasDefaultAdapter,
+            state.ConnectionEndpoint is null,
+            state.IsConnectionActive,
+            state.IsDisconnecting,
+            ActualWidth > 0 && ActualWidth < 720);
+    }
+
     /// <summary>モデルが変わったときの処理です。</summary>
     /// <remarks>責務: 画面を描き直します。</remarks>
     /// <param name="sender">送り元。</param>
@@ -65,6 +89,13 @@ public sealed partial class WindowsHomeView : UserControl
     private void Render()
     {
         var state = new WindowsHomeState(_settings.State, _liveTelemetry.State);
+        var key = RenderKey(state);
+        if (key == _renderKey || _gate.TryDefer(Render))
+        {
+            return;
+        }
+
+        _renderKey = key;
         Page.Children.Clear();
         var header = new StackPanel { Spacing = 7 };
         header.Children.Add(Typography.Text(LocalizedText.Get("home.eyebrow"), "EyebrowTextStyle"));

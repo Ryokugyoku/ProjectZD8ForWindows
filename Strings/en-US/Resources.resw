@@ -3686,6 +3686,14 @@ Own the drive.</value>
     <value>Finish signing in in your browser…</value>
     <comment>windows.cloud.signing_in</comment>
   </data>
+  <data name="windows_history_open_detail" xml:space="preserve">
+    <value>Open details</value>
+    <comment>windows.history.open_detail</comment>
+  </data>
+  <data name="windows_history_select_session" xml:space="preserve">
+    <value>Select a session to see its details here.</value>
+    <comment>windows.history.select_session</comment>
+  </data>
   <data name="windows_login_apple_coming_soon" xml:space="preserve">
     <value>Coming soon</value>
     <comment>windows.login.apple_coming_soon</comment>
@@ -3701,5 +3709,45 @@ Own the drive.</value>
   <data name="windows_login_local_mode_notice" xml:space="preserve">
     <value>Sign in with Apple is coming soon. For now, your data is kept only on this PC and isn't synced with iPhone. It will move to your Apple account when you first sign in.</value>
     <comment>windows.login.local_mode_notice</comment>
+  </data>
+  <data name="windows_maintenance_delete_message" xml:space="preserve">
+    <value>“%@” will be deleted. This can't be undone.</value>
+    <comment>windows.maintenance.delete.message</comment>
+  </data>
+  <data name="windows_maintenance_delete_title" xml:space="preserve">
+    <value>Delete this service record?</value>
+    <comment>windows.maintenance.delete.title</comment>
+  </data>
+  <data name="windows_maintenance_new" xml:space="preserve">
+    <value>New record</value>
+    <comment>windows.maintenance.new</comment>
+  </data>
+  <data name="windows_settings_group_account" xml:space="preserve">
+    <value>Account</value>
+    <comment>windows.settings.group.account</comment>
+  </data>
+  <data name="windows_settings_group_connection" xml:space="preserve">
+    <value>Connection</value>
+    <comment>windows.settings.group.connection</comment>
+  </data>
+  <data name="windows_settings_group_data" xml:space="preserve">
+    <value>Data and sync</value>
+    <comment>windows.settings.group.data</comment>
+  </data>
+  <data name="windows_settings_group_general" xml:space="preserve">
+    <value>General</value>
+    <comment>windows.settings.group.general</comment>
+  </data>
+  <data name="windows_shell_connection_connected" xml:space="preserve">
+    <value>Connected</value>
+    <comment>windows.shell.connection.connected</comment>
+  </data>
+  <data name="windows_shell_connection_disconnecting" xml:space="preserve">
+    <value>Disconnecting…</value>
+    <comment>windows.shell.connection.disconnecting</comment>
+  </data>
+  <data name="windows_shell_open_live" xml:space="preserve">
+    <value>Open live view</value>
+    <comment>windows.shell.open_live</comment>
   </data>
 </root>

@@ -3686,6 +3686,14 @@
     <value>ブラウザーでサインインを済ませてください…</value>
     <comment>windows.cloud.signing_in</comment>
   </data>
+  <data name="windows_history_open_detail" xml:space="preserve">
+    <value>詳細を開く</value>
+    <comment>windows.history.open_detail</comment>
+  </data>
+  <data name="windows_history_select_session" xml:space="preserve">
+    <value>セッションを選ぶと、ここに詳細が表示されます。</value>
+    <comment>windows.history.select_session</comment>
+  </data>
   <data name="windows_login_apple_coming_soon" xml:space="preserve">
     <value>近日対応</value>
     <comment>windows.login.apple_coming_soon</comment>
@@ -3701,5 +3709,45 @@
   <data name="windows_login_local_mode_notice" xml:space="preserve">
     <value>Apple でのサインインは近日対応です。今はデータをこの PC の中だけに保存し、iPhone とは同期しません。初めて Apple でサインインしたときに、そのアカウントへ引き継ぎます。</value>
     <comment>windows.login.local_mode_notice</comment>
+  </data>
+  <data name="windows_maintenance_delete_message" xml:space="preserve">
+    <value>「%@」を削除します。この操作は取り消せません。</value>
+    <comment>windows.maintenance.delete.message</comment>
+  </data>
+  <data name="windows_maintenance_delete_title" xml:space="preserve">
+    <value>この整備記録を削除しますか？</value>
+    <comment>windows.maintenance.delete.title</comment>
+  </data>
+  <data name="windows_maintenance_new" xml:space="preserve">
+    <value>新しい記録</value>
+    <comment>windows.maintenance.new</comment>
+  </data>
+  <data name="windows_settings_group_account" xml:space="preserve">
+    <value>アカウント</value>
+    <comment>windows.settings.group.account</comment>
+  </data>
+  <data name="windows_settings_group_connection" xml:space="preserve">
+    <value>接続</value>
+    <comment>windows.settings.group.connection</comment>
+  </data>
+  <data name="windows_settings_group_data" xml:space="preserve">
+    <value>データと同期</value>
+    <comment>windows.settings.group.data</comment>
+  </data>
+  <data name="windows_settings_group_general" xml:space="preserve">
+    <value>全般</value>
+    <comment>windows.settings.group.general</comment>
+  </data>
+  <data name="windows_shell_connection_connected" xml:space="preserve">
+    <value>接続中</value>
+    <comment>windows.shell.connection.connected</comment>
+  </data>
+  <data name="windows_shell_connection_disconnecting" xml:space="preserve">
+    <value>切断しています…</value>
+    <comment>windows.shell.connection.disconnecting</comment>
+  </data>
+  <data name="windows_shell_open_live" xml:space="preserve">
+    <value>ライブを表示</value>
+    <comment>windows.shell.open_live</comment>
   </data>
 </root>

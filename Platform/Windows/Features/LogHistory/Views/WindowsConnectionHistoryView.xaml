@@ -4,7 +4,36 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto">
-        <StackPanel x:Name="Page" Padding="26" Spacing="20" MaxWidth="1240" />
-    </ScrollViewer>
+    <!--
+      上：階層のパンくず（接続履歴 › 車両 › セッション › 解析）。どの段にも 1 クリックで戻れる。
+      下：広いウインドウでは、車両のセッション一覧（左）と選んだセッションの詳細（右）を並べる（Windows の一覧・詳細の形）。
+          狭いウインドウと、車両の一覧・解析の画面は 1 列。
+    -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <BreadcrumbBar x:Name="Breadcrumb" Margin="26,14,26,0" Visibility="Collapsed" ItemClicked="OnBreadcrumbItemClicked" />
+
+        <ScrollViewer x:Name="Scroller" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="Page" Padding="26" Spacing="20" MaxWidth="1240" />
+        </ScrollViewer>
+
+        <Grid x:Name="Split" Grid.Row="1" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="420" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ScrollViewer x:Name="ListScroller" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="ListPane" Padding="20,16,16,20" Spacing="12" />
+            </ScrollViewer>
+            <Rectangle Grid.Column="1" Width="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            <ScrollViewer x:Name="DetailScroller" Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="DetailPane" Padding="26,16,26,26" Spacing="20" MaxWidth="1000" HorizontalAlignment="Stretch" />
+            </ScrollViewer>
+        </Grid>
+    </Grid>
 </UserControl>

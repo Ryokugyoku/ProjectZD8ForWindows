@@ -37,6 +37,15 @@ public sealed partial class WindowsGarageView : UserControl
     /// <summary>表示中の編集画面です（同じ車両の間は作り直さない）。</summary>
     private WindowsVehicleEditorView? _editor;
 
+    /// <summary>操作中の作り直しを待たせる仕組みです。</summary>
+    private readonly RenderGate _gate;
+
+    /// <summary>最後に描いた一覧の鍵です（PID の設定など、一覧に関係のない変化で作り直さないため）。</summary>
+    private string? _catalogKey;
+
+    /// <summary>表示中の車両の確認です。</summary>
+    private VehicleIdentificationSnapshot? _shownSnapshot;
+
     /// <summary>車両管理のモデルを受け取ってガレージ画面を作ります。</summary>
     /// <param name="model">車両管理のモデル。</param>
     public WindowsGarageView(VehicleManagementModel model)
@@ -44,6 +53,7 @@ public sealed partial class WindowsGarageView : UserControl
         _model = model;
         _pidSettings = new WindowsVehiclePIDSettingsDialog(model.Send);
         Content = _host;
+        _gate = new RenderGate(this);
         Loaded += (_, _) =>
         {
             _model.PropertyChanged += OnModelChanged;
@@ -67,21 +77,39 @@ public sealed partial class WindowsGarageView : UserControl
         if (state.Phase == VehicleManagementStatePhase.ConfirmingIdentification && state.PendingIdentification is { } snapshot)
         {
             _editor = null;
-            _host.Child = IdentificationConfirmation(snapshot);
+            _catalogKey = null;
+            if (!ReferenceEquals(_shownSnapshot, snapshot) && !_gate.TryDefer(Render))
+            {
+                _shownSnapshot = snapshot;
+                _host.Child = IdentificationConfirmation(snapshot);
+            }
         }
         else if (state.EditingVehicle is { } vehicle
             && state.Phase is VehicleManagementStatePhase.Registering or VehicleManagementStatePhase.Editing)
         {
-            if (_editor is null || !_editor.Vehicle.Equals(vehicle))
+            _shownSnapshot = null;
+            _catalogKey = null;
+            if (_editor is null || _editor.Vehicle.Id != vehicle.Id)
             {
                 _editor = new WindowsVehicleEditorView(vehicle, _model.Send);
                 _host.Child = _editor;
+            }
+            else if (!_editor.Vehicle.Equals(vehicle))
+            {
+                // 写真を選んだときなど。入力中の内容を残したまま、変わった所（写真）だけを取り込む。
+                _editor.ApplyExternalChange(vehicle);
             }
         }
         else
         {
             _editor = null;
-            _host.Child = Catalog(state);
+            _shownSnapshot = null;
+            var key = CatalogKey(state);
+            if (key != _catalogKey && !_gate.TryDefer(Render))
+            {
+                _catalogKey = key;
+                _host.Child = Catalog(state);
+            }
         }
 
         _pidSettings.Render(state, XamlRoot);
@@ -104,6 +132,39 @@ public sealed partial class WindowsGarageView : UserControl
         });
     }
 
+    /// <summary>一覧を作り直すかを見分ける鍵を作ります。</summary>
+    /// <param name="state">車両管理の状態。</param>
+    /// <returns>鍵。</returns>
+    private static string CatalogKey(VehicleManagementState state) => string.Join(
+        "|",
+        new object?[]
+        {
+            state.Phase,
+            state.FailureKey,
+            state.IdentificationFailureStage,
+            state.ConnectionVehicle is null,
+        }
+        .Concat(state.Vehicles.Select(vehicle =>
+        {
+            var activity = state.ActivityByVehicleID.TryGetValue(vehicle.Id, out var value) ? value : new VehicleActivitySummary();
+            state.SpecialPIDModelCodeByVehicleID.TryGetValue(vehicle.Id, out var modelCode);
+            return (object)string.Join(
+                ":",
+                vehicle.Id,
+                vehicle.Name,
+                vehicle.Manufacturer,
+                vehicle.DisplayIdentifier,
+                vehicle.PhotoData?.Length,
+                System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(vehicle.PhotoData ?? []),
+                activity.SessionCount,
+                activity.TotalRecordedDuration,
+                activity.IsConnected,
+                activity.LatestOdometerKilometers,
+                activity.OdometerModelCode,
+                activity.LastLoggedAt,
+                modelCode);
+        })));
+
     /// <summary>車両の一覧を作ります。</summary>
     /// <remarks>責務: 見出し、状態の帯、台数などの要約、車両のカード（なければ空の表示）を並べます。</remarks>
     /// <param name="state">車両管理の状態。</param>
@@ -113,6 +174,7 @@ public sealed partial class WindowsGarageView : UserControl
         var page = new StackPanel { Spacing = 24, Padding = new Thickness(32), MaxWidth = 1180 };
         var refresh = new Button { Content = new GlyphLabel(FluentSymbol.Refresh, LocalizedText.Get("garage.refresh")) };
         refresh.Click += (_, _) => _model.Send(new VehicleManagementAction.RefreshRequested());
+        refresh.KeyboardAccelerators.Add(new Microsoft.UI.Xaml.Input.KeyboardAccelerator { Key = global::Windows.System.VirtualKey.F5 });
         page.Children.Add(new ScreenHeader(
             null,
             LocalizedText.Get("garage.eyebrow"),
@@ -298,7 +360,18 @@ public sealed partial class WindowsGarageView : UserControl
         };
         actions.Children.Add(delete);
         stack.Children.Add(actions);
-        return SurfaceCard.Create(stack, padding: 14);
+        var card = SurfaceCard.Create(stack, padding: 14);
+        card.ContextFlyout = new ContextMenu()
+            .Item(FluentSymbol.Edit, LocalizedText.Get("garage.edit"), () => _model.Send(new VehicleManagementAction.EditRequested(vehicle.Id)))
+            .Item(FluentSymbol.Pulse, LocalizedText.Get("garage.pid_settings.open"), () => _model.Send(new VehicleManagementAction.PidSettingsRequested(vehicle.Id)))
+            .Separator()
+            .Item(FluentSymbol.Delete, LocalizedText.Get("garage.delete.action"), () =>
+            {
+                _deletionCandidate = vehicle;
+                Render();
+            }, Tone.Danger)
+            .Build();
+        return card;
     }
 
     /// <summary>記号・項目名・値の行を作ります。</summary>

@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using ProjectZD8.Application.Authentication.Actions;
@@ -22,6 +21,10 @@ namespace ProjectZD8ForWindows.Platform.Windows.Features.Settings.Views;
 /// <summary>
 /// 設定画面です。言語・外観・アダプター・自動アップロード・アカウント削除を扱います（iOS 版の <c>MacOSSettingsView</c>）。
 /// </summary>
+/// <remarks>
+/// Windows 11 の「設定」アプリと同じく、見出し（全般・接続・データと同期・アカウント）ごとに、
+/// 左に記号・題・説明、右に操作を置いた 1 行のカードを縦に並べます。
+/// </remarks>
 public sealed partial class WindowsSettingsView : UserControl
 {
     /// <summary>アダプター選択の表示モデルです。</summary>
@@ -42,13 +45,16 @@ public sealed partial class WindowsSettingsView : UserControl
     /// <summary>Windows 版だけの iCloud サインインの表示モデルです。</summary>
     private readonly WindowsCloudSyncModel _cloudSync;
 
+    /// <summary>操作中の作り直しを待たせる仕組みです。</summary>
+    private readonly RenderGate _gate;
+
     /// <summary>描いている最中かどうかです（描画中のイベントを無視するため）。</summary>
     private bool _isRendering;
 
     /// <summary>最後にカードを描いたときの入力です（同じなら描き直さない）。</summary>
     private object? _pageKey;
 
-    /// <summary>最後に描いたアダプターのカードです。</summary>
+    /// <summary>最後に描いたアダプターのまとまりです。</summary>
     private FrameworkElement? _adapterCard;
 
     /// <summary>画面が処理したアダプターへの注意の通し番号です。</summary>
@@ -72,16 +78,9 @@ public sealed partial class WindowsSettingsView : UserControl
         _adapterSelection = new WindowsAdapterSelectionDialog(settings.Send);
         _accountDeletion = new WindowsAccountDeletionFlow(authentication.Send);
         InitializeComponent();
+        _gate = new RenderGate(this);
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
-        SizeChanged += (_, args) =>
-        {
-            if ((args.PreviousSize.Width >= 760) != (args.NewSize.Width >= 760))
-            {
-                _pageKey = null;
-                Render();
-            }
-        };
     }
 
     /// <summary>表示されたときの処理です。</summary>
@@ -117,13 +116,13 @@ public sealed partial class WindowsSettingsView : UserControl
     private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => Render();
 
     /// <summary>設定画面を描きます。</summary>
-    /// <remarks>責務: 状態から各カードを作り、ダイアログとアダプターへの注意の表示を状態に合わせます。</remarks>
+    /// <remarks>責務: 入力が変わったときだけ（押している最中でなければ）行を作り直し、ダイアログとアダプターへの注意の表示を状態に合わせます。</remarks>
     private void Render()
     {
         var state = _settings.State;
         var account = _accountSettings.Settings;
-        var pageKey = (state.SelectedAdapters, account, ActualWidth >= 760, _cloudSync.Availability, _cloudSync.IsSigningIn, _cloudSync.DidFail);
-        if (!Equals(pageKey, _pageKey))
+        var pageKey = (state.SelectedAdapters, account, _cloudSync.Availability, _cloudSync.IsSigningIn, _cloudSync.DidFail);
+        if (!Equals(pageKey, _pageKey) && !_gate.TryDefer(Render))
         {
             _pageKey = pageKey;
             RenderPage(state, account);
@@ -135,192 +134,151 @@ public sealed partial class WindowsSettingsView : UserControl
         PresentAdapterAttentionIfNeeded(state);
     }
 
-    /// <summary>設定のカードを描き直します。</summary>
-    /// <remarks>責務: 見出し・言語・外観・アダプター・アップロード・アカウント削除のカードを幅に合わせて並べます。</remarks>
+    /// <summary>設定の行を描き直します。</summary>
+    /// <remarks>責務: 見出しと、全般（言語・外観）・接続（アダプター）・データと同期（アップロード・iCloud）・アカウント（削除）の行を並べます。</remarks>
     /// <param name="state">設定画面の状態。</param>
     /// <param name="account">アカウント設定。</param>
     private void RenderPage(WindowsSettingsState state, AccountSettings account)
     {
         _isRendering = true;
         Page.Children.Clear();
-        Page.Children.Add(new ScreenHeader(
+        var header = new ScreenHeader(
             FluentSymbol.Sliders,
             null,
             LocalizedText.Get("settings.title"),
-            LocalizedText.Get("settings.subtitle")));
+            LocalizedText.Get("settings.subtitle"));
+        header.Margin = new Thickness(0, 0, 0, 8);
+        Page.Children.Add(header);
 
-        var adapterCard = AdapterCard(state);
-        _adapterCard = adapterCard;
-        var cards = new UIElement[] { LanguageCard(account), AppearanceCard(account), adapterCard, UploadCard(account) };
-        if (ActualWidth >= 760)
-        {
-            var grid = new Grid { ColumnSpacing = 18 };
-            grid.ColumnDefinitions.Add(new ColumnDefinition());
-            grid.ColumnDefinitions.Add(new ColumnDefinition());
-            var left = new StackPanel { Spacing = 18 };
-            left.Children.Add(cards[0]);
-            left.Children.Add(cards[1]);
-            var right = new StackPanel { Spacing = 18 };
-            right.Children.Add(cards[2]);
-            right.Children.Add(cards[3]);
-            Grid.SetColumn(right, 1);
-            grid.Children.Add(left);
-            grid.Children.Add(right);
-            Page.Children.Add(grid);
-        }
-        else
-        {
-            foreach (var card in cards)
-            {
-                Page.Children.Add(card);
-            }
-        }
+        Page.Children.Add(SettingsRow.Header(LocalizedText.Get("windows.settings.group.general")));
+        Page.Children.Add(LanguageRow(account));
+        Page.Children.Add(AppearanceRow(account));
 
-        Page.Children.Add(CloudSyncCard());
-        Page.Children.Add(AccountDeletionCard());
+        Page.Children.Add(SettingsRow.Header(LocalizedText.Get("windows.settings.group.connection")));
+        var adapters = AdapterGroup(state);
+        _adapterCard = adapters;
+        Page.Children.Add(adapters);
+
+        Page.Children.Add(SettingsRow.Header(LocalizedText.Get("windows.settings.group.data")));
+        Page.Children.Add(UploadRow(account));
+        Page.Children.Add(CloudSyncRow());
+
+        Page.Children.Add(SettingsRow.Header(LocalizedText.Get("windows.settings.group.account")));
+        Page.Children.Add(AccountDeletionRow());
         _isRendering = false;
     }
 
-    /// <summary>設定のカードを作ります。</summary>
-    /// <remarks>責務: 記号・小見出し・題・説明と中身を持つカードを作ります。</remarks>
-    /// <param name="prefix">キーの前半（例 settings.language）。</param>
-    /// <param name="glyph">記号。</param>
-    /// <param name="content">中身。</param>
-    /// <returns>カード。</returns>
-    private static Border SettingsCard(string prefix, string glyph, UIElement content)
-    {
-        var stack = new StackPanel { Spacing = 16 };
-        var head = new Grid { ColumnSpacing = 12 };
-        head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        head.Children.Add(IconTile.Create(glyph, Tone.Accent, 34));
-        var texts = new StackPanel { Spacing = 3 };
-        texts.Children.Add(Typography.Text(LocalizedText.Get(prefix + ".eyebrow"), "EyebrowTextStyle"));
-        texts.Children.Add(Typography.Text(LocalizedText.Get(prefix + ".title"), "CardTitleTextStyle"));
-        texts.Children.Add(Typography.Text(LocalizedText.Get(prefix + ".description"), "SecondaryCaptionTextStyle"));
-        Grid.SetColumn(texts, 1);
-        head.Children.Add(texts);
-        stack.Children.Add(head);
-        stack.Children.Add(content);
-        return SurfaceCard.Create(stack, padding: 18);
-    }
-
-    /// <summary>言語のカードを作ります。</summary>
-    /// <remarks>責務: 3 つの言語から 1 つを選ぶ選択肢を作ります。</remarks>
+    /// <summary>言語の行を作ります。</summary>
     /// <param name="account">アカウント設定。</param>
-    /// <returns>カード。</returns>
-    private Border LanguageCard(AccountSettings account)
+    /// <returns>行。</returns>
+    private Border LanguageRow(AccountSettings account)
     {
-        var choices = new RadioButtons { MaxColumns = 3 };
+        var choices = new ComboBox { MinWidth = 200 };
         foreach (var language in SettingsLanguageRawValue.AllCases)
         {
-            choices.Items.Add(new RadioButton { Content = LocalizedText.Get(language.TitleKey()), Tag = language });
+            choices.Items.Add(new ComboBoxItem { Content = LocalizedText.Get(language.TitleKey()), Tag = language });
         }
 
         choices.SelectedIndex = IndexOf(SettingsLanguageRawValue.AllCases, account.Language);
         choices.SelectionChanged += (_, _) =>
         {
-            if (!_isRendering && choices.SelectedItem is RadioButton { Tag: SettingsLanguage language })
+            if (!_isRendering && choices.SelectedItem is ComboBoxItem { Tag: SettingsLanguage language })
             {
                 _accountSettings.Send(new AccountSettingsAction.LanguageSelected(language));
             }
         };
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(choices, "windows-settings-language");
-        return SettingsCard("settings.language", FluentSymbol.Language, choices);
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(choices, LocalizedText.Get("settings.language.title"));
+        return SettingsRow.Create(
+            FluentSymbol.Language,
+            LocalizedText.Get("settings.language.title"),
+            LocalizedText.Get("settings.language.description"),
+            choices);
     }
 
-    /// <summary>外観のカードを作ります。</summary>
-    /// <remarks>責務: システム・ライト・ダークの 3 つの切り替えボタンを作ります。</remarks>
+    /// <summary>外観の行を作ります。</summary>
     /// <param name="account">アカウント設定。</param>
-    /// <returns>カード。</returns>
-    private Border AppearanceCard(AccountSettings account)
+    /// <returns>行。</returns>
+    private Border AppearanceRow(AccountSettings account)
     {
-        var row = new Grid { ColumnSpacing = 8 };
-        var index = 0;
+        var choices = new ComboBox { MinWidth = 200 };
         foreach (var appearance in SettingsAppearanceRawValue.AllCases)
         {
-            row.ColumnDefinitions.Add(new ColumnDefinition());
-            var content = new StackPanel { Spacing = 7, HorizontalAlignment = HorizontalAlignment.Center };
-            content.Children.Add(new FontIcon { Glyph = appearance.Glyph(), FontSize = 17 });
-            content.Children.Add(Typography.Text(LocalizedText.Get(appearance.TitleKey()), "CaptionTextBlockStyle", wraps: false));
-            var button = new ToggleButton
+            choices.Items.Add(new ComboBoxItem
             {
-                Content = content,
-                IsChecked = account.Appearance == appearance,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                MinHeight = 60,
-            };
-            var selected = appearance;
-            button.Click += (_, _) => _accountSettings.Send(new AccountSettingsAction.AppearanceSelected(selected));
-            Grid.SetColumn(button, index++);
-            row.Children.Add(button);
+                Content = new GlyphLabel(appearance.Glyph(), LocalizedText.Get(appearance.TitleKey())),
+                Tag = appearance,
+            });
         }
 
-        return SettingsCard("settings.appearance", FluentSymbol.Sliders, row);
+        choices.SelectedIndex = IndexOf(SettingsAppearanceRawValue.AllCases, account.Appearance);
+        choices.SelectionChanged += (_, _) =>
+        {
+            if (!_isRendering && choices.SelectedItem is ComboBoxItem { Tag: SettingsAppearance appearance })
+            {
+                _accountSettings.Send(new AccountSettingsAction.AppearanceSelected(appearance));
+            }
+        };
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(choices, "windows-settings-appearance");
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(choices, LocalizedText.Get("settings.appearance.title"));
+        return SettingsRow.Create(
+            FluentSymbol.Sliders,
+            LocalizedText.Get("settings.appearance.title"),
+            LocalizedText.Get("settings.appearance.description"),
+            choices);
     }
 
-    /// <summary>アダプターのカードを作ります。</summary>
-    /// <remarks>責務: 主・副のアダプターの行（選択済みの名前と「選択」ボタン）を作ります。</remarks>
+    /// <summary>アダプターの行のまとまりを作ります。</summary>
     /// <param name="state">設定画面の状態。</param>
-    /// <returns>カード。</returns>
-    private Border AdapterCard(WindowsSettingsState state)
+    /// <returns>まとまり（ホームから来たときに揺らす対象）。</returns>
+    private StackPanel AdapterGroup(WindowsSettingsState state)
     {
-        var rows = new StackPanel { Spacing = 10 };
+        var group = new StackPanel { Spacing = 4, RenderTransform = new TranslateTransform() };
         foreach (var role in AdapterConnectionRoleRawValue.AllCases)
         {
-            rows.Children.Add(AdapterRow(role, state));
+            group.Children.Add(AdapterRow(role, state));
         }
 
-        var card = SettingsCard("settings.adapter", FluentSymbol.Plug, rows);
-        card.RenderTransform = new TranslateTransform();
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(card, "windows-settings-adapter-card");
-        return card;
+        var note = Typography.Text(LocalizedText.Get("settings.adapter.description"), "SecondaryCaptionTextStyle");
+        note.Margin = new Thickness(4, 2, 0, 0);
+        group.Children.Add(note);
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(group, "windows-settings-adapter-card");
+        return group;
     }
 
-    /// <summary>アダプターの 1 行を作ります。</summary>
-    /// <remarks>責務: 役割の名前・バッジ・選択済みのアダプター名と「選択」ボタンを並べます。</remarks>
+    /// <summary>アダプターの役割（主・副）の行を作ります。</summary>
     /// <param name="role">役割。</param>
     /// <param name="state">設定画面の状態。</param>
     /// <returns>行。</returns>
     private Border AdapterRow(AdapterConnectionRole role, WindowsSettingsState state)
     {
-        var grid = new Grid { ColumnSpacing = 12 };
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.Children.Add(IconTile.Create(role.Glyph(), role == AdapterConnectionRole.Primary ? Tone.Accent : Tone.Neutral, 34));
-        var texts = new StackPanel { Spacing = 2, VerticalAlignment = VerticalAlignment.Center };
-        var titleRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
-        titleRow.Children.Add(Typography.Text(LocalizedText.Get(role.TitleKey()), "BodyStrongTextBlockStyle", wraps: false));
-        titleRow.Children.Add(StatusPill.Create(null, LocalizedText.Get(role.BadgeKey()), role == AdapterConnectionRole.Primary ? Tone.Accent : Tone.Neutral));
-        texts.Children.Add(titleRow);
         var description = state.SelectedAdapters.TryGetValue(role, out var adapter)
             ? adapter.DisplayName
             : LocalizedText.Get("settings.adapter.not_selected");
-        texts.Children.Add(Typography.Text(description, "SecondaryCaptionTextStyle", wraps: false));
-        Grid.SetColumn(texts, 1);
-        grid.Children.Add(texts);
-        var select = new Button { Content = LocalizedText.Get("settings.adapter.select"), VerticalAlignment = VerticalAlignment.Center };
+        var trailing = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+        trailing.Children.Add(StatusPill.Create(null, LocalizedText.Get(role.BadgeKey()), role == AdapterConnectionRole.Primary ? Tone.Accent : Tone.Neutral));
+        var select = new Button { Content = LocalizedText.Get("settings.adapter.select"), MinWidth = 96 };
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(select, LocalizedText.Get(role.TitleKey()));
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(select, $"windows-settings-adapter-{role.ToRawValue()}-select");
         select.Click += (_, _) => _settings.Send(new WindowsSettingsAction.AdapterSelectionRequested(role));
-        Grid.SetColumn(select, 2);
-        grid.Children.Add(select);
-        return new Border { Style = DesignTokens.Style("QuietSurfaceStyle"), Padding = new Thickness(11), Child = grid };
+        trailing.Children.Add(select);
+        return SettingsRow.Create(
+            role.Glyph(),
+            LocalizedText.Get(role.TitleKey()),
+            description,
+            trailing,
+            role == AdapterConnectionRole.Primary ? Tone.Accent : Tone.Neutral);
     }
 
-    /// <summary>自動アップロードのカードを作ります。</summary>
-    /// <remarks>責務: 自動アップロードの切り替えスイッチを作ります。</remarks>
+    /// <summary>自動アップロードの行を作ります。</summary>
     /// <param name="account">アカウント設定。</param>
-    /// <returns>カード。</returns>
-    private Border UploadCard(AccountSettings account)
+    /// <returns>行。</returns>
+    private Border UploadRow(AccountSettings account)
     {
         var toggle = new ToggleSwitch
         {
-            Header = LocalizedText.Get("settings.upload.automatic"),
             IsOn = account.AutomaticSessionUploadEnabled,
-            OnContent = string.Empty,
-            OffContent = string.Empty,
+            MinWidth = 0,
         };
         toggle.Toggled += (_, _) =>
         {
@@ -330,61 +288,54 @@ public sealed partial class WindowsSettingsView : UserControl
             }
         };
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(toggle, "windows-settings-automatic-upload");
-        return SettingsCard("settings.upload", FluentSymbol.Upload, toggle);
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(toggle, LocalizedText.Get("settings.upload.automatic"));
+        return SettingsRow.Create(
+            FluentSymbol.Upload,
+            LocalizedText.Get("settings.upload.automatic"),
+            LocalizedText.Get("settings.upload.description"),
+            toggle);
     }
 
-    /// <summary>iCloud 同期のカードを作ります（Windows 版だけ）。</summary>
-    /// <remarks>
-    /// 責務: iCloud（CloudKit）へのサインインの状態を文で示し、サインイン・サインアウトの操作を作ります。
-    /// 同期していない状態を同期済みのように見せないよう、状態は必ず文で出します。
-    /// </remarks>
-    /// <returns>カード。</returns>
-    private Border CloudSyncCard()
+    /// <summary>iCloud 同期の行を作ります。</summary>
+    /// <remarks>責務: 状態（近日対応・サインアウト・サインイン済み・サインイン中・失敗）を説明に、サインイン・サインアウトのボタンを右に置きます。</remarks>
+    /// <returns>行。</returns>
+    private Border CloudSyncRow()
     {
-        var content = new StackPanel { Spacing = 12 };
         var availability = _cloudSync.Availability;
-        var (statusKey, tone) = availability switch
+        var statusKey = availability switch
         {
-            WindowsCloudSyncAvailability.Available => ("windows.cloud.signed_in", Tone.Accent),
-            WindowsCloudSyncAvailability.SignedOut => ("windows.cloud.signed_out", Tone.Neutral),
-            _ => ("windows.cloud.coming_soon", Tone.Neutral),
+            WindowsCloudSyncAvailability.Available => "windows.cloud.signed_in",
+            WindowsCloudSyncAvailability.SignedOut => "windows.cloud.signed_out",
+            _ => "windows.cloud.coming_soon",
         };
-        content.Children.Add(new GlyphLabel(
-            availability == WindowsCloudSyncAvailability.Available ? FluentSymbol.Cloud : FluentSymbol.Info,
-            LocalizedText.Get(statusKey),
-            "SecondaryBodyTextStyle",
-            DesignTokens.Foreground(tone)));
+        var description = LocalizedText.Get(statusKey);
+        if (_cloudSync.DidFail && !_cloudSync.IsSigningIn)
+        {
+            description += "\n" + LocalizedText.Get("windows.cloud.sign_in_failed");
+        }
 
+        UIElement? trailing = null;
         if (_cloudSync.IsSigningIn)
         {
             var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
             row.Children.Add(new ProgressRing { IsActive = true, Width = 18, Height = 18 });
             row.Children.Add(Typography.Text(LocalizedText.Get("windows.cloud.signing_in"), "SecondaryCaptionTextStyle"));
-            content.Children.Add(row);
+            trailing = row;
         }
-        else if (_cloudSync.DidFail)
-        {
-            content.Children.Add(new GlyphLabel(
-                FluentSymbol.Warning,
-                LocalizedText.Get("windows.cloud.sign_in_failed"),
-                "CaptionTextBlockStyle",
-                DesignTokens.Foreground(Tone.Caution)));
-        }
-
-        if (availability == WindowsCloudSyncAvailability.NotConfigured)
+        else if (availability == WindowsCloudSyncAvailability.NotConfigured)
         {
             // Coming Soon の間は、入口があることだけを示す押せないボタンを出す（機能フラグ AppleSignIn:Enabled で有効になる）。
             var comingSoon = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+            comingSoon.Children.Add(StatusPill.Create(null, LocalizedText.Get("windows.login.apple_coming_soon"), Tone.Accent));
             comingSoon.Children.Add(new Button
             {
                 Content = LocalizedText.Get("windows.cloud.sign_in"),
                 IsEnabled = false,
             });
-            comingSoon.Children.Add(StatusPill.Create(null, LocalizedText.Get("windows.login.apple_coming_soon"), Tone.Accent));
             Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(comingSoon, "windows-settings-cloud-coming-soon");
-            content.Children.Add(comingSoon);
+            trailing = comingSoon;
         }
-        else if (availability == WindowsCloudSyncAvailability.SignedOut && !_cloudSync.IsSigningIn)
+        else if (availability == WindowsCloudSyncAvailability.SignedOut)
         {
             var signIn = new Button
             {
@@ -393,45 +344,41 @@ public sealed partial class WindowsSettingsView : UserControl
             };
             signIn.Click += (_, _) => _ = _cloudSync.SignIn();
             Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(signIn, "windows-settings-cloud-sign-in");
-            content.Children.Add(signIn);
+            trailing = signIn;
         }
         else if (availability == WindowsCloudSyncAvailability.Available)
         {
             var signOut = new Button { Content = LocalizedText.Get("windows.cloud.sign_out") };
             signOut.Click += (_, _) => _cloudSync.SignOut();
             Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(signOut, "windows-settings-cloud-sign-out");
-            content.Children.Add(signOut);
+            trailing = signOut;
         }
 
-        return SettingsCard("settings.windows_cloud", FluentSymbol.Cloud, content);
+        return SettingsRow.Create(
+            FluentSymbol.Cloud,
+            LocalizedText.Get("settings.windows_cloud.title"),
+            description,
+            trailing,
+            availability == WindowsCloudSyncAvailability.Available ? Tone.Accent : Tone.Neutral);
     }
 
-    /// <summary>アカウント削除のカードを作ります。</summary>
-    /// <remarks>責務: アカウント削除の説明と開始のボタンを、赤の控えめなカードで作ります。</remarks>
-    /// <returns>カード。</returns>
-    private Border AccountDeletionCard()
+    /// <summary>アカウント削除の行を作ります。</summary>
+    /// <returns>行。</returns>
+    private Border AccountDeletionRow()
     {
-        var grid = new Grid { ColumnSpacing = 15 };
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.Children.Add(IconTile.Create(FluentSymbol.Shield, Tone.Danger, 40));
-        var texts = new StackPanel { Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
-        texts.Children.Add(Typography.Text(LocalizedText.Get("account.delete.card.title"), "CardTitleTextStyle"));
-        texts.Children.Add(Typography.Text(LocalizedText.Get("account.delete.card.description"), "SecondaryCaptionTextStyle"));
-        Grid.SetColumn(texts, 1);
-        grid.Children.Add(texts);
         var button = new Button
         {
             Content = LocalizedText.Get("account.delete.start"),
             Style = DesignTokens.Style("DangerButtonStyle"),
-            VerticalAlignment = VerticalAlignment.Center,
         };
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-account-delete-start");
         button.Click += (_, _) => _authentication.Send(AuthenticationAction.AccountDeletionRequested);
-        Grid.SetColumn(button, 2);
-        grid.Children.Add(button);
-        return SurfaceCard.Create(grid, Tone.Danger, 18, tinted: true);
+        return SettingsRow.Create(
+            FluentSymbol.Shield,
+            LocalizedText.Get("account.delete.card.title"),
+            LocalizedText.Get("account.delete.card.description"),
+            button,
+            Tone.Danger);
     }
 
     /// <summary>

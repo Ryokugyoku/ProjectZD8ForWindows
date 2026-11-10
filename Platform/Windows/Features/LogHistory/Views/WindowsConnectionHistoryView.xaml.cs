@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
@@ -10,6 +11,7 @@ using ProjectZD8.Application.LogHistory.State;
 using ProjectZD8.Domain.Entities;
 using ProjectZD8.Domain.Policies;
 using ProjectZD8.Domain.ValueObjects;
+using ProjectZD8ForWindows.Platform.Windows.AppShell;
 using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using ProjectZD8ForWindows.Platform.Windows.Features.Analysis.Views;
 using ProjectZD8ForWindows.Platform.Windows.Features.LogHistory.Presentation;
@@ -19,11 +21,17 @@ using ProjectZD8ForWindows.Platform.Windows.Localization;
 namespace ProjectZD8ForWindows.Platform.Windows.Features.LogHistory.Views;
 
 /// <summary>
-/// 接続履歴の画面です。記録中のセッション、車両ごとの保存済みログ、セッション詳細、解析へ移ります（iOS 版の <c>MacOSConnectionHistoryView</c>）。
+/// 接続履歴の画面です（iOS 版の <c>MacOSConnectionHistoryView</c>）。車両別のアーカイブ → 車両のセッション一覧 → セッションの詳細 → 解析と進みます。
 /// </summary>
-/// <remarks>画面の一時的な状態は移動の積み重ねだけです。確認のダイアログはすべて履歴の状態から出します。</remarks>
-public sealed partial class WindowsConnectionHistoryView : UserControl
+/// <remarks>
+/// 上のパンくずで、どの段にも 1 クリックで戻れます。シェルの戻るボタン・Alt+←・マウスの戻るボタンでも 1 段戻れます。
+/// ウインドウが広いときは、セッション一覧と詳細を左右に並べ、一覧から選ぶだけで詳細を切り替えられます。
+/// </remarks>
+public sealed partial class WindowsConnectionHistoryView : UserControl, IBackNavigable
 {
+    /// <summary>一覧と詳細を左右に並べる幅です。</summary>
+    private const double SplitWidth = 1100;
+
     /// <summary>接続履歴のモデルです。</summary>
     private readonly ConnectionHistoryModel _model;
 
@@ -42,10 +50,10 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
     /// <summary>セッション削除の失敗です。</summary>
     private readonly StateBoundDialog _deletionFailureDialog = new();
 
-    /// <summary>停止の確認です。</summary>
+    /// <summary>停止内容の確認です。</summary>
     private readonly StateBoundDialog _stopReviewDialog = new();
 
-    /// <summary>停止の確認の失敗です。</summary>
+    /// <summary>停止内容の確認の失敗です。</summary>
     private readonly StateBoundDialog _stopReviewFailureDialog = new();
 
     /// <summary>アップロードの失敗です。</summary>
@@ -54,17 +62,29 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
     /// <summary>解析のための Raw のダウンロードの確認です。</summary>
     private readonly StateBoundDialog _downloadDialog = new();
 
-    /// <summary>記録中の経過時間を更新するタイマーです。</summary>
+    /// <summary>進行中のセッションの経過時間を進めるタイマーです。</summary>
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
 
-    /// <summary>描いている最中かどうかです（描画中のイベントを無視するため）。</summary>
+    /// <summary>経過時間の文字と開始時刻です。</summary>
+    private readonly List<(TextBlock Text, DateTimeOffset StartedAt)> _timers = [];
+
+    /// <summary>操作中の作り直しを待たせる仕組みです。</summary>
+    private readonly RenderGate _gate;
+
+    /// <summary>描いている最中かどうかです（選択の変化を利用者の操作と区別するため）。</summary>
     private bool _isRendering;
 
-    /// <summary>表示中の解析画面です（同じセッションの間は作り直さない）。</summary>
+    /// <summary>表示中の解析画面です。</summary>
     private WindowsSessionLogAnalysisView? _analysisView;
 
-    /// <summary>経過時間の文字と開始時刻です。</summary>
-    private readonly System.Collections.Generic.List<(TextBlock Text, DateTimeOffset StartedAt)> _timers = [];
+    /// <summary>最後にパンくずへ出した文字です。</summary>
+    private string? _breadcrumbKey;
+
+    /// <summary>最後に詳細へ出したセッションです（切り替えたら詳細を上までスクロールし直す）。</summary>
+    private ConnectionSessionID? _detailSessionID;
+
+    /// <summary>最後に描いたときに戻れたかどうかです。</summary>
+    private bool _lastCanGoBack;
 
     /// <summary>モデルを受け取って接続履歴の画面を作ります。</summary>
     /// <param name="model">接続履歴のモデル。</param>
@@ -74,6 +94,7 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         _model = model;
         _analysis = analysis;
         InitializeComponent();
+        _gate = new RenderGate(this);
         _timer.Tick += (_, _) =>
         {
             foreach (var (text, startedAt) in _timers)
@@ -95,31 +116,59 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
             _analysis.PropertyChanged -= OnModelChanged;
             _timer.Stop();
         };
+        SizeChanged += (_, args) =>
+        {
+            if ((args.PreviousSize.Width >= SplitWidth) != (args.NewSize.Width >= SplitWidth))
+            {
+                Render();
+            }
+        };
     }
 
+    /// <inheritdoc />
+    public event EventHandler? CanGoBackChanged;
+
+    /// <inheritdoc />
+    public bool CanGoBack => _navigation.Path.Count > 0;
+
+    /// <summary>一覧と詳細を左右に並べるかどうかです。</summary>
+    private bool IsWide => ActualWidth >= SplitWidth;
+
+    /// <inheritdoc />
+    public void GoBack() => NavigateTo(_navigation.Path.Count - 1);
+
     /// <summary>モデルが変わったときの処理です。</summary>
-    /// <remarks>責務: 画面を描き直します。</remarks>
     /// <param name="sender">送り元。</param>
     /// <param name="e">変更の内容。</param>
     private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => Render();
 
-    /// <summary>今の行き先の画面を描き、確認のダイアログを状態に合わせます。</summary>
-    /// <remarks>責務: 消えたセッションの画面から戻り、行き先ごとの画面を作ります。</remarks>
+    /// <summary>
+    /// 今の行き先の画面を描きます。
+    /// </summary>
+    /// <remarks>責務: 行き先に応じて、アーカイブ・セッション一覧・詳細・解析を 1 列か左右 2 列で描き、パンくずとダイアログを合わせます。押している最中は待ちます。</remarks>
     private void Render()
     {
+        if (_gate.TryDefer(Render))
+        {
+            return;
+        }
+
         var state = _model.State;
         _navigation.ReturnFromDeletedSession(state.Sessions.Select(session => session.Id).ToHashSet());
         _isRendering = true;
         _timers.Clear();
+        var groupID = _navigation.Path.OfType<WindowsConnectionHistoryRoute.VehicleSessions>().LastOrDefault()?.GroupID;
         switch (_navigation.Current)
         {
             case WindowsConnectionHistoryRoute.SessionAnalysis analysisRoute
                 when state.Sessions.FirstOrDefault(session => session.Id == analysisRoute.SessionID) is { } analyzed:
+                ShowSingleColumn();
                 if (_analysisView?.SessionID != analyzed.Id)
                 {
-                    _analysisView = new WindowsSessionLogAnalysisView(analyzed, _analysis, CloseAnalysis);
+                    _analysisView = new WindowsSessionLogAnalysisView(analyzed, _analysis);
                     Page.Children.Clear();
                     Page.Children.Add(_analysisView);
+                    Scroller.ChangeView(null, 0, null, true);
                 }
                 else if (!Page.Children.Contains(_analysisView))
                 {
@@ -131,39 +180,171 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
             case WindowsConnectionHistoryRoute.SessionDetail detailRoute
                 when state.Sessions.FirstOrDefault(session => session.Id == detailRoute.SessionID) is { } session:
                 _analysisView = null;
-                Page.Children.Clear();
-                Page.Children.Add(new WindowsConnectionSessionDetailView(
-                    session,
-                    state.DeletingSessionID == session.Id,
-                    _model.Send,
-                    OpenAnalysis,
-                    () =>
-                    {
-                        _navigation.ReturnToVehicleSessionList();
-                        Render();
-                    }));
+                var detail = new WindowsConnectionSessionDetailView(session, state, _model.Send, OpenAnalysis);
+                if (IsWide && groupID is { } detailGroup)
+                {
+                    ShowSplit();
+                    RenderSessionList(ListPane, state, detailGroup, session.Id);
+                    DetailPane.Children.Clear();
+                    DetailPane.Children.Add(detail);
+                }
+                else
+                {
+                    ShowSingleColumn();
+                    Page.Children.Clear();
+                    Page.Children.Add(detail);
+                }
+
+                if (_detailSessionID != session.Id)
+                {
+                    _detailSessionID = session.Id;
+                    DetailScroller.ChangeView(null, 0, null, true);
+                    Scroller.ChangeView(null, 0, null, true);
+                }
+
                 break;
             case WindowsConnectionHistoryRoute.VehicleSessions vehicleRoute:
                 _analysisView = null;
-                Page.Children.Clear();
-                RenderVehicleSessions(state, vehicleRoute.GroupID);
+                _detailSessionID = null;
+                if (IsWide)
+                {
+                    ShowSplit();
+                    RenderSessionList(ListPane, state, vehicleRoute.GroupID, null);
+                    DetailPane.Children.Clear();
+                    DetailPane.Children.Add(new ContentUnavailablePanel(FluentSymbol.Document, LocalizedText.Get("windows.history.select_session")));
+                }
+                else
+                {
+                    ShowSingleColumn();
+                    Page.Children.Clear();
+                    RenderSessionList(Page, state, vehicleRoute.GroupID, null);
+                }
+
                 break;
             default:
                 _analysisView = null;
+                _detailSessionID = null;
+                ShowSingleColumn();
                 Page.Children.Clear();
                 RenderArchive(state);
                 break;
         }
 
+        RenderBreadcrumb(state);
         _isRendering = false;
         SyncDialogs(state, _analysis.State);
+        if (_lastCanGoBack != CanGoBack)
+        {
+            _lastCanGoBack = CanGoBack;
+            CanGoBackChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
-    /// <summary>解析を開きます（セッション詳細の解析のカード）。</summary>
-    /// <remarks>責務: 解析を始め、端末に Raw があれば解析画面へ進みます（なければダウンロードの確認を待つ）。</remarks>
+    /// <summary>1 列の表示に切り替えます。</summary>
+    private void ShowSingleColumn()
+    {
+        Scroller.Visibility = Visibility.Visible;
+        Split.Visibility = Visibility.Collapsed;
+        ListPane.Children.Clear();
+        DetailPane.Children.Clear();
+    }
+
+    /// <summary>左右 2 列の表示に切り替えます。</summary>
+    private void ShowSplit()
+    {
+        Scroller.Visibility = Visibility.Collapsed;
+        Split.Visibility = Visibility.Visible;
+        Page.Children.Clear();
+    }
+
+    /// <summary>
+    /// パンくずを描きます。
+    /// </summary>
+    /// <remarks>責務: 移動の積み重ねを「接続履歴 › 車両 › セッション › 解析」の文字に変えます。変わったときだけ入れ替えます。</remarks>
+    /// <param name="state">接続履歴の状態。</param>
+    private void RenderBreadcrumb(ConnectionHistoryState state)
+    {
+        var labels = new List<string> { LocalizedText.Get("history.title") };
+        foreach (var route in _navigation.Path)
+        {
+            labels.Add(route switch
+            {
+                WindowsConnectionHistoryRoute.VehicleSessions vehicle =>
+                    state.VehicleGroups.FirstOrDefault(group => group.Id == vehicle.GroupID) is { } group
+                        ? GroupName(group)
+                        : LocalizedText.Get("history.vehicle.unassigned"),
+                WindowsConnectionHistoryRoute.SessionDetail detail =>
+                    state.Sessions.FirstOrDefault(session => session.Id == detail.SessionID) is { } session
+                        ? DateText.DateAndMinute(session.StartedAt)
+                        : "—",
+                _ => LocalizedText.Get("analysis.open"),
+            });
+        }
+
+        var key = string.Join("\u001F", labels);
+        Breadcrumb.Visibility = labels.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
+        if (key != _breadcrumbKey)
+        {
+            _breadcrumbKey = key;
+            Breadcrumb.ItemsSource = labels;
+        }
+    }
+
+    /// <summary>パンくずの項目を押したときの処理です。</summary>
+    /// <param name="sender">送り元。</param>
+    /// <param name="args">押した項目。</param>
+    private void OnBreadcrumbItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args) => NavigateTo(args.Index);
+
+    /// <summary>
+    /// 移動の積み重ねを指定した深さまで戻します。
+    /// </summary>
+    /// <remarks>責務: 解析から離れるときは解析を閉じたことをモデルへ伝え、端末のデータの変化を履歴へ反映させます。</remarks>
+    /// <param name="depth">残す深さ（0 で車両のアーカイブ）。</param>
+    private void NavigateTo(int depth)
+    {
+        if (depth < 0 || depth >= _navigation.Path.Count)
+        {
+            return;
+        }
+
+        var leavesAnalysis = _navigation.Path.Skip(depth).Any(route => route is WindowsConnectionHistoryRoute.SessionAnalysis);
+        if (leavesAnalysis)
+        {
+            _analysis.Send(new SessionLogAnalysisAction.Dismissed());
+            _analysisView = null;
+        }
+
+        _navigation.Truncate(depth);
+        if (leavesAnalysis)
+        {
+            _model.Send(new ConnectionHistoryAction.LocalDataChanged());
+        }
+
+        Render();
+    }
+
+    /// <summary>セッションの詳細を開きます。</summary>
+    /// <param name="sessionID">セッション。</param>
+    private void OpenDetail(ConnectionSessionID sessionID)
+    {
+        if (_navigation.Current is WindowsConnectionHistoryRoute.SessionAnalysis)
+        {
+            NavigateTo(_navigation.Path.Count - 1);
+        }
+
+        _navigation.ShowDetail(sessionID);
+        Render();
+    }
+
+    /// <summary>解析を開きます（iOS 版と同じく、Raw が端末になければダウンロードの確認から）。</summary>
     /// <param name="session">セッション。</param>
     private void OpenAnalysis(ConnectionSession session)
     {
+        if (_navigation.Current is not WindowsConnectionHistoryRoute.SessionDetail detail || detail.SessionID != session.Id)
+        {
+            OpenDetail(session.Id);
+        }
+
         _analysis.Send(new SessionLogAnalysisAction.SessionSelected(session));
         if (session.RawLogSummary.LocalState != ConnectionSessionLocalRawState.Removed)
         {
@@ -172,19 +353,10 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         }
     }
 
-    /// <summary>解析を閉じてセッション詳細へ戻ります。</summary>
-    /// <remarks>責務: 解析の終了を送り、詳細へ戻って履歴の再読込を求めます（iOS 版の <c>onChange(of: isAnalysisPresented)</c>）。</remarks>
-    private void CloseAnalysis()
-    {
-        _analysis.Send(new SessionLogAnalysisAction.Dismissed());
-        _navigation.ReturnFromAnalysis();
-        _analysisView = null;
-        _model.Send(new ConnectionHistoryAction.LocalDataChanged());
-        Render();
-    }
-
-    /// <summary>最上位（記録中と車両ごとの保存済みログ）を描きます。</summary>
-    /// <remarks>責務: 見出し、失敗・空の表示、記録中のセッション、車両ごとのまとまりを作ります。</remarks>
+    /// <summary>
+    /// 車両別のアーカイブ（最初の画面）を描きます。
+    /// </summary>
+    /// <remarks>責務: 見出しと合計、失敗・空の表示、進行中のセッション、車両ごとのカードを作ります。</remarks>
     /// <param name="state">接続履歴の状態。</param>
     private void RenderArchive(ConnectionHistoryState state)
     {
@@ -250,9 +422,8 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         Page.Children.Add(grid);
     }
 
-    /// <summary>記録中のセッションのカードを作ります。</summary>
-    /// <remarks>責務: 車両名、「記録中」、経過時間、開始日時を並べます（緑は記録中の状態が裏付ける）。</remarks>
-    /// <param name="session">記録中のセッション。</param>
+    /// <summary>進行中のセッションのカードを作ります。</summary>
+    /// <param name="session">セッション。</param>
     /// <returns>カード。</returns>
     private Border ActiveSessionCard(ConnectionSession session)
     {
@@ -282,8 +453,7 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         return SurfaceCard.Create(grid, Tone.Success, 20, tinted: true);
     }
 
-    /// <summary>車両のまとまりのボタンを作ります。</summary>
-    /// <remarks>責務: 車両名・識別子・セッション数・記録時間・距離・中断の数を出し、押すとその車両の一覧へ進みます。</remarks>
+    /// <summary>車両のカード（押すとその車両のセッション一覧へ進む）を作ります。</summary>
     /// <param name="group">車両のまとまり。</param>
     /// <returns>ボタン。</returns>
     private Button VehicleGroupButton(ConnectionHistoryVehicleGroup group)
@@ -327,10 +497,9 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         return button;
     }
 
-    /// <summary>車両のまとまりの数値の行を作ります。</summary>
-    /// <remarks>責務: セッション数・記録時間・距離と、中断があれば警告のバッジを並べます。</remarks>
-    /// <param name="group">車両のまとまり。null なら 0 として出す。</param>
-    /// <returns>行。</returns>
+    /// <summary>車両のまとまりの数値（件数・時間・距離・中断）を並べます。</summary>
+    /// <param name="group">車両のまとまり。なければ 0 を出す。</param>
+    /// <returns>数値の行。</returns>
     private static StackPanel GroupMetrics(ConnectionHistoryVehicleGroup? group)
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 18 };
@@ -347,56 +516,51 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         return row;
     }
 
-    /// <summary>車両のセッション一覧を描きます。</summary>
-    /// <remarks>責務: 戻るボタン付きの見出し、絞り込み、絞り込んだセッションの行を作ります。</remarks>
+    /// <summary>
+    /// 車両のセッション一覧を描きます。
+    /// </summary>
+    /// <remarks>責務: 車両の見出し、絞り込み、セッションの行を作ります。左右 2 列のとき（<paramref name="selectedID"/> の行を強調）は狭い幅に合わせて詰めます。</remarks>
+    /// <param name="host">描く先。</param>
     /// <param name="state">接続履歴の状態。</param>
     /// <param name="groupID">車両のまとまり。</param>
-    private void RenderVehicleSessions(ConnectionHistoryState state, ConnectionHistoryVehicleGroupID groupID)
+    /// <param name="selectedID">詳細を出しているセッション。なければ null。</param>
+    private void RenderSessionList(StackPanel host, ConnectionHistoryState state, ConnectionHistoryVehicleGroupID groupID, ConnectionSessionID? selectedID)
     {
+        var compact = !ReferenceEquals(host, Page);
+        host.Children.Clear();
         var group = state.VehicleGroups.FirstOrDefault(item => item.Id == groupID);
         var sessions = state.FilteredSessions(groupID);
-        var header = new Grid { ColumnSpacing = 18 };
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        var back = BackButton(LocalizedText.Get("history.navigation.back"), () =>
-        {
-            _navigation.ReturnToVehicleArchive();
-            Render();
-        });
-        header.Children.Add(back);
         var identityTexts = new StackPanel { Spacing = 4 };
         identityTexts.Children.Add(Typography.Text(LocalizedText.Get("history.archive.title"), "EyebrowTextStyle"));
-        identityTexts.Children.Add(Typography.Text(group is null ? LocalizedText.Get("history.vehicle.unassigned") : GroupName(group), "PageTitleTextStyle"));
+        identityTexts.Children.Add(Typography.Text(group is null ? LocalizedText.Get("history.vehicle.unassigned") : GroupName(group), compact ? "SubtitleTextBlockStyle" : "PageTitleTextStyle"));
         if (group?.Vehicle?.DisplayIdentifier is { Length: > 0 } identifier)
         {
             identityTexts.Children.Add(Typography.Text(identifier, "MonospaceCaptionTextStyle"));
         }
 
         identityTexts.Children.Add(GroupMetrics(group));
-        Grid.SetColumn(identityTexts, 1);
-        header.Children.Add(identityTexts);
-        Page.Children.Add(SurfaceCard.Create(header, padding: 20));
-        Page.Children.Add(FilterPanel(state));
+        host.Children.Add(compact ? identityTexts : SurfaceCard.Create(identityTexts, padding: 20));
+        host.Children.Add(FilterPanel(state, compact));
         if (sessions.Count == 0)
         {
-            Page.Children.Add(new ContentUnavailablePanel(FluentSymbol.Search, LocalizedText.Get("history.filter.empty"), LocalizedText.Get("history.filter.empty.body")));
+            host.Children.Add(new ContentUnavailablePanel(FluentSymbol.Search, LocalizedText.Get("history.filter.empty"), LocalizedText.Get("history.filter.empty.body")));
             return;
         }
 
-        var list = new StackPanel { Spacing = 10 };
+        var list = new StackPanel { Spacing = compact ? 6 : 10 };
         foreach (var session in sessions)
         {
-            list.Children.Add(SessionListItem(state, session));
+            list.Children.Add(SessionListItem(state, session, compact, session.Id == selectedID));
         }
 
-        Page.Children.Add(list);
+        host.Children.Add(list);
     }
 
-    /// <summary>絞り込みの部分を作ります。</summary>
-    /// <remarks>責務: 開始日・終了日・終了理由・並び順の絞り込みと、解除のボタンを作ります。</remarks>
+    /// <summary>絞り込みと並べ替えの面を作ります。</summary>
     /// <param name="state">接続履歴の状態。</param>
-    /// <returns>表示の要素。</returns>
-    private Border FilterPanel(ConnectionHistoryState state)
+    /// <param name="compact">狭い一覧の中に置くなら true。</param>
+    /// <returns>絞り込みの面。</returns>
+    private Border FilterPanel(ConnectionHistoryState state, bool compact)
     {
         var stack = new StackPanel { Spacing = 13 };
         var head = new Grid();
@@ -405,14 +569,14 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         head.Children.Add(new GlyphLabel(FluentSymbol.Filter, LocalizedText.Get("history.filter.title"), "BodyStrongTextBlockStyle"));
         if (state.HasActiveFilters)
         {
-            var reset = new HyperlinkButton { Content = LocalizedText.Get("history.filter.reset") };
+            var reset = new HyperlinkButton { Content = LocalizedText.Get("history.filter.reset"), Padding = new Thickness(6, 2, 6, 2) };
             reset.Click += (_, _) => _model.Send(new ConnectionHistoryAction.FiltersReset());
             Grid.SetColumn(reset, 1);
             head.Children.Add(reset);
         }
 
         stack.Children.Add(head);
-        var controls = new AdaptiveGrid { MinItemWidth = 220, Spacing = 14 };
+        var controls = new AdaptiveGrid { MinItemWidth = compact ? 160 : 220, Spacing = compact ? 10 : 14 };
         var closedStarts = state.ClosedSessions.Select(session => session.StartedAt).ToList();
         controls.Children.Add(DateFilter(
             "history.filter.from",
@@ -455,16 +619,21 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         };
         controls.Children.Add(sort);
         stack.Children.Add(controls);
-        return new Border { Background = DesignTokens.SubtleBackground(Tone.Accent), CornerRadius = new CornerRadius(14), Padding = new Thickness(17), Child = stack };
+        return new Border
+        {
+            Background = DesignTokens.SubtleBackground(Tone.Accent),
+            CornerRadius = new CornerRadius(compact ? 10 : 14),
+            Padding = new Thickness(compact ? 13 : 17),
+            Child = stack,
+        };
     }
 
-    /// <summary>日付の絞り込みを作ります。</summary>
-    /// <remarks>責務: 使うかどうかのチェックと日付の選択を作り、変化を送ります。</remarks>
+    /// <summary>日付の絞り込み（チェックで有効にし、カレンダーで選ぶ）を作ります。</summary>
     /// <param name="titleKey">題のキー。</param>
-    /// <param name="date">今の日付。null なら使わない。</param>
-    /// <param name="fallback">チェックしたときの初期の日付。</param>
-    /// <param name="update">変化を送る処理。</param>
-    /// <returns>表示の要素。</returns>
+    /// <param name="date">今の日付。なければ絞り込まない。</param>
+    /// <param name="fallback">有効にしたときの最初の日付。</param>
+    /// <param name="update">変わったときの送り先。</param>
+    /// <returns>日付の絞り込み。</returns>
     private StackPanel DateFilter(string titleKey, DateTimeOffset? date, DateTimeOffset fallback, Action<DateTimeOffset?> update)
     {
         var stack = new StackPanel { Spacing = 6 };
@@ -487,12 +656,16 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         return stack;
     }
 
-    /// <summary>セッションの行（と手動アップロード・Raw の解放のボタン）を作ります。</summary>
-    /// <remarks>責務: 行を押すと詳細へ進み、条件を満たすときだけアップロードと端末の Raw の解放のボタンを出します。</remarks>
+    /// <summary>
+    /// セッションの 1 行を作ります。
+    /// </summary>
+    /// <remarks>責務: 押すと詳細を開く行を作り、右クリックで開く操作のメニューを付けます。1 列のときはアップロードと Raw の解放のボタンも横に並べます。</remarks>
     /// <param name="state">接続履歴の状態。</param>
     /// <param name="session">セッション。</param>
-    /// <returns>表示の要素。</returns>
-    private Grid SessionListItem(ConnectionHistoryState state, ConnectionSession session)
+    /// <param name="compact">狭い一覧の中に置くなら true。</param>
+    /// <param name="selected">詳細を出しているなら true。</param>
+    /// <returns>行。</returns>
+    private Grid SessionListItem(ConnectionHistoryState state, ConnectionSession session, bool compact, bool selected)
     {
         var grid = new Grid { ColumnSpacing = 8 };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -500,47 +673,40 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         var row = new Button
         {
-            Content = SessionRow(session),
+            Content = SessionRow(session, compact),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
-            Padding = new Thickness(15),
-            CornerRadius = new CornerRadius(12),
+            Padding = new Thickness(compact ? 12 : 15),
+            CornerRadius = new CornerRadius(compact ? 8 : 12),
+            ContextFlyout = SessionMenu(state, session),
         };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(row, DateText.DateAndMinute(session.StartedAt));
-        row.Click += (_, _) =>
+        if (selected)
         {
-            _navigation.Push(new WindowsConnectionHistoryRoute.SessionDetail(session.Id));
-            Render();
-        };
+            row.Background = DesignTokens.SubtleBackground(Tone.Accent);
+            row.BorderBrush = DesignTokens.Brush("RevTorqueAccentBrush");
+            row.BorderThickness = new Thickness(1.5);
+        }
+
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(row, DateText.DateAndMinute(session.StartedAt));
+        row.Click += (_, _) => OpenDetail(session.Id);
         grid.Children.Add(row);
+        if (compact)
+        {
+            return grid;
+        }
+
         if (CanUpload(state, session))
         {
-            var upload = new Button { Style = DesignTokens.Style("AccentButtonStyle"), IsEnabled = state.UploadingSessionID is null, VerticalAlignment = VerticalAlignment.Center };
-            if (state.UploadingSessionID == session.Id)
-            {
-                var progress = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 7, MinWidth = 112 };
-                progress.Children.Add(new ProgressBar { Value = (state.UploadProgress ?? 0) * 100, Width = 72, VerticalAlignment = VerticalAlignment.Center });
-                progress.Children.Add(Typography.Text(NumberText.Percent(state.UploadProgress ?? 0), "CaptionTextBlockStyle", wraps: false));
-                upload.Content = progress;
-            }
-            else
-            {
-                upload.Content = new GlyphLabel(FluentSymbol.Upload, LocalizedText.Get("history.upload.button"));
-            }
-
-            upload.Click += (_, _) => _model.Send(new ConnectionHistoryAction.SessionUploadRequested(session.Id));
+            var upload = UploadButton(state, session);
+            upload.VerticalAlignment = VerticalAlignment.Center;
             Grid.SetColumn(upload, 1);
             grid.Children.Add(upload);
         }
 
         if (CanReleaseRawCache(session))
         {
-            var release = new Button
-            {
-                Content = new GlyphLabel(FluentSymbol.Storage, LocalizedText.Get("history.raw.remove.button"), foreground: DesignTokens.Foreground(Tone.Caution)),
-                VerticalAlignment = VerticalAlignment.Center,
-            };
-            release.Click += (_, _) => _model.Send(new ConnectionHistoryAction.LocalRawRemovalRequested(session.Id));
+            var release = ReleaseRawButton(session, _model.Send);
+            release.VerticalAlignment = VerticalAlignment.Center;
             Grid.SetColumn(release, 2);
             grid.Children.Add(release);
         }
@@ -548,13 +714,84 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         return grid;
     }
 
-    /// <summary>セッションの行の中身を作ります。</summary>
-    /// <remarks>責務: 完了・中断の記号、開始日時、取得元、保存の状態、終了理由、時間・距離、短い ID を並べます。</remarks>
+    /// <summary>セッションの右クリックメニューを作ります。</summary>
+    /// <param name="state">接続履歴の状態。</param>
     /// <param name="session">セッション。</param>
-    /// <returns>表示の要素。</returns>
-    private static Grid SessionRow(ConnectionSession session)
+    /// <returns>メニュー。</returns>
+    private MenuFlyout SessionMenu(ConnectionHistoryState state, ConnectionSession session)
     {
-        var grid = new Grid { ColumnSpacing = 14 };
+        var menu = new ContextMenu()
+            .Item(FluentSymbol.Document, LocalizedText.Get("windows.history.open_detail"), () => OpenDetail(session.Id))
+            .Item(FluentSymbol.Chart, LocalizedText.Get("analysis.open"), () => OpenAnalysis(session));
+        if (CanUpload(state, session) && state.UploadingSessionID is null)
+        {
+            menu.Item(FluentSymbol.Upload, LocalizedText.Get("history.upload.button"), () => _model.Send(new ConnectionHistoryAction.SessionUploadRequested(session.Id)));
+        }
+
+        if (CanReleaseRawCache(session))
+        {
+            menu.Item(FluentSymbol.Storage, LocalizedText.Get("history.raw.remove.button"), () => _model.Send(new ConnectionHistoryAction.LocalRawRemovalRequested(session.Id)), Tone.Caution);
+        }
+
+        if (session.EndedAt is not null && state.DeletingSessionID != session.Id)
+        {
+            menu.Separator().Item(FluentSymbol.Delete, LocalizedText.Get("history.delete.button"), () => _model.Send(new ConnectionHistoryAction.SessionDeletionRequested(session.Id)), Tone.Danger);
+        }
+
+        return menu.Build();
+    }
+
+    /// <summary>手動アップロードのボタンを作ります（アップロード中は進み具合を出す）。</summary>
+    /// <param name="state">接続履歴の状態。</param>
+    /// <param name="session">セッション。</param>
+    /// <returns>ボタン。</returns>
+    internal Button UploadButton(ConnectionHistoryState state, ConnectionSession session) => MakeUploadButton(state, session, _model.Send);
+
+    /// <summary>手動アップロードのボタンを作ります（アップロード中は進み具合を出す）。</summary>
+    /// <param name="state">接続履歴の状態。</param>
+    /// <param name="session">セッション。</param>
+    /// <param name="send">操作の送り先。</param>
+    /// <returns>ボタン。</returns>
+    internal static Button MakeUploadButton(ConnectionHistoryState state, ConnectionSession session, Action<ConnectionHistoryAction> send)
+    {
+        var upload = new Button { Style = DesignTokens.Style("AccentButtonStyle"), IsEnabled = state.UploadingSessionID is null };
+        if (state.UploadingSessionID == session.Id)
+        {
+            var progress = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 7, MinWidth = 112 };
+            progress.Children.Add(new ProgressBar { Value = (state.UploadProgress ?? 0) * 100, Width = 72, VerticalAlignment = VerticalAlignment.Center });
+            progress.Children.Add(Typography.Text(NumberText.Percent(state.UploadProgress ?? 0), "CaptionTextBlockStyle", wraps: false));
+            upload.Content = progress;
+        }
+        else
+        {
+            upload.Content = new GlyphLabel(FluentSymbol.Upload, LocalizedText.Get("history.upload.button"));
+        }
+
+        upload.Click += (_, _) => send(new ConnectionHistoryAction.SessionUploadRequested(session.Id));
+        return upload;
+    }
+
+    /// <summary>端末の Raw を解放するボタンを作ります。</summary>
+    /// <param name="session">セッション。</param>
+    /// <param name="send">操作の送り先。</param>
+    /// <returns>ボタン。</returns>
+    internal static Button ReleaseRawButton(ConnectionSession session, Action<ConnectionHistoryAction> send)
+    {
+        var release = new Button
+        {
+            Content = new GlyphLabel(FluentSymbol.Storage, LocalizedText.Get("history.raw.remove.button"), foreground: DesignTokens.Foreground(Tone.Caution)),
+        };
+        release.Click += (_, _) => send(new ConnectionHistoryAction.LocalRawRemovalRequested(session.Id));
+        return release;
+    }
+
+    /// <summary>セッションの行の中身を作ります。</summary>
+    /// <param name="session">セッション。</param>
+    /// <param name="compact">狭い一覧の中に置くなら true（ID を省き、時間と距離を下の段へ回す）。</param>
+    /// <returns>行の中身。</returns>
+    private static Grid SessionRow(ConnectionSession session, bool compact)
+    {
+        var grid = new Grid { ColumnSpacing = compact ? 11 : 14 };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -565,7 +802,11 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         grid.Children.Add(status);
         var texts = new StackPanel { Spacing = 4 };
         texts.Children.Add(Typography.Strong(DateText.DateAndMinute(session.StartedAt)));
-        texts.Children.Add(new GlyphLabel(FluentSymbol.Person, AcquisitionDeviceText(session), "SecondaryCaptionTextStyle"));
+        if (!compact)
+        {
+            texts.Children.Add(new GlyphLabel(FluentSymbol.Person, AcquisitionDeviceText(session), "SecondaryCaptionTextStyle"));
+        }
+
         var badges = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 7 };
         badges.Children.Add(CloudStatusPill(session.RawLogSummary.CloudState));
         badges.Children.Add(LocalStatusPill(session.RawLogSummary.LocalState));
@@ -582,17 +823,20 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         measures.Children.Add(new GlyphLabel(FluentSymbol.Road, DistanceText.Format(session.RecordedDistanceKilometers), "MonospaceCaptionTextStyle"));
         Grid.SetColumn(measures, 2);
         grid.Children.Add(measures);
-        var id = Typography.Text(session.Id.RawValue.ToString("N")[..8].ToUpperInvariant(), "MonospaceCaptionTextStyle", wraps: false);
-        id.VerticalAlignment = VerticalAlignment.Center;
-        Grid.SetColumn(id, 3);
-        grid.Children.Add(id);
+        if (!compact)
+        {
+            var id = Typography.Text(session.Id.RawValue.ToString("N")[..8].ToUpperInvariant(), "MonospaceCaptionTextStyle", wraps: false);
+            id.VerticalAlignment = VerticalAlignment.Center;
+            Grid.SetColumn(id, 3);
+            grid.Children.Add(id);
+        }
+
         return grid;
     }
 
-    /// <summary>クラウドの保存状態の表示を作ります。</summary>
-    /// <remarks>責務: アップロードの状態を記号・文言・色の組へ変換します。</remarks>
-    /// <param name="state">クラウドの保存状態。</param>
-    /// <returns>表示の要素。</returns>
+    /// <summary>iCloud の状態の印を作ります。</summary>
+    /// <param name="state">iCloud の状態。</param>
+    /// <returns>印。</returns>
     private static Border CloudStatusPill(ConnectionSessionCloudSyncState state) => state switch
     {
         ConnectionSessionCloudSyncState.Pending => StatusPill.Create(FluentSymbol.Upload, LocalizedText.Get("history.raw.cloud.pending"), Tone.Caution),
@@ -601,10 +845,9 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         _ => StatusPill.Create(FluentSymbol.Cloud, LocalizedText.Get("history.raw.cloud.not_uploaded"), Tone.Neutral),
     };
 
-    /// <summary>端末の保存状態の表示を作ります。</summary>
-    /// <remarks>責務: 端末の Raw の状態を記号・文言・色の組へ変換します。</remarks>
-    /// <param name="state">端末の保存状態。</param>
-    /// <returns>表示の要素。</returns>
+    /// <summary>端末の Raw の状態の印を作ります。</summary>
+    /// <param name="state">端末の Raw の状態。</param>
+    /// <returns>印。</returns>
     private static Border LocalStatusPill(ConnectionSessionLocalRawState state) => state switch
     {
         ConnectionSessionLocalRawState.Empty => StatusPill.Create(null, LocalizedText.Get("history.raw.local.empty"), Tone.Neutral),
@@ -612,28 +855,7 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         _ => StatusPill.Create(FluentSymbol.Download, LocalizedText.Get("history.raw.local.removed"), Tone.Neutral),
     };
 
-    /// <summary>戻るボタンを作ります。</summary>
-    /// <remarks>責務: 記号だけの戻るボタンに、読み上げとツールチップの文言を付けます。</remarks>
-    /// <param name="label">文言。</param>
-    /// <param name="back">押したときの処理。</param>
-    /// <returns>ボタン。</returns>
-    public static Button BackButton(string label, Action back)
-    {
-        var button = new Button
-        {
-            Content = new FontIcon { Glyph = FluentSymbol.Back, FontSize = 14 },
-            Width = 44,
-            Height = 44,
-            VerticalAlignment = VerticalAlignment.Top,
-        };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, label);
-        ToolTipService.SetToolTip(button, label);
-        button.Click += (_, _) => back();
-        return button;
-    }
-
-    /// <summary>確認のダイアログを状態に合わせます。</summary>
-    /// <remarks>責務: Raw の解放・削除・停止の確認・アップロードの失敗・ダウンロードの確認を、状態があるときだけ出します。</remarks>
+    /// <summary>状態に合わせて確認のダイアログを出し入れします。</summary>
     /// <param name="state">接続履歴の状態。</param>
     /// <param name="analysis">解析の状態。</param>
     private void SyncDialogs(ConnectionHistoryState state, SessionLogAnalysisState analysis)
@@ -716,13 +938,12 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
             });
     }
 
-    /// <summary>確認のダイアログを作ります。</summary>
-    /// <remarks>責務: 題・本文・決定と取り消しのボタンを持つダイアログを作ります。</remarks>
+    /// <summary>確認・知らせのダイアログを作ります。</summary>
     /// <param name="titleKey">題のキー。</param>
     /// <param name="message">本文。</param>
-    /// <param name="primaryKey">決定のボタンのキー。null なら決定なし。</param>
+    /// <param name="primaryKey">主のボタンのキー。なければ null。</param>
     /// <param name="closeKey">閉じるボタンのキー。</param>
-    /// <param name="destructive">取り消せない操作なら true（決定を赤にする）。</param>
+    /// <param name="destructive">取り消せない操作なら true（主のボタンを赤にする）。</param>
     /// <returns>ダイアログ。</returns>
     private static ContentDialog Alert(string titleKey, string message, string? primaryKey, string closeKey, bool destructive = false)
     {
@@ -742,55 +963,49 @@ public sealed partial class WindowsConnectionHistoryView : UserControl
         return dialog;
     }
 
-    /// <summary>手動アップロードできるかどうかを返します（iOS 版の <c>canUpload</c>）。</summary>
-    /// <remarks>責務: 自動アップロードが無効で、終了済みかつ端末に Raw があり未アップロードのときだけ true にします。</remarks>
+    /// <summary>手動アップロードできるかどうかを返します（自動アップロードが無効で、終わっていて、端末に Raw があり、まだ上げていない）。</summary>
     /// <param name="state">接続履歴の状態。</param>
     /// <param name="session">セッション。</param>
-    /// <returns>アップロードできるなら true。</returns>
-    private static bool CanUpload(ConnectionHistoryState state, ConnectionSession session) =>
+    /// <returns>できるなら true。</returns>
+    internal static bool CanUpload(ConnectionHistoryState state, ConnectionSession session) =>
         !state.AutomaticUploadEnabled
         && session.EndedAt is not null
         && session.RawLogSummary.LocalState != ConnectionSessionLocalRawState.Removed
         && session.RawLogSummary.CloudState != ConnectionSessionCloudSyncState.Uploaded;
 
-    /// <summary>端末の Raw を解放できるかどうかを返します（iOS 版の <c>canReleaseRawCache</c>）。</summary>
-    /// <remarks>責務: クラウドへの保存が確認できた Raw だけを解放の対象にします。</remarks>
+    /// <summary>端末の Raw を解放できるかどうかを返します（iCloud に上がっていて、目録の要約がある）。</summary>
     /// <param name="session">セッション。</param>
-    /// <returns>解放できるなら true。</returns>
-    private static bool CanReleaseRawCache(ConnectionSession session) =>
+    /// <returns>できるなら true。</returns>
+    internal static bool CanReleaseRawCache(ConnectionSession session) =>
         session.EndedAt is not null
         && session.RawLogSummary.LocalState == ConnectionSessionLocalRawState.Available
         && session.RawLogSummary.RecordCount > 0
         && session.RawLogSummary.CloudState == ConnectionSessionCloudSyncState.Uploaded
         && !string.IsNullOrEmpty(session.RawLogSummary.ManifestDigest);
 
-    /// <summary>車両のまとまりの名前を返します。</summary>
-    /// <remarks>責務: 車両名、なければ「未割り当て」の文言を返します。</remarks>
+    /// <summary>車両のまとまりの名前です。</summary>
     /// <param name="group">車両のまとまり。</param>
     /// <returns>名前。</returns>
     private static string GroupName(ConnectionHistoryVehicleGroup group) =>
         group.Vehicle?.Name is { Length: > 0 } name ? name : LocalizedText.Get("history.vehicle.unassigned");
 
-    /// <summary>セッションの車両名を返します。</summary>
-    /// <remarks>責務: 車両名、なければ「確認中」の文言を返します。</remarks>
+    /// <summary>セッションの車両の名前です。</summary>
     /// <param name="session">セッション。</param>
     /// <returns>名前。</returns>
     public static string VehicleName(ConnectionSession session) =>
         session.Vehicle?.Name is { Length: > 0 } name ? name : LocalizedText.Get("history.vehicle.pending");
 
-    /// <summary>取得元の端末の表示を返します。</summary>
-    /// <remarks>責務: 端末名と種類、記録がなければ「不明」の文言を返します。</remarks>
+    /// <summary>取得した端末の文字です。</summary>
     /// <param name="session">セッション。</param>
-    /// <returns>表示文字列。</returns>
+    /// <returns>文字。</returns>
     public static string AcquisitionDeviceText(ConnectionSession session) =>
         session.AcquisitionDevice is { } device
             ? $"{device.Name} ({device.Platform.ToRawValue()})"
             : LocalizedText.Get("history.device.unknown");
 
-    /// <summary>セッションの記録時間（秒）を返します。</summary>
-    /// <remarks>責務: 終了済みなら開始から終了まで、記録中なら 0 を返します。</remarks>
+    /// <summary>セッションの長さ（秒）です。</summary>
     /// <param name="session">セッション。</param>
-    /// <returns>秒数。</returns>
+    /// <returns>秒。</returns>
     private static double SessionDuration(ConnectionSession session) =>
         Math.Max(0, ((session.EndedAt ?? session.StartedAt) - session.StartedAt).TotalSeconds);
 }

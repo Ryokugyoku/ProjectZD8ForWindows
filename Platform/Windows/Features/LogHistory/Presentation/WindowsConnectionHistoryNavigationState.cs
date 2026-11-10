@@ -48,6 +48,32 @@ public sealed class WindowsConnectionHistoryNavigationState
         }
     }
 
+    /// <summary>移動の積み重ねを、先頭から指定した数だけ残して戻ります（パンくずでの移動）。</summary>
+    /// <remarks>責務: 指定した数より深い行き先を取り除きます。0 なら車両の一覧へ戻ります。</remarks>
+    /// <param name="count">残す数。</param>
+    public void Truncate(int count)
+    {
+        if (count < _path.Count)
+        {
+            _path.RemoveRange(System.Math.Max(count, 0), _path.Count - System.Math.Max(count, 0));
+        }
+    }
+
+    /// <summary>
+    /// セッションの詳細を開きます。すでに別のセッションの詳細を開いていれば、それと入れ替えます（一覧・詳細を並べたときの選び直し）。
+    /// </summary>
+    /// <remarks>責務: 詳細の行き先を 1 段だけにして、戻る操作で一覧へ 1 回で戻れるようにします。</remarks>
+    /// <param name="sessionID">開くセッション。</param>
+    public void ShowDetail(ConnectionSessionID sessionID)
+    {
+        while (Current is WindowsConnectionHistoryRoute.SessionDetail or WindowsConnectionHistoryRoute.SessionAnalysis)
+        {
+            _path.RemoveAt(_path.Count - 1);
+        }
+
+        _path.Add(new WindowsConnectionHistoryRoute.SessionDetail(sessionID));
+    }
+
     /// <summary>表示中のセッションが消えたら、一覧へ戻ります。</summary>
     /// <remarks>責務: 最後の行き先のセッションがもうなければ、そのセッションの行き先を取り除きます。</remarks>
     /// <param name="availableSessionIDs">今あるセッション。</param>

@@ -3686,6 +3686,14 @@ Domina la conducción.</value>
     <value>Termina de iniciar sesión en el navegador…</value>
     <comment>windows.cloud.signing_in</comment>
   </data>
+  <data name="windows_history_open_detail" xml:space="preserve">
+    <value>Abrir detalles</value>
+    <comment>windows.history.open_detail</comment>
+  </data>
+  <data name="windows_history_select_session" xml:space="preserve">
+    <value>Selecciona una sesión para ver sus detalles aquí.</value>
+    <comment>windows.history.select_session</comment>
+  </data>
   <data name="windows_login_apple_coming_soon" xml:space="preserve">
     <value>Próximamente</value>
     <comment>windows.login.apple_coming_soon</comment>
@@ -3701,5 +3709,45 @@ Domina la conducción.</value>
   <data name="windows_login_local_mode_notice" xml:space="preserve">
     <value>El inicio de sesión con Apple llegará pronto. Por ahora, tus datos se guardan solo en este equipo y no se sincronizan con el iPhone. Pasarán a tu cuenta de Apple la primera vez que inicies sesión.</value>
     <comment>windows.login.local_mode_notice</comment>
+  </data>
+  <data name="windows_maintenance_delete_message" xml:space="preserve">
+    <value>Se eliminará «%@». Esta acción no se puede deshacer.</value>
+    <comment>windows.maintenance.delete.message</comment>
+  </data>
+  <data name="windows_maintenance_delete_title" xml:space="preserve">
+    <value>¿Eliminar este registro de mantenimiento?</value>
+    <comment>windows.maintenance.delete.title</comment>
+  </data>
+  <data name="windows_maintenance_new" xml:space="preserve">
+    <value>Nuevo registro</value>
+    <comment>windows.maintenance.new</comment>
+  </data>
+  <data name="windows_settings_group_account" xml:space="preserve">
+    <value>Cuenta</value>
+    <comment>windows.settings.group.account</comment>
+  </data>
+  <data name="windows_settings_group_connection" xml:space="preserve">
+    <value>Conexión</value>
+    <comment>windows.settings.group.connection</comment>
+  </data>
+  <data name="windows_settings_group_data" xml:space="preserve">
+    <value>Datos y sincronización</value>
+    <comment>windows.settings.group.data</comment>
+  </data>
+  <data name="windows_settings_group_general" xml:space="preserve">
+    <value>General</value>
+    <comment>windows.settings.group.general</comment>
+  </data>
+  <data name="windows_shell_connection_connected" xml:space="preserve">
+    <value>Conectado</value>
+    <comment>windows.shell.connection.connected</comment>
+  </data>
+  <data name="windows_shell_connection_disconnecting" xml:space="preserve">
+    <value>Desconectando…</value>
+    <comment>windows.shell.connection.disconnecting</comment>
+  </data>
+  <data name="windows_shell_open_live" xml:space="preserve">
+    <value>Ver en directo</value>
+    <comment>windows.shell.open_live</comment>
   </data>
 </root>

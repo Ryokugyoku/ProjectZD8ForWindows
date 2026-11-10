@@ -44,12 +44,16 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
     /// <summary>応答している PID の数の文字です。</summary>
     private TextBlock? _supportedCountText;
 
+    /// <summary>操作中の作り直しを待たせる仕組みです。</summary>
+    private readonly RenderGate _gate;
+
     /// <summary>ライブ取得のモデルを受け取って画面を作ります。</summary>
     /// <param name="model">ライブ取得のモデル。</param>
     public WindowsLiveTelemetryView(LiveTelemetryModel model)
     {
         _model = model;
         InitializeComponent();
+        _gate = new RenderGate(this);
         Loaded += (_, _) =>
         {
             _model.PropertyChanged += OnModelChanged;
@@ -81,8 +85,9 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
             ",",
             new[] { state.Phase.ToString(), state.FailureKey ?? string.Empty, _selectedCategory.ToString() }
                 .Concat(state.Samples.Select(sample => $"{sample.Request.Service:X2}{sample.Request.Pid:X2}{sample.VehicleModelCode}")));
-        if (key == _structureKey)
+        if (key == _structureKey || _gate.TryDefer(Render))
         {
+            // 操作中（分類のボタンを押している最中や、説明のフライアウトを開いている間）は作り直さず、値だけを変える。
             UpdateValues(state);
             return;
         }
@@ -103,6 +108,19 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
         Page.Children.Add(Hero(state));
         if (StatusBanner(state) is { } banner)
         {
+            if (state.Phase == LiveTelemetryStatePhase.Failed)
+            {
+                // 再試行は失敗の知らせの中に置く（Windows の InfoBar の操作ボタン）。
+                var retry = new Button
+                {
+                    Content = new GlyphLabel(FluentSymbol.Refresh, LocalizedText.Get("telemetry.retry")),
+                    Style = DesignTokens.Style("AccentButtonStyle"),
+                };
+                Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(retry, "windows-telemetry-retry");
+                retry.Click += (_, _) => _model.Send(new LiveTelemetryAction.RetryRequested());
+                banner.ActionButton = retry;
+            }
+
             Page.Children.Add(banner);
         }
 
@@ -122,18 +140,6 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
             Page.Children.Add(SurfaceCard.Create(new ContentUnavailablePanel(
                 FluentSymbol.Plug,
                 LocalizedText.Get("telemetry.status.waiting_for_connection"))));
-        }
-
-        if (state.Phase == LiveTelemetryStatePhase.Failed)
-        {
-            var retry = new Button
-            {
-                Content = new GlyphLabel(FluentSymbol.Refresh, LocalizedText.Get("telemetry.retry")),
-                Style = DesignTokens.Style("AccentButtonStyle"),
-                MinHeight = 40,
-            };
-            retry.Click += (_, _) => _model.Send(new LiveTelemetryAction.RetryRequested());
-            Page.Children.Add(retry);
         }
     }
 

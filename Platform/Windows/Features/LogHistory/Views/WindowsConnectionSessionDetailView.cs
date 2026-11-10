@@ -18,20 +18,19 @@ namespace ProjectZD8ForWindows.Platform.Windows.Features.LogHistory.Views;
 public sealed partial class WindowsConnectionSessionDetailView : UserControl
 {
     /// <summary>セッションと操作の送り先を受け取って詳細を作ります。</summary>
+    /// <remarks>一覧へ戻るのは、画面の上のパンくずとシェルの戻る操作で行います。</remarks>
     /// <param name="session">セッション。</param>
-    /// <param name="isDeleting">削除中なら true。</param>
+    /// <param name="state">接続履歴の状態（削除中・アップロード中かどうか）。</param>
     /// <param name="send">接続履歴の操作の送り先。</param>
     /// <param name="openAnalysis">解析を開く処理。</param>
-    /// <param name="back">一覧へ戻る処理。</param>
     public WindowsConnectionSessionDetailView(
         ConnectionSession session,
-        bool isDeleting,
+        ConnectionHistoryState state,
         Action<ConnectionHistoryAction> send,
-        Action<ConnectionSession> openAnalysis,
-        Action back)
+        Action<ConnectionSession> openAnalysis)
     {
         var page = new StackPanel { Spacing = 20 };
-        page.Children.Add(DetailActions(session, isDeleting, send, back));
+        page.Children.Add(DetailActions(session, state, send, openAnalysis));
         page.Children.Add(Hero(session));
         if (StopReviewCard(session, send) is { } review)
         {
@@ -58,17 +57,34 @@ public sealed partial class WindowsConnectionSessionDetailView : UserControl
         Content = page;
     }
 
-    /// <summary>戻る・削除の操作の行を作ります。</summary>
-    /// <remarks>責務: 戻るボタンと、終了済みのセッションの削除ボタン（削除中は進行表示）を並べます。</remarks>
+    /// <summary>操作の行（コマンドバー）を作ります。</summary>
+    /// <remarks>責務: 左に解析・アップロード・Raw の解放、右に終了済みのセッションの削除ボタン（削除中は進行表示）を並べます。</remarks>
     /// <returns>行。</returns>
-    private static Grid DetailActions(ConnectionSession session, bool isDeleting, Action<ConnectionHistoryAction> send, Action back)
+    private static Grid DetailActions(ConnectionSession session, ConnectionHistoryState state, Action<ConnectionHistoryAction> send, Action<ConnectionSession> openAnalysis)
     {
-        var grid = new Grid();
+        var isDeleting = state.DeletingSessionID == session.Id;
+        var grid = new Grid { ColumnSpacing = 8 };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var backButton = new Button { Content = new GlyphLabel(FluentSymbol.Back, LocalizedText.Get("history.detail.back")), MinHeight = 36 };
-        backButton.Click += (_, _) => back();
-        grid.Children.Add(backButton);
+        var left = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        var analysis = new Button { Content = new GlyphLabel(FluentSymbol.Chart, LocalizedText.Get("analysis.open")), MinHeight = 36 };
+        analysis.Click += (_, _) => openAnalysis(session);
+        left.Children.Add(analysis);
+        if (WindowsConnectionHistoryView.CanUpload(state, session))
+        {
+            var upload = WindowsConnectionHistoryView.MakeUploadButton(state, session, send);
+            upload.MinHeight = 36;
+            left.Children.Add(upload);
+        }
+
+        if (WindowsConnectionHistoryView.CanReleaseRawCache(session))
+        {
+            var release = WindowsConnectionHistoryView.ReleaseRawButton(session, send);
+            release.MinHeight = 36;
+            left.Children.Add(release);
+        }
+
+        grid.Children.Add(left);
         if (session.EndedAt is not null)
         {
             var delete = new Button

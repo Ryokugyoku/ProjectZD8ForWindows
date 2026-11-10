@@ -1,7 +1,7 @@
 # ProjectZD8ForWindows 進捗
 
 最終更新: 2026-11-10
-README 確認済みのコミット: d085c46
+README 確認済みのコミット: ae15a35（＋未コミットの画面の作り直しを反映済み）
 
 ## 概要
 - iOS/macOS アプリ「RevTorque Insight」（GitHub: Ryokugyoku/ProjectZD8、Swift/SwiftUI）を Windows（WinUI 3 / .NET 10）向けに作り直す。iOS 版と CloudKit で同期する。
@@ -15,7 +15,7 @@ README 確認済みのコミット: d085c46
 - 生ログストアの性能（Release、24 コア、1 セッションに 100 万件、`tools/ProjectZD8.LogStoreBenchmark`）：書込み 124 万件/秒、Append の遅延 p50 0.6µs・p99 2.0µs・p99.9 20.7µs（最大 14.1ms）。sequence の範囲読取（1,000 件）p50 0.66ms・p99 1.06ms、時間窓（10 秒分）p50 0.65ms・p99 1.09ms、全件読取 377ms。ディスク 26.5MiB（27.8 バイト/件）。開き直し（索引あり）1.2ms、異常終了後の開き直し（全走査）204ms。
 - OBD：USB シリアル（COM、115200bps）、Bluetooth Classic（RFCOMM / SPP）、BLE（GATT の UART）、デモ用アダプター。機器の検出、既定アダプターの記憶、BLE の既定アダプターの到来を監視してシェルの InfoBar で接続を尋ねる処理（iOS と同じユースケース）。
 - 同期と認証：Swift の Codable と同じ JSON、CloudKit Web Services のクライアントと各リポジトリ（車両・整備・接続セッション・AccountSettings・AccountSessionRevocation）、Web 版の Sign in with Apple（ID トークンの検証と sub の取り出し）、CloudKit の Web 認証（設定画面の「iCloud 同期」カード）、PasswordVault（だめなら DPAPI）への保存。機能フラグが有効で設定（`appsettings.Local.json` か環境変数 `PROJECTZD8_*`）もそろったときだけ使う。それ以外はローカルモード。
-- 翻訳：iOS 版の xcstrings（904 キー）と Windows 版だけの文言（`Strings/WindowsOnly.xcstrings`、18 キー）から、日本語・英語・スペイン語の .resw を生成して取り込んだ。
+- 翻訳：iOS 版の xcstrings（904 キー）と Windows 版だけの文言（`Strings/WindowsOnly.xcstrings`、30 キー）から、日本語・英語・スペイン語の .resw を生成して取り込んだ。
 - git は C:\Program Files\Git にあるが PATH に入っていない（Git Bash の git は使える）。GitHub CLI（gh）はない。.NET SDK 10.0.403 あり。iOS 版を参照用に ..\ProjectZD8 に clone 済み（8bcda6f）。
 
 ## 確かめたこと・確かめていないこと
@@ -23,6 +23,7 @@ README 確認済みのコミット: d085c46
 - 確かめていない：実機の OBD アダプター（USB シリアル・RFCOMM・BLE の接続と送受信、探索、到来の監視）、実際の CloudKit と Apple のサインイン（テストは偽の HTTP 応答だけ）、本物の車、電源断での fsync の効き目、ARM64 と x86 のビルド、狭いウインドウ（640×420）、写真の取り込み、停止確認・Raw の解放・セッション削除の各ダイアログ、Release ビルド（トリミングあり）での起動。
 
 ## 直近の作業
+- 2026-11-10: 画面を Windows 向けに作り直した（開発者の依頼「ボタンが若干不便」）。原因：多くの画面がモデルの変化（ライブ取得・ログ読込み・アダプター探索で 1 秒に何度も）のたびにボタンを作り直し、押してから離すまでにボタンが消えてクリックが取りこぼされていた。対策：RenderGate（押している最中・メニューやドロップダウンを開いている間は作り直しを待たせる）と、描く内容の鍵が変わったときだけ作り直す方式を全画面に入れた。あわせて、ナビを 1 行・設定を下に、全画面共通の接続バー（接続・切断・ライブ表示）、戻る（ボタン・Alt+←・マウスの戻る）、履歴のパンくずと広い幅での一覧・詳細の 2 列、右クリックメニュー（セッション・整備記録・車両）、整備の「新しい記録」メニューと ListView、Ctrl+S・F5、設定を Windows 11 の設定アプリ風の行に。不具合も直した：車両の編集で写真を選ぶと入力が消えていた、PID 収集設定でスイッチを切り替えるたびに一覧が先頭に戻っていた。整備記録の削除に確認ダイアログを足した（モデルは確認なしで消すため）。ビルド警告 0、テスト 522 件合格、起動して応答することまで確認（画面の目視は未）。
 - 2026-11-10: Sign in with Apple と iCloud 同期を「近日対応（Coming Soon）」にした（開発者の指示）。機能フラグ AppleSignIn:Enabled（既定 false）を足し、ログイン画面と設定画面に押せないボタンと「近日対応」の印を出した。有効にしたときに、ローカルモードのデータを最初の Apple アカウントへ引き継ぐ処理（SqliteAccountDataReassignment と LocalAccountDataAdoptingAuthorizationPort）を作った。切り替えと引き継ぎのテスト 28 件を追加。docs/CLOUD_SETUP.md に有効にする手順のチェックリストを書いた。起動してログイン画面と設定画面（日本語・英語）を目で確かめた（screenshots/coming-soon/）。
 - 2026-11-10: Data 層・画面・組み立て・翻訳・マニフェストを作り、アプリを完成させた。サブエージェント 4 つ（永続化、デバイス、ネットワークと認証、画面）を別の作業ツリーで並行させ、リードがまとめて組み立てを本物の Data 層に差し替えた。ローカルモードとデモ用アダプターで全画面を操作して確かめた。
 - 2026-11-10: Application 層とそのテストを C# に移植した（9 機能、テスト 155 件合格）。
@@ -30,6 +31,7 @@ README 確認済みのコミット: d085c46
 - 2026-11-10: iOS 版の CloudKit と認証の実装を調べ、Windows から同期する方式を設計した（下の「同期の設計メモ」）。
 
 ## 次にやること
+- 画面の作り直し（2026-11-10）を目で確かめる：接続バーの接続・切断、履歴の 2 列（幅 1100 以上）とパンくず・戻る、右クリックメニュー、整備の「新しい記録」と ↑↓ の選択、設定の行、ライブ取得中に分類ボタンを連打してもクリックが届くこと、暗い外観・英語・狭い幅（640）。
 - Services ID が発行されたら、docs/CLOUD_SETUP.md の「0. 有効にする手順（チェックリスト）」を順に進め、最後に AppleSignIn:Enabled を true にする。
 - 開発者の準備（docs/CLOUD_SETUP.md）：Apple Developer で Services ID とリダイレクト先の https ドメインを用意し、docs/web/ のページを置く。CloudKit Console で API トークン（Sign In Callback）を作り、AccountSettings と AccountSessionRevocation のスキーマを Production に反映する。appsettings.Local.json を置く。
 - 実際の Apple・CloudKit につないで確かめる（下の検討事項の「CloudKit Web Services の確かめていない点」と「sub の一致」）。
@@ -66,6 +68,8 @@ README 確認済みのコミット: d085c46
 - CloudKit Console で、スキーマを本番環境（Production）に反映する必要がある（開発者の作業）。
 
 ## 検討事項・未決定
+- 画面の作り直しで、iOS 版と違う所：ホームの補足（ナビの 2 行目）はツールチップへ、詳細・解析の「戻る」ボタンはパンくずとシェルの戻るへ、設定の言語・外観はボタンの並びからドロップダウンへ、整備記録の削除は確認ダイアログを挟む。Windows の慣習に合わせたが、iOS と揃えたい所があるか → 開発者に確認。
+- 車両の編集で写真を選んだとき、iOS 版は下書きを置き換える（入力が消える）実装に見える。Windows 版は入力を残すようにした。iOS 側も直すか → 開発者に確認。
 - ローカルモードのデータの引き継ぎの注意点：①確認なしで自動で引き継ぐ（決定事項を参照）。②付け替え先に同じ ID の車両があれば上書きしない（元の持ち主に残る）。③引き継いだ走行ログが iCloud に上がるのは、自動アップロードの設定が有効なときだけ（無効なら履歴に手動アップロードのボタンが出る）。
 - 機能フラグを有効にしたあと、ローカルモードに戻す手段はない（フラグを false に戻すとローカルモードの識別子で入り直すが、引き継ぎ済みのデータは Apple のアカウントの持ち物のまま見えなくなる）。戻す運用が要るか → 開発者に確認。
 - アカウント削除で AccountSessionRevocation のレコードを消すかどうか。今の実装は消さない（ほかの端末へログアウトを知らせるのに要るため）。「iOS 版の CloudKit 化の設計案」の「消す」と食い違っている。→ 開発者に確認。
@@ -94,6 +98,7 @@ README 確認済みのコミット: d085c46
 - ライセンスが PolyForm Noncommercial なので、Windows 版も同じライセンスにするか。
 
 ## 決定事項
+- 2026-11-10: 画面は Windows の慣習を優先してよい（開発者の指示「機能を保てばレイアウトは大きく変えてよい」）。モデルが頻繁に変わる画面では、押している最中に作り直さない（RenderGate）ことを全画面の決まりにする。
 - 2026-11-10: ローカルモードのデータは、この PC で最初に Apple でサインインしたアカウントへ、確認のダイアログなしで自動で引き継ぐ（開発者の判断）。Windows のユーザーごとに 1 人が使う前提。家族で 1 台の PC を共有すると、先にサインインした人のアカウントに入る。
 - 2026-11-10: Sign in with Apple と iCloud 同期は「近日対応（Coming Soon）」にする（開発者の指示）。切り替えは 1 か所の機能フラグ `AppleSignIn:Enabled`（appsettings.Local.json。環境変数 PROJECTZD8_APPLE_SIGN_IN_ENABLED が優先）。既定は無効で、Services ID などがそろっていてもフラグが true でなければ使わない。フラグを当てはめた設定（CloudServiceConfiguration.ForActiveFeatures）だけを組み立てに渡すので、無効の間は Apple にも CloudKit にも通信しない。フラグが true でも設定が足りなければ Coming Soon のまま（Debug の出力に理由を出す）。
 - 2026-11-10: iCloud 同期も Apple のサインインと同じフラグに従う。CloudKit のレコード名は Apple の sub から作るので、Apple のサインインなしでは同期できないため。

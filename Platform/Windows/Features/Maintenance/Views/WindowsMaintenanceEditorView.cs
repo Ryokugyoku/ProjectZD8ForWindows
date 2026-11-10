@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using ProjectZD8.Application.Maintenance.Actions;
 using ProjectZD8.Application.Maintenance.State;
 using ProjectZD8.Domain.Entities;
+using ProjectZD8.Domain.ValueObjects;
 using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using ProjectZD8ForWindows.Platform.Windows.Formatting;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
@@ -34,15 +35,32 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
     /// <summary>保存のボタンです。</summary>
     private readonly Button _saveButton;
 
+    /// <summary>記録の削除を確かめる処理です。</summary>
+    private readonly Action<MaintenanceRecordID> _requestDeletion;
+
     /// <summary>下書きとモデルを受け取って編集画面を作ります。</summary>
     /// <param name="draft">下書き。</param>
     /// <param name="model">整備記録のモデル。</param>
-    public WindowsMaintenanceEditorView(MaintenanceEditorDraft draft, MaintenanceModel model)
+    /// <param name="requestDeletion">記録の削除を確かめる処理（確かめてから削除を送る）。</param>
+    public WindowsMaintenanceEditorView(MaintenanceEditorDraft draft, MaintenanceModel model, Action<MaintenanceRecordID> requestDeletion)
     {
         _model = model;
+        _requestDeletion = requestDeletion;
         _structureKey = StructureKey(draft);
-        _saveButton = new Button { Content = LocalizedText.Get("maintenance.save"), Style = DesignTokens.Style("AccentButtonStyle") };
+        _saveButton = new Button
+        {
+            Content = new GlyphLabel(FluentSymbol.Accept, LocalizedText.Get("maintenance.save")),
+            Style = DesignTokens.Style("AccentButtonStyle"),
+            MinWidth = 96,
+        };
         _saveButton.Click += (_, _) => _model.Send(new MaintenanceAction.SaveRequested());
+        // Ctrl+S で保存（ボタンのツールチップに近道が出る）。
+        _saveButton.KeyboardAccelerators.Add(new Microsoft.UI.Xaml.Input.KeyboardAccelerator
+        {
+            Key = global::Windows.System.VirtualKey.S,
+            Modifiers = global::Windows.System.VirtualKeyModifiers.Control,
+        });
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(_saveButton, LocalizedText.Get("maintenance.save"));
 
         var root = new Grid();
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -110,7 +128,7 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
             var delete = new Button { Content = new FontIcon { Glyph = FluentSymbol.Delete, FontSize = 14, Foreground = DesignTokens.Foreground(Tone.Danger) } };
             ToolTipService.SetToolTip(delete, LocalizedText.Get("maintenance.delete"));
             Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(delete, LocalizedText.Get("maintenance.delete"));
-            delete.Click += (_, _) => _model.Send(new MaintenanceAction.DeleteRequested(recordID));
+            delete.Click += (_, _) => _requestDeletion(recordID);
             actions.Children.Add(delete);
         }
 

@@ -1,7 +1,7 @@
 # RevTorque Insight for Windows
 
 iOS / macOS アプリ **RevTorque Insight**（[Ryokugyoku/ProjectZD8](https://github.com/Ryokugyoku/ProjectZD8)）の Windows 版です。
-WinUI 3（Windows App SDK）と .NET 8 で作り直しています。CloudKit を通じて iOS 版とデータを同期することを目標にしています。
+WinUI 3（Windows App SDK）と .NET 10 で作り直しています。CloudKit を通じて iOS 版とデータを同期することを目標にしています。
 
 > 移植作業の途中です。今動いている範囲と今後の予定は [PROGRESS.md](PROGRESS.md) を見てください。
 
@@ -10,7 +10,7 @@ WinUI 3（Windows App SDK）と .NET 8 で作り直しています。CloudKit �
 | パス | 内容 |
 |---|---|
 | `ProjectZD8ForWindows.csproj`（ルート） | WinUI 3 のアプリ本体（パッケージ化した MSIX アプリ） |
-| `src/ProjectZD8.Domain` | 業務ルール層（iOS 版の `ProjectZD8/Domain` に対応）。net8.0、OS に依存しない |
+| `src/ProjectZD8.Domain` | 業務ルール層（iOS 版の `ProjectZD8/Domain` に対応）。net10.0、OS に依存しない |
 | `tests/ProjectZD8.Domain.Tests` | Domain 層の xUnit テスト |
 | `docs/PORTING_CONVENTIONS.md` | Swift から C# に移すときの規約 |
 
@@ -21,7 +21,7 @@ WinUI 3（Windows App SDK）と .NET 8 で作り直しています。CloudKit �
 ## 必要なもの
 
 - Windows 10 1809（17763）以降
-- .NET SDK 8 以降（10 で確認）
+- .NET SDK 10
 - アプリ本体をビルドするには、Visual Studio 2022 以降と「WinUI アプリケーション開発」ワークロード
 
 ## ビルドとテスト

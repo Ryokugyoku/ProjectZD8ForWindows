@@ -1,13 +1,13 @@
 # ProjectZD8ForWindows 進捗
 
 最終更新: 2026-11-10
-README 確認済みのコミット: なし（git init 済み・まだコミットなし。README は 2026-11-10 の作業内容と一致を確認済み）
+README 確認済みのコミット: 5709f29
 
 ## 概要
-- iOS/macOS アプリ「RevTorque Insight」（GitHub: Ryokugyoku/ProjectZD8、Swift/SwiftUI）を Windows（WinUI 3 / .NET 8）向けに作り直す。
+- iOS/macOS アプリ「RevTorque Insight」（GitHub: Ryokugyoku/ProjectZD8、Swift/SwiftUI）を Windows（WinUI 3 / .NET 10）向けに作り直す。
 
 ## 現状
-- Domain 層（iOS 版の Domain、Swift 65 ファイル）を `src/ProjectZD8.Domain`（net8.0）に移植済み。ビルドは警告 0。
+- Domain 層（iOS 版の Domain、Swift 65 ファイル）を `src/ProjectZD8.Domain`（net10.0）に移植済み。ビルドは警告 0。
 - Domain のテスト 12 ファイルを `tests/ProjectZD8.Domain.Tests`（xUnit）に移植済み。56 件すべて合格。JSON の往復テスト 2 ファイルは Data 層で移す。
 - WinUI 3 のアプリ本体はテンプレートのまま（Domain を参照しているだけ）。
 - 元リポジトリの構成を調べ終えた（Domain / Application / Data / Platform のクリーンアーキテクチャ、テストあり）。
@@ -15,7 +15,8 @@ README 確認済みのコミット: なし（git init 済み・まだコミッ�
 - iOS 版を参照用に ..\ProjectZD8 に clone 済み（8bcda6f）。
 
 ## 直近の作業
-- 2026-11-10: Domain 層とそのテストを C# に移植した（テスト 56 件合格、移植のバグは見つからず）。移植の規約を docs/PORTING_CONVENTIONS.md に、README を新しく書いた。git init した（まだコミットなし）。
+- 2026-11-10: 全プロジェクトを .NET 10 に上げた。テスト 56 件合格、アプリ（x64）のビルドも成功。アプリの起動は未確認。
+- 2026-11-10: Domain 層とそのテストを C# に移植した（テスト 56 件合格、移植のバグは見つからず）。移植の規約を docs/PORTING_CONVENTIONS.md に、README を新しく書いた。git init して最初のコミット（5709f29）を作った。
 - 2026-11-10: iOS 版の CloudKit と認証の実装を調べ、Windows から同期する方式を設計した（下の「同期の設計メモ」）。
 - 2026-11-10: 元リポジトリの構成を調べ、移植のしやすさを評価した。
 
@@ -55,14 +56,15 @@ README 確認済みのコミット: なし（git init 済み・まだコミッ�
 ## 検討事項・未決定
 - Windows を「Mac 受領証」（ConnectionSessionMacReceipt）を出す端末として扱うか。出すと、iOS 側が生ログのキャッシュを消す判断に影響する。
 - Sign in with Apple のリダイレクト先ドメインをどれにするか。そのドメインからカスタム URL スキームでアプリに戻す。
+- git の user.name / user.email が未設定。最初のコミットは -c で作成者 Ryokugyoku を指定した。リモート（GitHub）にはまだ push していない。
 - 移植で Swift と完全には同じにならない点（実害は小さい見込み）：計算式の中の漢数字（一 など）を Swift は数字として扱うが .NET は扱わない（エラーの種類が変わるだけ）。double の NaN 同士の比較が等しくなる。日時の精度が 100ns 単位。
-- ターゲットを net8.0 のままにするか、.NET 10（LTS、SDK はインストール済み）に上げるか。
 - 対応する OBD アダプター：BLE の UART（Windows の BLE API で可能）と、Bluetooth Classic の SPP / COM ポート（OBDLink MX+ など）。iOS の ExternalAccessory（MFi）は Windows では使えない。
 - 文字列の翻訳（Localizable.xcstrings、約520KB）を .resw に変換する方法。
 - ライセンスが PolyForm Noncommercial なので、Windows 版も同じライセンスにするか。
 
 ## 決定事項
 - 2026-11-10: 移植は Windows 版から始め、Domain → Application → Data → 画面の順に進める（開発者の指示）。
-- 2026-11-10: 名前空間とプロジェクト名は iOS 版に合わせて ProjectZD8 にする。Domain は net8.0 のクラスライブラリにして、JSON の属性は付けない。
+- 2026-11-10: 名前空間とプロジェクト名は iOS 版に合わせて ProjectZD8 にする。Domain は OS に依存しないクラスライブラリにして、JSON の属性は付けない。
+- 2026-11-10: 全プロジェクトを .NET 10（LTS）に上げた（開発者の指示）。アプリは net10.0-windows10.0.19041.0、Domain とテストは net10.0。
 - 2026-11-10: iCloud KV ストアの代わりに、iOS 版も設定とログアウト通知を CloudKit に書くよう直す（Windows から同期するため）。
 - 2026-11-10: Windows 版は iOS 版とデータを同期する（開発者の希望）。CloudKit Web Services と Sign in with Apple の Web 版を使う。

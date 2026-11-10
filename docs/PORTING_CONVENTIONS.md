@@ -7,7 +7,7 @@ iOS 版の `AGENTS.md`・`Documentation/CODING_STANDARDS.md`・`Documentation/PL
 
 | iOS 版のフォルダ | C# プロジェクト | 名前空間 |
 |---|---|---|
-| `ProjectZD8/Domain` | `src/ProjectZD8.Domain`（net8.0） | `ProjectZD8.Domain.<サブフォルダ>` |
+| `ProjectZD8/Domain` | `src/ProjectZD8.Domain`（net10.0） | `ProjectZD8.Domain.<サブフォルダ>` |
 | `ProjectZD8Tests/Domain` | `tests/ProjectZD8.Domain.Tests`（xUnit） | `ProjectZD8.Domain.Tests.<サブフォルダ>` |
 
 - フォルダ構成とファイル名は iOS 版と同じにする（`Domain/Entities/VehicleProfile.swift` → `src/ProjectZD8.Domain/Entities/VehicleProfile.cs`）。

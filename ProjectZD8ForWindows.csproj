@@ -12,6 +12,8 @@
     <WinUISDKReferences>false</WinUISDKReferences>
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
+    <!-- 対応していない表示言語のときは英語で出す（iOS 版の元の言語は日本語だが、海外の利用者に読める言語を優先）。 -->
+    <DefaultLanguage>en-US</DefaultLanguage>
     <!-- 単一インスタンスとプロトコル起動の振り分けのため、Main は App/Lifecycle/Program.cs に自分で書く。 -->
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
@@ -28,6 +30,11 @@
 
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!-- 開発者ごとの秘密の設定（Apple の Services ID、CloudKit の API トークン）。あればアプリと一緒に配る。コミットしない（.gitignore）。 -->
+  <ItemGroup Condition="Exists('appsettings.Local.json')">
+    <Content Include="appsettings.Local.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- src/ と tests/ は別プロジェクト。アプリのビルドに取り込まないよう除外する。.claude/ はエージェントの作業ツリー（リポジトリの複製）が入るので同じく除外する。 -->

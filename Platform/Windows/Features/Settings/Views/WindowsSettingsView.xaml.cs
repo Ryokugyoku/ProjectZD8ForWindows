@@ -39,6 +39,9 @@ public sealed partial class WindowsSettingsView : UserControl
     /// <summary>アカウント削除のダイアログです。</summary>
     private readonly WindowsAccountDeletionFlow _accountDeletion;
 
+    /// <summary>Windows 版だけの iCloud サインインの表示モデルです。</summary>
+    private readonly WindowsCloudSyncModel _cloudSync;
+
     /// <summary>描いている最中かどうかです（描画中のイベントを無視するため）。</summary>
     private bool _isRendering;
 
@@ -55,14 +58,17 @@ public sealed partial class WindowsSettingsView : UserControl
     /// <param name="settings">アダプター選択の表示モデル。</param>
     /// <param name="accountSettings">アカウント設定のモデル。</param>
     /// <param name="authentication">認証のモデル。</param>
+    /// <param name="cloudSync">iCloud サインインの表示モデル。</param>
     public WindowsSettingsView(
         WindowsSettingsPresentationModel settings,
         AccountSettingsModel accountSettings,
-        AuthenticationSessionModel authentication)
+        AuthenticationSessionModel authentication,
+        WindowsCloudSyncModel cloudSync)
     {
         _settings = settings;
         _accountSettings = accountSettings;
         _authentication = authentication;
+        _cloudSync = cloudSync;
         _adapterSelection = new WindowsAdapterSelectionDialog(settings.Send);
         _accountDeletion = new WindowsAccountDeletionFlow(authentication.Send);
         InitializeComponent();
@@ -87,6 +93,7 @@ public sealed partial class WindowsSettingsView : UserControl
         _settings.PropertyChanged += OnModelChanged;
         _accountSettings.PropertyChanged += OnModelChanged;
         _authentication.PropertyChanged += OnModelChanged;
+        _cloudSync.PropertyChanged += OnModelChanged;
         _pageKey = null;
         Render();
     }
@@ -100,6 +107,7 @@ public sealed partial class WindowsSettingsView : UserControl
         _settings.PropertyChanged -= OnModelChanged;
         _accountSettings.PropertyChanged -= OnModelChanged;
         _authentication.PropertyChanged -= OnModelChanged;
+        _cloudSync.PropertyChanged -= OnModelChanged;
     }
 
     /// <summary>モデルが変わったときの処理です。</summary>
@@ -114,7 +122,7 @@ public sealed partial class WindowsSettingsView : UserControl
     {
         var state = _settings.State;
         var account = _accountSettings.Settings;
-        var pageKey = (state.SelectedAdapters, account, ActualWidth >= 760);
+        var pageKey = (state.SelectedAdapters, account, ActualWidth >= 760, _cloudSync.Availability, _cloudSync.IsSigningIn, _cloudSync.DidFail);
         if (!Equals(pageKey, _pageKey))
         {
             _pageKey = pageKey;
@@ -168,6 +176,7 @@ public sealed partial class WindowsSettingsView : UserControl
             }
         }
 
+        Page.Children.Add(CloudSyncCard());
         Page.Children.Add(AccountDeletionCard());
         _isRendering = false;
     }
@@ -322,6 +331,66 @@ public sealed partial class WindowsSettingsView : UserControl
         };
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(toggle, "windows-settings-automatic-upload");
         return SettingsCard("settings.upload", FluentSymbol.Upload, toggle);
+    }
+
+    /// <summary>iCloud 同期のカードを作ります（Windows 版だけ）。</summary>
+    /// <remarks>
+    /// 責務: iCloud（CloudKit）へのサインインの状態を文で示し、サインイン・サインアウトの操作を作ります。
+    /// 同期していない状態を同期済みのように見せないよう、状態は必ず文で出します。
+    /// </remarks>
+    /// <returns>カード。</returns>
+    private Border CloudSyncCard()
+    {
+        var content = new StackPanel { Spacing = 12 };
+        var availability = _cloudSync.Availability;
+        var (statusKey, tone) = availability switch
+        {
+            WindowsCloudSyncAvailability.Available => ("windows.cloud.signed_in", Tone.Accent),
+            WindowsCloudSyncAvailability.SignedOut => ("windows.cloud.signed_out", Tone.Neutral),
+            _ => ("windows.cloud.local_mode", Tone.Neutral),
+        };
+        content.Children.Add(new GlyphLabel(
+            availability == WindowsCloudSyncAvailability.Available ? FluentSymbol.Cloud : FluentSymbol.Info,
+            LocalizedText.Get(statusKey),
+            "SecondaryBodyTextStyle",
+            DesignTokens.Foreground(tone)));
+
+        if (_cloudSync.IsSigningIn)
+        {
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+            row.Children.Add(new ProgressRing { IsActive = true, Width = 18, Height = 18 });
+            row.Children.Add(Typography.Text(LocalizedText.Get("windows.cloud.signing_in"), "SecondaryCaptionTextStyle"));
+            content.Children.Add(row);
+        }
+        else if (_cloudSync.DidFail)
+        {
+            content.Children.Add(new GlyphLabel(
+                FluentSymbol.Warning,
+                LocalizedText.Get("windows.cloud.sign_in_failed"),
+                "CaptionTextBlockStyle",
+                DesignTokens.Foreground(Tone.Caution)));
+        }
+
+        if (availability == WindowsCloudSyncAvailability.SignedOut && !_cloudSync.IsSigningIn)
+        {
+            var signIn = new Button
+            {
+                Content = LocalizedText.Get("windows.cloud.sign_in"),
+                Style = DesignTokens.Style("AccentButtonStyle"),
+            };
+            signIn.Click += (_, _) => _ = _cloudSync.SignIn();
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(signIn, "windows-settings-cloud-sign-in");
+            content.Children.Add(signIn);
+        }
+        else if (availability == WindowsCloudSyncAvailability.Available)
+        {
+            var signOut = new Button { Content = LocalizedText.Get("windows.cloud.sign_out") };
+            signOut.Click += (_, _) => _cloudSync.SignOut();
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(signOut, "windows-settings-cloud-sign-out");
+            content.Children.Add(signOut);
+        }
+
+        return SettingsCard("settings.windows_cloud", FluentSymbol.Cloud, content);
     }
 
     /// <summary>アカウント削除のカードを作ります。</summary>

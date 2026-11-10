@@ -192,7 +192,7 @@ public sealed partial class MainWindow : Window
     private void ShowLogin()
     {
         _shell = null;
-        ContentHost.Child = new WindowsLoginView(_flow.Root.Authentication);
+        ContentHost.Child = new WindowsLoginView(_flow.Root.Authentication, _flow.Root.IsLocalMode);
         _showsShell = false;
     }
 }

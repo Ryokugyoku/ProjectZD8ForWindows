@@ -3630,4 +3630,68 @@ Own the drive.</value>
     <value>—</value>
     <comment>—</comment>
   </data>
+  <data name="settings_windows_cloud_description" xml:space="preserve">
+    <value>Sign in to iCloud with the same Apple ID as your iPhone to sync vehicles, maintenance records, and drive logs.</value>
+    <comment>settings.windows_cloud.description</comment>
+  </data>
+  <data name="settings_windows_cloud_eyebrow" xml:space="preserve">
+    <value>ICLOUD</value>
+    <comment>settings.windows_cloud.eyebrow</comment>
+  </data>
+  <data name="settings_windows_cloud_title" xml:space="preserve">
+    <value>iCloud sync</value>
+    <comment>settings.windows_cloud.title</comment>
+  </data>
+  <data name="windows_adapter_prompt_connect" xml:space="preserve">
+    <value>Connect</value>
+    <comment>windows.adapter_prompt.connect</comment>
+  </data>
+  <data name="windows_adapter_prompt_dismiss" xml:space="preserve">
+    <value>Not now</value>
+    <comment>windows.adapter_prompt.dismiss</comment>
+  </data>
+  <data name="windows_adapter_prompt_message" xml:space="preserve">
+    <value>Connect to %@ and identify the vehicle?</value>
+    <comment>windows.adapter_prompt.message</comment>
+  </data>
+  <data name="windows_adapter_prompt_title" xml:space="preserve">
+    <value>Your default adapter is nearby</value>
+    <comment>windows.adapter_prompt.title</comment>
+  </data>
+  <data name="windows_cloud_local_mode" xml:space="preserve">
+    <value>Local mode: iCloud isn't set up on this PC.</value>
+    <comment>windows.cloud.local_mode</comment>
+  </data>
+  <data name="windows_cloud_sign_in" xml:space="preserve">
+    <value>Sign in to iCloud</value>
+    <comment>windows.cloud.sign_in</comment>
+  </data>
+  <data name="windows_cloud_sign_in_failed" xml:space="preserve">
+    <value>Couldn't sign in to iCloud. Try again.</value>
+    <comment>windows.cloud.sign_in_failed</comment>
+  </data>
+  <data name="windows_cloud_sign_out" xml:space="preserve">
+    <value>Sign out of iCloud</value>
+    <comment>windows.cloud.sign_out</comment>
+  </data>
+  <data name="windows_cloud_signed_in" xml:space="preserve">
+    <value>Signed in to iCloud</value>
+    <comment>windows.cloud.signed_in</comment>
+  </data>
+  <data name="windows_cloud_signed_out" xml:space="preserve">
+    <value>Not signed in to iCloud. Data stays on this PC until you sign in.</value>
+    <comment>windows.cloud.signed_out</comment>
+  </data>
+  <data name="windows_cloud_signing_in" xml:space="preserve">
+    <value>Finish signing in in your browser…</value>
+    <comment>windows.cloud.signing_in</comment>
+  </data>
+  <data name="windows_login_continue_local" xml:space="preserve">
+    <value>Continue on this PC</value>
+    <comment>windows.login.continue_local</comment>
+  </data>
+  <data name="windows_login_local_mode_notice" xml:space="preserve">
+    <value>Apple sign-in isn't set up on this PC, so your data is kept only on this PC and isn't synced with iPhone.</value>
+    <comment>windows.login.local_mode_notice</comment>
+  </data>
 </root>

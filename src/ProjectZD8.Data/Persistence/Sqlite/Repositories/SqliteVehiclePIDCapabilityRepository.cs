@@ -1,3 +1,4 @@
+using ProjectZD8.Data.Persistence;
 using Microsoft.Data.Sqlite;
 using ProjectZD8.Data.Persistence.Sqlite.Database;
 using ProjectZD8.Data.Persistence.Sqlite.Records;
@@ -9,7 +10,7 @@ namespace ProjectZD8.Data.Persistence.Sqlite.Repositories;
 
 /// <summary>車両別対応PIDと収集選択をSQLiteへ保存します。</summary>
 /// <remarks>iOS版 <c>GRDBVehiclePIDCapabilityRepository</c> に相当します。</remarks>
-public sealed class SqliteVehiclePIDCapabilityRepository : IVehiclePIDCapabilityRepository, IAccountVehiclePIDCapabilityErasureRepository
+public sealed class SqliteVehiclePIDCapabilityRepository : IVehiclePIDCapabilityStorage
 {
     /// <summary>SQLiteの直列化された読書き境界です。</summary>
     private readonly SqliteDatabase _database;

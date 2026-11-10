@@ -25,11 +25,16 @@ public sealed partial class WindowsLoginView : UserControl
     /// <summary>免責事項のダイアログです。</summary>
     private readonly StateBoundDialog _disclaimer = new();
 
+    /// <summary>Apple のサインインの設定がなく、ローカルモードで動いているなら true。</summary>
+    private readonly bool _isLocalMode;
+
     /// <summary>認証モデルを受け取ってログイン画面を作ります。</summary>
     /// <param name="model">認証セッションのモデル。</param>
-    public WindowsLoginView(AuthenticationSessionModel model)
+    /// <param name="isLocalMode">ローカルモード（Apple のサインインを設定していない）なら true。ボタンの文言と説明を変える。</param>
+    public WindowsLoginView(AuthenticationSessionModel model, bool isLocalMode = false)
     {
         _model = model;
+        _isLocalMode = isLocalMode;
         InitializeComponent();
         ApplyStaticTexts();
         Loaded += OnLoaded;
@@ -119,6 +124,10 @@ public sealed partial class WindowsLoginView : UserControl
                 }
 
                 PhaseArea.Children.Add(ContinueButton(state.Failure is null));
+                if (_isLocalMode)
+                {
+                    PhaseArea.Children.Add(Typography.Text(LocalizedText.Get("windows.login.local_mode_notice"), "CaptionTextBlockStyle", new SolidColorBrush(Color.FromArgb(204, 255, 255, 255))));
+                }
                 break;
         }
 
@@ -152,7 +161,7 @@ public sealed partial class WindowsLoginView : UserControl
     {
         var button = new Button
         {
-            Content = Typography.Strong(LocalizedText.Get("auth.continue_with_apple"), "BodyStrongTextBlockStyle", new SolidColorBrush(Colors.Black)),
+            Content = Typography.Strong(LocalizedText.Get(_isLocalMode ? "windows.login.continue_local" : "auth.continue_with_apple"), "BodyStrongTextBlockStyle", new SolidColorBrush(Colors.Black)),
             HorizontalAlignment = HorizontalAlignment.Stretch,
             MinHeight = 46,
             CornerRadius = new CornerRadius(12),

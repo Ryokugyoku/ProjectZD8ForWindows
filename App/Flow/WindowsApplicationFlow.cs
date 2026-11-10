@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using ProjectZD8.Application.Authentication.State;
+using ProjectZD8.Application.DeviceConnection.State;
 using ProjectZD8.Application.LiveTelemetry.Actions;
 using ProjectZD8.Application.Logging.Actions;
 using ProjectZD8.Application.LogHistory.Actions;
@@ -35,6 +36,9 @@ public sealed class WindowsApplicationFlow
     /// <summary>直前の登録車両の一覧です。</summary>
     private IReadOnlyList<VehicleProfile> _lastVehicles;
 
+    /// <summary>直前の既定アダプターの設定です（到来の監視を張り直すかの判断に使う）。</summary>
+    private DefaultAdapterPreference? _lastDefaultAdapterPreference;
+
     /// <summary>ルートの依存一式を受け取り、変化の監視を始めます。</summary>
     /// <param name="root">アプリのルートの依存一式。</param>
     public WindowsApplicationFlow(WindowsApplicationRoot root)
@@ -47,6 +51,8 @@ public sealed class WindowsApplicationFlow
         root.Authentication.PropertyChanged += OnAuthenticationChanged;
         root.AccountSettings.PropertyChanged += OnAccountSettingsChanged;
         root.VehicleManagement.PropertyChanged += OnVehicleManagementChanged;
+        root.PromptedVehicleConnectionRequest.PropertyChanged += (_, _) => ConsumePromptedVehicleConnectionIfPossible();
+        ObserveSettingsModel();
     }
 
     /// <summary>設定画面の表示モデルを作り直したときに通知します（ログアウト時）。</summary>
@@ -75,6 +81,8 @@ public sealed class WindowsApplicationFlow
         _root.ConnectionHistory.Send(new ConnectionHistoryAction.AccountIdentifierChanged(identifier));
         _root.ConnectionHistory.Send(
             new ConnectionHistoryAction.AutomaticUploadChanged(_root.AccountSettings.Settings.AutomaticSessionUploadEnabled));
+        RefreshDefaultAdapterArrivalMonitoring();
+        ConsumePromptedVehicleConnectionIfPossible();
     }
 
     /// <summary>
@@ -90,6 +98,19 @@ public sealed class WindowsApplicationFlow
 
         _root.ConnectionHistory.Send(new ConnectionHistoryAction.RefreshRequested());
         _root.Maintenance.Send(new MaintenanceAction.RefreshRequested());
+        _ = _root.SynchronizeAccountState();
+        _root.CloudSync.AvailabilityDidChange();
+        ConsumePromptedVehicleConnectionIfPossible();
+    }
+
+    /// <summary>
+    /// アプリを閉じるときの後片付けをします。
+    /// </summary>
+    /// <remarks>責務: 取得を止め、到来の監視をやめ、保存先を閉じます（生ログの確定と索引の書出し）。</remarks>
+    public void Shutdown()
+    {
+        _root.LiveTelemetry.Send(new LiveTelemetryAction.StopRequested());
+        _root.Shutdown();
     }
 
     /// <summary>認証の段階が変わったときの処理です。</summary>
@@ -105,10 +126,20 @@ public sealed class WindowsApplicationFlow
         }
 
         _lastPhase = phase;
+        if (phase == AuthenticationPhase.SignedIn)
+        {
+            RefreshDefaultAdapterArrivalMonitoring();
+            ConsumePromptedVehicleConnectionIfPossible();
+            return;
+        }
+
         if (phase != AuthenticationPhase.SignedOut)
         {
             return;
         }
+
+        _root.PromptForDefaultAdapterConnection.Stop();
+        _root.AdapterArrivalPrompt.Dismiss();
 
         _root.LiveTelemetry.Send(new LiveTelemetryAction.StopRequested());
         _root.ConnectionSessionLifecycle.Send(new ConnectionSessionLifecycleAction.AccountIdentifierChanged(null));
@@ -116,8 +147,61 @@ public sealed class WindowsApplicationFlow
         _root.AccountSettings.Send(new AccountSettingsAction.AccountIdentifierChanged(null));
         _root.VehicleManagement.Send(new VehicleManagementAction.AccountIdentifierChanged(null));
         _root.Maintenance.Send(new MaintenanceAction.AccountIdentifierChanged(null));
+        SettingsModel.PropertyChanged -= OnSettingsModelChanged;
         SettingsModel = _root.MakeSettingsPresentationModel();
+        ObserveSettingsModel();
         SettingsModelReplaced?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>設定画面の表示モデルの監視を始めます。</summary>
+    /// <remarks>責務: 今の表示モデルの既定アダプターを覚え、変化の通知を受け取るようにします。</remarks>
+    private void ObserveSettingsModel()
+    {
+        _lastDefaultAdapterPreference = SettingsModel.State.DefaultAdapterPreference;
+        SettingsModel.PropertyChanged += OnSettingsModelChanged;
+    }
+
+    /// <summary>設定画面の表示モデルが変わったときの処理です。</summary>
+    /// <remarks>責務: 既定アダプターの変更を、到来の監視の張り直しへ変換します（iOS 版の defaultAdapterPreference の onChange）。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">変更の内容。</param>
+    private void OnSettingsModelChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        var preference = SettingsModel.State.DefaultAdapterPreference;
+        if (Equals(preference, _lastDefaultAdapterPreference))
+        {
+            return;
+        }
+
+        _lastDefaultAdapterPreference = preference;
+        RefreshDefaultAdapterArrivalMonitoring();
+    }
+
+    /// <summary>既定アダプターの到来の監視を、サインインの状態に合わせて始めるか止めます。</summary>
+    /// <remarks>責務: iOS 版の refreshDefaultAdapterArrivalMonitoring と同じく、サインイン中だけ監視します。</remarks>
+    private void RefreshDefaultAdapterArrivalMonitoring()
+    {
+        if (_root.Authentication.State.Phase == AuthenticationPhase.SignedIn)
+        {
+            _root.PromptForDefaultAdapterConnection.Start();
+        }
+        else
+        {
+            _root.PromptForDefaultAdapterConnection.Stop();
+        }
+    }
+
+    /// <summary>尋ねて受け入れられた接続要求を、サインイン中なら接続へ渡します。</summary>
+    /// <remarks>責務: iOS 版の consumePromptedVehicleConnectionIfPossible と同じく、預かった終端を 1 回だけ接続の開始へ渡します。</remarks>
+    private void ConsumePromptedVehicleConnectionIfPossible()
+    {
+        if (_root.Authentication.State.Phase != AuthenticationPhase.SignedIn
+            || _root.PromptedVehicleConnectionRequest.Consume() is not { } endpoint)
+        {
+            return;
+        }
+
+        _root.StartVehicleConnection.Execute(endpoint);
     }
 
     /// <summary>アカウント設定が変わったときの処理です。</summary>

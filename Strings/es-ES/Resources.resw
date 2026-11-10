@@ -3630,4 +3630,68 @@ Domina la conducción.</value>
     <value>—</value>
     <comment>—</comment>
   </data>
+  <data name="settings_windows_cloud_description" xml:space="preserve">
+    <value>Inicia sesión en iCloud con el mismo Apple ID que tu iPhone para sincronizar vehículos, mantenimiento y registros de conducción.</value>
+    <comment>settings.windows_cloud.description</comment>
+  </data>
+  <data name="settings_windows_cloud_eyebrow" xml:space="preserve">
+    <value>ICLOUD</value>
+    <comment>settings.windows_cloud.eyebrow</comment>
+  </data>
+  <data name="settings_windows_cloud_title" xml:space="preserve">
+    <value>Sincronización con iCloud</value>
+    <comment>settings.windows_cloud.title</comment>
+  </data>
+  <data name="windows_adapter_prompt_connect" xml:space="preserve">
+    <value>Conectar</value>
+    <comment>windows.adapter_prompt.connect</comment>
+  </data>
+  <data name="windows_adapter_prompt_dismiss" xml:space="preserve">
+    <value>Ahora no</value>
+    <comment>windows.adapter_prompt.dismiss</comment>
+  </data>
+  <data name="windows_adapter_prompt_message" xml:space="preserve">
+    <value>¿Conectar con %@ e identificar el vehículo?</value>
+    <comment>windows.adapter_prompt.message</comment>
+  </data>
+  <data name="windows_adapter_prompt_title" xml:space="preserve">
+    <value>Tu adaptador predeterminado está cerca</value>
+    <comment>windows.adapter_prompt.title</comment>
+  </data>
+  <data name="windows_cloud_local_mode" xml:space="preserve">
+    <value>Modo local: iCloud no está configurado en este equipo.</value>
+    <comment>windows.cloud.local_mode</comment>
+  </data>
+  <data name="windows_cloud_sign_in" xml:space="preserve">
+    <value>Iniciar sesión en iCloud</value>
+    <comment>windows.cloud.sign_in</comment>
+  </data>
+  <data name="windows_cloud_sign_in_failed" xml:space="preserve">
+    <value>No se pudo iniciar sesión en iCloud. Inténtalo de nuevo.</value>
+    <comment>windows.cloud.sign_in_failed</comment>
+  </data>
+  <data name="windows_cloud_sign_out" xml:space="preserve">
+    <value>Cerrar sesión en iCloud</value>
+    <comment>windows.cloud.sign_out</comment>
+  </data>
+  <data name="windows_cloud_signed_in" xml:space="preserve">
+    <value>Sesión iniciada en iCloud</value>
+    <comment>windows.cloud.signed_in</comment>
+  </data>
+  <data name="windows_cloud_signed_out" xml:space="preserve">
+    <value>No has iniciado sesión en iCloud. Los datos se quedan en este equipo hasta que inicies sesión.</value>
+    <comment>windows.cloud.signed_out</comment>
+  </data>
+  <data name="windows_cloud_signing_in" xml:space="preserve">
+    <value>Termina de iniciar sesión en el navegador…</value>
+    <comment>windows.cloud.signing_in</comment>
+  </data>
+  <data name="windows_login_continue_local" xml:space="preserve">
+    <value>Continuar en este equipo</value>
+    <comment>windows.login.continue_local</comment>
+  </data>
+  <data name="windows_login_local_mode_notice" xml:space="preserve">
+    <value>El inicio de sesión de Apple no está configurado en este equipo, así que tus datos se guardan solo aquí y no se sincronizan con el iPhone.</value>
+    <comment>windows.login.local_mode_notice</comment>
+  </data>
 </root>

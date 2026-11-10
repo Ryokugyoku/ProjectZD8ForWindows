@@ -14,7 +14,7 @@ using System.Xml;
 
 if (args.Length < 2)
 {
-    Console.Error.WriteLine("usage: dotnet run scripts/ConvertXcstrings.cs -- <Localizable.xcstrings> <出力フォルダ>");
+    Console.Error.WriteLine("usage: dotnet run --file scripts/ConvertXcstrings.cs -- <Localizable.xcstrings> <出力フォルダ> [追加の xcstrings ...]");
     return 2;
 }
 
@@ -29,45 +29,51 @@ var languages = new (string Source, string Folder)[]
     ("es", "es-ES"),
 };
 
-using var document = JsonDocument.Parse(File.ReadAllBytes(inputPath));
-var root = document.RootElement;
-var sourceLanguage = root.GetProperty("sourceLanguage").GetString() ?? "ja";
-var strings = root.GetProperty("strings");
-
+var inputPaths = new[] { inputPath }.Concat(args.Skip(2)).ToArray();
+string? sourceLanguage = null;
 var names = new Dictionary<string, string>(StringComparer.Ordinal);
 var entries = new List<(string Name, string Key, Dictionary<string, string> Values)>();
-foreach (var item in strings.EnumerateObject().OrderBy(item => item.Name, StringComparer.Ordinal))
+foreach (var path in inputPaths)
 {
-    var key = item.Name;
-    if (key.Length == 0)
+    using var document = JsonDocument.Parse(File.ReadAllBytes(path));
+    var root = document.RootElement;
+    sourceLanguage ??= root.GetProperty("sourceLanguage").GetString() ?? "ja";
+    var strings = root.GetProperty("strings");
+    foreach (var item in strings.EnumerateObject().OrderBy(item => item.Name, StringComparer.Ordinal))
     {
-        continue;
-    }
-
-    var name = ResourceName(key);
-    if (names.TryGetValue(name, out var other))
-    {
-        Console.Error.WriteLine($"Name が衝突しました: \"{key}\" と \"{other}\" → {name}");
-        return 1;
-    }
-
-    names[name] = key;
-    var values = new Dictionary<string, string>(StringComparer.Ordinal);
-    if (item.Value.TryGetProperty("localizations", out var localizations))
-    {
-        foreach (var localization in localizations.EnumerateObject())
+        var key = item.Name;
+        if (key.Length == 0)
         {
-            if (localization.Value.TryGetProperty("stringUnit", out var unit)
-                && unit.TryGetProperty("value", out var value)
-                && value.GetString() is { } text)
+            continue;
+        }
+
+        var name = ResourceName(key);
+        if (names.TryGetValue(name, out var other))
+        {
+            Console.Error.WriteLine($"Name が衝突しました: \"{key}\" と \"{other}\" → {name}（{path}）");
+            return 1;
+        }
+
+        names[name] = key;
+        var values = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (item.Value.TryGetProperty("localizations", out var localizations))
+        {
+            foreach (var localization in localizations.EnumerateObject())
             {
-                values[localization.Name] = text;
+                if (localization.Value.TryGetProperty("stringUnit", out var unit)
+                    && unit.TryGetProperty("value", out var value)
+                    && value.GetString() is { } text)
+                {
+                    values[localization.Name] = text;
+                }
             }
         }
-    }
 
-    entries.Add((name, key, values));
+        entries.Add((name, key, values));
+    }
 }
+
+sourceLanguage ??= "ja";
 
 foreach (var (source, folder) in languages)
 {

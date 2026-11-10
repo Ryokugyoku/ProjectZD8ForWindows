@@ -1,3 +1,4 @@
+using ProjectZD8.Data.Persistence;
 using ProjectZD8.Domain.Entities;
 using ProjectZD8.Domain.Repositories;
 using ProjectZD8.Domain.ValueObjects;
@@ -6,7 +7,7 @@ namespace ProjectZD8.Data.Persistence.Sqlite.Repositories;
 
 /// <summary>車両別PID DBを準備できない場合に明示的な失敗を返します。</summary>
 /// <remarks>iOS版 <c>UnavailableVehiclePIDCapabilityRepository</c> の移植です（iOS版の非公開エラー型は <see cref="InvalidOperationException"/> にしました）。</remarks>
-public sealed class UnavailableVehiclePIDCapabilityRepository : IVehiclePIDCapabilityRepository, IAccountVehiclePIDCapabilityErasureRepository
+public sealed class UnavailableVehiclePIDCapabilityRepository : IVehiclePIDCapabilityStorage
 {
     /// <summary>対応PIDの読込を失敗させます。</summary>
     /// <remarks>責務: 照会を明示的な保存先利用不能へ変換します。</remarks>

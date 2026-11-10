@@ -1,12 +1,19 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using ProjectZD8.Application.Analysis.State;
 using ProjectZD8.Application.Analysis.UseCases;
+using ProjectZD8.Application.Authentication.Ports;
 using ProjectZD8.Application.Authentication.State;
 using ProjectZD8.Application.Authentication.UseCases;
+using ProjectZD8.Application.DeviceConnection.Ports;
+using ProjectZD8.Application.DeviceConnection.State;
 using ProjectZD8.Application.DeviceConnection.UseCases;
 using ProjectZD8.Application.LiveTelemetry.Actions;
+using ProjectZD8.Application.LiveTelemetry.Ports;
 using ProjectZD8.Application.LiveTelemetry.State;
 using ProjectZD8.Application.LiveTelemetry.UseCases;
 using ProjectZD8.Application.Logging.Actions;
@@ -23,11 +30,24 @@ using ProjectZD8.Application.Settings.UseCases;
 using ProjectZD8.Application.VehicleManagement.Actions;
 using ProjectZD8.Application.VehicleManagement.State;
 using ProjectZD8.Application.VehicleManagement.UseCases;
+using ProjectZD8.Data.Authentication;
+using ProjectZD8.Data.Configuration;
+using ProjectZD8.Data.Devices;
+using ProjectZD8.Data.Devices.OBD;
+using ProjectZD8.Data.Diagnostics;
+using ProjectZD8.Data.Files;
+using ProjectZD8.Data.Network.CloudKit;
+using ProjectZD8.Data.Persistence;
+using ProjectZD8.Data.Persistence.Preferences;
+using ProjectZD8.Data.Persistence.Sqlite.Database;
+using ProjectZD8.Data.Persistence.Sqlite.Repositories;
+using ProjectZD8.Data.Windows.Authentication;
+using ProjectZD8.Data.Windows.Devices;
 using ProjectZD8.Domain.Policies;
 using ProjectZD8.Domain.Repositories;
 using ProjectZD8.Domain.ValueObjects;
-using ProjectZD8ForWindows.AppRoot.Composition.Interim;
 using ProjectZD8ForWindows.Platform.Windows.Features.DeviceConnection.Presentation;
+using ProjectZD8ForWindows.Platform.Windows.Features.Settings.Presentation;
 
 namespace ProjectZD8ForWindows.AppRoot.Composition;
 
@@ -35,8 +55,8 @@ namespace ProjectZD8ForWindows.AppRoot.Composition;
 /// Windows アプリで使う実装の依存関係を組み立てます（iOS 版の <c>MacOSApplicationComposition</c> と <c>ProjectZD8App.init</c>）。
 /// </summary>
 /// <remarks>
-/// Data 層はまだないため、保存先・通信・認証は <c>Interim/</c> の暫定実装を使います。
-/// Data 層ができたら、このファイルの「暫定」と書いた生成箇所だけを差し替えます（画面と Application 層は変えない）。
+/// 保存はマスタ系を SQLite、生ログと取得の証跡を追記専用のログストアに置きます（iOS 版は全部 GRDB）。
+/// Apple と CloudKit の設定（appsettings.Local.json か環境変数 PROJECTZD8_*）がなければ、アカウントなしのローカルモードで動きます。
 /// UI スレッドから呼ぶ前提です。
 /// </remarks>
 public static class WindowsApplicationComposition
@@ -49,21 +69,33 @@ public static class WindowsApplicationComposition
     /// <returns>ルートの依存一式。</returns>
     public static WindowsApplicationRoot MakeRoot(string[] arguments)
     {
-        var configuration = ProductionConnectionSessionAcquisitionConfiguration.Phase4G;
-        IAcquisitionPerformanceEventPort performanceEvents = new NoOpAcquisitionPerformanceEventPort();
+        var dataDirectory = WindowsApplicationDataLocation.DataDirectory();
+        var cloudConfiguration = CloudServiceConfigurationLoader.Load(WindowsApplicationDataLocation.LocalSettingsPath(dataDirectory));
+        var acquisitionConfiguration = ProductionConnectionSessionAcquisitionConfiguration.Phase4G;
+        var performanceEvents = MakeAcquisitionPerformanceEventPort();
+        var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
+        var defaults = new JsonFileLocalKeyValueStore(Path.Combine(dataDirectory, "preferences.json"));
+        var secretStore = WindowsSecretStoreFactory.Create(Path.Combine(dataDirectory, "secrets"));
 
-        // 暫定: Data 層の SQLite 実装（GRDBConnectionSessionRepository 相当）に差し替える。
-        var connectionSessionStorage = new InterimConnectionSessionStore(performanceEvents);
-        // 暫定: ネットワーク担当の CloudKit 転送に差し替える。
-        IConnectionSessionTransferRepository transferRepository = new InterimLocalOnlyConnectionSessionTransferRepository();
-        // 暫定: Data 層の PID 定義 DB（seed 登録済み）と車両別対応 PID に差し替える。
-        IOBDPIDDefinitionRepository definitionRepository = new InterimOBDPIDDefinitionRepository();
-        var capabilityRepository = new InterimVehiclePIDCapabilityRepository();
-        // 暫定: SQLite＋CloudKit 同期の車両保存先に差し替える。
-        var vehicleRepository = new InterimVehicleRepository();
-        // 暫定: デバイス担当の Windows 通信（シリアル・BLE）をデモ付きで包んだものに差し替える。
-        var telemetry = new InterimDemoOBDPIDTelemetryAdapter();
-        var photoImporter = new InterimPhotoFileImporter();
+        // CloudKit。設定がなければ、どのリポジトリも端末内だけで動く（取得は空、削除は何もしない）。
+        var cloudKit = new CloudKitWebServicesClient(httpClient, cloudConfiguration, new SecretStoreCloudKitWebAuthTokenStore(secretStore));
+        var callbackBroker = new AuthorizationCallbackBroker(cloudConfiguration.CallbackScheme);
+        var browserLauncher = new WindowsExternalBrowserLauncher();
+        ISynchronizedKeyValueStore synchronizedStore = cloudConfiguration.IsConfigured
+            ? new CloudKitSynchronizedKeyValueStore(cloudKit)
+            : new InMemorySynchronizedKeyValueStore();
+
+        var connectionSessionStorage = OpenConnectionSessionRepository(dataDirectory, performanceEvents);
+        IConnectionSessionTransferRepository transferRepository = new CloudKitConnectionSessionTransferRepository(cloudKit);
+        var definitionRepository = MakeOBDPIDDefinitionRepository(dataDirectory);
+        var capabilityRepository = MakeVehiclePIDCapabilityRepository(dataDirectory);
+        var vehicleRepository = new CloudKitVehicleRepository(
+            SqliteVehicleRepository.OpenApplicationRepository(dataDirectory),
+            cloudKit,
+            defaults);
+        var telemetry = new DemoAwareOBDPIDTelemetryAdapter(
+            live: new OBDLinkEXPIDTelemetryAdapter(WindowsOBDCommandTransportFactory.Make),
+            demo: new DemoOBDPIDTelemetryAdapter(StandardOBDPIDSeed.Definitions));
 
         var connectionHistoryModel = new ConnectionHistoryModel(
             repository: connectionSessionStorage,
@@ -92,22 +124,24 @@ public static class WindowsApplicationComposition
             endedSessionUploadRequested: session => connectionHistoryModel.Send(new ConnectionHistoryAction.SessionUploadRequested(session.Id)));
 
         var liveTelemetryModel = MakeLiveTelemetryModel(
-            configuration,
+            acquisitionConfiguration,
             connectionSessionStorage,
             telemetry,
             definitionRepository,
             capabilityRepository,
             performanceEvents,
-            activeSessionID: () => System.Threading.Tasks.Task.FromResult(connectionSessionLifecycleModel.ActiveSession?.Id),
+            activeSessionID: () => Task.FromResult(connectionSessionLifecycleModel.ActiveSession?.Id),
             sessionDidEnd: reason => connectionSessionLifecycleModel.Send(new ConnectionSessionLifecycleAction.EndRequested(reason)),
             distanceDidChange: observation => connectionSessionLifecycleModel.Send(new ConnectionSessionLifecycleAction.DistanceObserved(observation)));
 
         var vehicleManagementModel = new VehicleManagementModel(
             state: new VehicleManagementState(),
             repository: vehicleRepository,
-            // 暫定: デバイス担当の ELM327 識別をデモ付きで包んだものに差し替える。
-            identifyForConnection: new IdentifyVehicleForConnectionUseCase(new InterimDemoVehicleIdentificationAdapter()),
-            photoImporter: photoImporter,
+            identifyForConnection: new IdentifyVehicleForConnectionUseCase(
+                new DemoAwareVehicleIdentificationAdapter(
+                    live: new SerialELMVehicleIdentificationAdapter(WindowsOBDCommandTransportFactory.Make),
+                    demo: new DemoVehicleIdentificationAdapter())),
+            photoImporter: new VehiclePhotoFileImporter(),
             pidCapabilityRepository: capabilityRepository,
             pidDefinitionRepository: definitionRepository,
             loadVehicleActivitySummaries: new LoadVehicleActivitySummariesUseCase(connectionSessionStorage),
@@ -128,21 +162,26 @@ public static class WindowsApplicationComposition
                 liveTelemetryModel.Send(new LiveTelemetryAction.StartRequested(endpoint, vehicle.Id, vehicleModelCode));
             });
 
-        // 暫定: SQLite の整備記録と CloudKit の MaintenanceCatalog 同期に差し替える。
-        var maintenanceRepository = new InterimMaintenanceRecordRepository();
+        var maintenanceRepository = MakeMaintenanceRepository(dataDirectory);
         var maintenanceModel = new MaintenanceModel(
             state: new MaintenanceState(),
             repository: maintenanceRepository,
-            synchronize: new SynchronizeMaintenanceRecordsUseCase(maintenanceRepository, new InterimLocalOnlyMaintenanceRemoteStore()),
-            photoImporter: photoImporter);
+            synchronize: new SynchronizeMaintenanceRecordsUseCase(maintenanceRepository, new CloudKitMaintenanceRemoteStore(cloudKit)),
+            photoImporter: new MaintenancePhotoFileImporter());
 
-        // 暫定: ネットワーク担当の設定ストア・既定アダプターの保存先に差し替える。
-        var accountSettingsStore = new InterimAccountSettingsStore();
-        var defaultAdapterStore = new InterimDefaultAdapterPreferenceStore();
+        var accountSettingsStore = new SynchronizedAccountSettingsStore(defaults, synchronizedStore);
+        var defaultAdapterStore = new JsonFileDefaultAdapterPreferenceStore(dataDirectory);
         var accountSettingsModel = new AccountSettingsModel(new AccountSettings(), new AccountSettingsUseCase(accountSettingsStore));
 
         var authenticationModel = MakeAuthenticationSessionModel(
             arguments,
+            cloudConfiguration,
+            httpClient,
+            callbackBroker,
+            browserLauncher,
+            secretStore,
+            defaults,
+            synchronizedStore,
             connectionSessionStorage,
             transferRepository,
             accountSettingsStore,
@@ -152,6 +191,29 @@ public static class WindowsApplicationComposition
 
         var startVehicleConnection = new StartVehicleConnectionUseCase(
             endpoint => vehicleManagementModel.Send(new VehicleManagementAction.IdentifyRequested(endpoint)));
+
+        var promptedRequest = new PromptedVehicleConnectionRequestBuffer();
+        var connectionPrompt = new InAppDefaultAdapterConnectionPrompt();
+        var arrivalPromptModel = new WindowsAdapterArrivalPromptModel(connectionPrompt.Accept, connectionPrompt.Decline);
+        connectionPrompt.PromptRequested += (_, endpoint) => arrivalPromptModel.Present(endpoint);
+        connectionPrompt.PromptDismissed += (_, _) => arrivalPromptModel.Dismiss();
+        var promptForDefaultAdapterConnection = new PromptForDefaultAdapterConnectionUseCase(
+            new DefaultAdapterPreferenceUseCase(defaultAdapterStore),
+            new WindowsDefaultAdapterArrivalMonitor(),
+            connectionPrompt,
+            promptedRequest.Store);
+
+        var cloudKitAuthenticator = new CloudKitWebAuthenticator(cloudKit, callbackBroker, browserLauncher);
+        var cloudSyncModel = new WindowsCloudSyncModel(
+            availability: () => cloudKit.Availability switch
+            {
+                CloudKitAvailability.Available => WindowsCloudSyncAvailability.Available,
+                CloudKitAvailability.SignedOut => WindowsCloudSyncAvailability.SignedOut,
+                _ => WindowsCloudSyncAvailability.NotConfigured,
+            },
+            signIn: () => cloudKitAuthenticator.SignIn(),
+            signOut: cloudKitAuthenticator.SignOut);
+        cloudKit.AvailabilityChanged += (_, _) => cloudSyncModel.AvailabilityDidChange();
 
         return new WindowsApplicationRoot(
             Authentication: authenticationModel,
@@ -163,30 +225,129 @@ public static class WindowsApplicationComposition
             ConnectionHistory: connectionHistoryModel,
             SessionLogAnalysis: sessionLogAnalysisModel,
             StartVehicleConnection: startVehicleConnection,
-            MakeSettingsPresentationModel: () => MakeSettingsPresentationModel(defaultAdapterStore));
+            MakeSettingsPresentationModel: () => MakeSettingsPresentationModel(defaultAdapterStore),
+            IsLocalMode: !cloudConfiguration.IsConfigured,
+            CloudSync: cloudSyncModel,
+            PromptForDefaultAdapterConnection: promptForDefaultAdapterConnection,
+            PromptedVehicleConnectionRequest: promptedRequest,
+            AdapterArrivalPrompt: arrivalPromptModel,
+            DeliverProtocolActivation: uri => callbackBroker.TryDeliver(uri),
+            SynchronizeAccountState: () => synchronizedStore is CloudKitSynchronizedKeyValueStore cloudStore
+                ? cloudStore.SynchronizeAsync()
+                : Task.CompletedTask,
+            Shutdown: () =>
+            {
+                promptForDefaultAdapterConnection.Stop();
+                (connectionSessionStorage as IDisposable)?.Dispose();
+                httpClient.Dispose();
+            });
+    }
+
+    /// <summary>
+    /// 接続セッション一式（SQLite の概要＋ログストアの生ログ・取得証跡）を開きます。
+    /// </summary>
+    /// <remarks>責務: 製品の保存先を開き、開けなければ明示的に使えない保存先へ切り替えます。</remarks>
+    /// <param name="dataDirectory">データのフォルダ。</param>
+    /// <param name="performanceEvents">取得証拠の書込みを知らせる計測境界。</param>
+    /// <returns>接続セッションの保存一式。</returns>
+    private static IConnectionSessionStorage OpenConnectionSessionRepository(
+        string dataDirectory,
+        IAcquisitionPerformanceEventPort performanceEvents)
+    {
+        try
+        {
+            return SqliteConnectionSessionRepository.OpenApplicationRepository(dataDirectory, performanceEvents);
+        }
+        catch (Exception exception)
+        {
+            Debug.WriteLine($"接続セッションの保存先を開けませんでした: {exception}");
+            return new UnavailableConnectionSessionRepository();
+        }
+    }
+
+    /// <summary>
+    /// 製品の PID 定義 DB を開き、確認済みの初期データを非破壊で登録します。
+    /// </summary>
+    /// <remarks>責務: PID 定義の永続化を、使える SQLite 実装か明示的に使えない境界へ変換します。</remarks>
+    /// <param name="dataDirectory">データのフォルダ。</param>
+    /// <returns>初期データ登録済みの PID 定義リポジトリ。準備に失敗したら使えないリポジトリ。</returns>
+    private static IOBDPIDDefinitionRepository MakeOBDPIDDefinitionRepository(string dataDirectory)
+    {
+        try
+        {
+            var repository = SqliteOBDPIDDefinitionRepository.OpenApplicationRepository(dataDirectory);
+            StandardOBDPIDSeed.Install(repository);
+            ZD8OBDPIDSeed.Install(repository);
+            return repository;
+        }
+        catch (Exception exception)
+        {
+            Debug.WriteLine($"PID 定義の保存先を開けませんでした: {exception}");
+            return new UnavailableOBDPIDDefinitionRepository();
+        }
+    }
+
+    /// <summary>
+    /// 製品 DB の車両別対応 PID の保存先を作ります。
+    /// </summary>
+    /// <remarks>責務: 車両別対応 PID の永続化を、使える実装か明示的に使えない境界へ変換します。</remarks>
+    /// <param name="dataDirectory">データのフォルダ。</param>
+    /// <returns>車両別対応 PID のリポジトリ。</returns>
+    private static IVehiclePIDCapabilityStorage MakeVehiclePIDCapabilityRepository(string dataDirectory)
+    {
+        try
+        {
+            return SqliteVehiclePIDCapabilityRepository.OpenApplicationRepository(dataDirectory);
+        }
+        catch (Exception exception)
+        {
+            Debug.WriteLine($"車両別対応 PID の保存先を開けませんでした: {exception}");
+            return new UnavailableVehiclePIDCapabilityRepository();
+        }
+    }
+
+    /// <summary>
+    /// 製品 DB の整備記録の保存先を作ります。
+    /// </summary>
+    /// <remarks>責務: 整備記録の永続化を、使える SQLite 実装か明示的に使えない境界へ変換します。</remarks>
+    /// <param name="dataDirectory">データのフォルダ。</param>
+    /// <returns>整備記録のリポジトリ。</returns>
+    private static IMaintenanceRecordRepository MakeMaintenanceRepository(string dataDirectory)
+    {
+        try
+        {
+            return SqliteMaintenanceRecordRepository.OpenApplicationRepository(dataDirectory);
+        }
+        catch (Exception exception)
+        {
+            Debug.WriteLine($"整備記録の保存先を開けませんでした: {exception}");
+            return new UnavailableMaintenanceRecordRepository();
+        }
     }
 
     /// <summary>
     /// PID 定義・通信・取得証拠の保存を結び付けたライブ取得モデルを作ります。
     /// </summary>
-    /// <remarks>責務: ライブ取得の依存（定義、通信、取得コントローラー）を 1 件のモデルへ注入します。</remarks>
+    /// <remarks>責務: ライブ取得の依存（定義、通信、取得コントローラー、スリープ抑止）を 1 件のモデルへ注入します。</remarks>
     /// <returns>ライブ取得のモデル。</returns>
     private static LiveTelemetryModel MakeLiveTelemetryModel(
         ProductionConnectionSessionAcquisitionConfiguration configuration,
-        InterimConnectionSessionStore connectionSessionStorage,
-        InterimDemoOBDPIDTelemetryAdapter telemetry,
+        IConnectionSessionStorage connectionSessionStorage,
+        IOBDPIDTelemetryPort telemetry,
         IOBDPIDDefinitionRepository definitionRepository,
         IVehiclePIDCapabilityRepository capabilityRepository,
         IAcquisitionPerformanceEventPort performanceEvents,
-        Func<System.Threading.Tasks.Task<ConnectionSessionID?>> activeSessionID,
+        Func<Task<ConnectionSessionID?>> activeSessionID,
         Action<ConnectionSessionEndReason> sessionDidEnd,
         Action<ConnectionSessionDistanceObservation> distanceDidChange)
     {
         var acquisitionController = new ConnectionSessionAcquisitionController(
             createManifest: new CreateConnectionSessionAcquisitionManifestUseCase(
                 connectionSessionStorage,
-                // 暫定: ネットワーク担当の Data/Mapping（BundleConnectionSessionAcquisitionEvidenceAdapter 相当）に差し替える。
-                new InterimConnectionSessionAcquisitionEvidence(configuration.SchemaContractVersion, ConnectionSessionAcquisitionPlatform.MacOS)),
+                AssemblyConnectionSessionAcquisitionEvidenceAdapter.FromAssembly(
+                    typeof(WindowsApplicationComposition).Assembly,
+                    configuration.SchemaContractVersion,
+                    ConnectionSessionAcquisitionPlatform.MacOS)),
             persistBatch: new PersistAcquisitionBatchUseCase(
                 connectionSessionStorage,
                 telemetry,
@@ -204,31 +365,45 @@ public static class WindowsApplicationComposition
             acquisitionEvidence: acquisitionController,
             sessionDidEnd: sessionDidEnd,
             distanceDidChange: distanceDidChange,
-            // 暫定: デバイス担当の SetThreadExecutionState によるスリープ抑止に差し替える（今は抑止しない）。
-            systemSleepInhibitor: null);
+            systemSleepInhibitor: new SetThreadExecutionStateVehicleConnectionSystemSleepInhibitor());
     }
 
     /// <summary>
     /// 認証・資格情報の保存・アカウント削除を結び付けた認証セッションモデルを作ります。
     /// </summary>
-    /// <remarks>責務: ローカルモードの認可と端末内データの消去を Authentication のユースケースへ注入します。</remarks>
+    /// <remarks>
+    /// 責務: 設定があれば Web 版の Sign in with Apple、なければローカルモードの認可を、
+    /// 資格情報の保存と端末内データの消去とともに Authentication のユースケースへ注入します。
+    /// </remarks>
     /// <returns>認証セッションのモデル。</returns>
     private static AuthenticationSessionModel MakeAuthenticationSessionModel(
         string[] arguments,
-        InterimConnectionSessionStore connectionSessionStorage,
+        CloudServiceConfiguration cloudConfiguration,
+        HttpClient httpClient,
+        AuthorizationCallbackBroker callbackBroker,
+        IExternalBrowserLauncher browserLauncher,
+        ISecretStore secretStore,
+        ILocalKeyValueStore defaults,
+        ISynchronizedKeyValueStore synchronizedStore,
+        IConnectionSessionStorage connectionSessionStorage,
         IConnectionSessionTransferRepository transferRepository,
-        InterimAccountSettingsStore accountSettingsStore,
-        InterimDefaultAdapterPreferenceStore defaultAdapterStore,
-        InterimVehicleRepository vehicleRepository,
-        InterimVehiclePIDCapabilityRepository capabilityRepository)
+        SynchronizedAccountSettingsStore accountSettingsStore,
+        JsonFileDefaultAdapterPreferenceStore defaultAdapterStore,
+        CloudKitVehicleRepository vehicleRepository,
+        IVehiclePIDCapabilityStorage capabilityRepository)
     {
-        // 暫定: ネットワーク担当の Sign in with Apple（Web）と資格情報の保存に差し替える。設定がないときはローカルモードのまま。
-        var authorization = new InterimLocalModeAccountAuthorization();
-        var sessionStore = new InterimAuthenticationSessionStore();
-        var sessionRevocation = new InterimAccountSessionRevocation();
-        var dataEraser = new InterimAccountDataEraser(
+        IAppleAccountAuthorizationPort authorization = cloudConfiguration.IsConfigured
+            ? new WebAppleAccountAuthorizationClient(
+                cloudConfiguration,
+                callbackBroker,
+                browserLauncher,
+                new AppleIdentityTokenValidator(new AppleJsonWebKeySetCache(httpClient), cloudConfiguration.AppleServicesId!))
+            : new LocalAccountAuthorizationAdapter(defaults);
+        var sessionStore = new SecretStoreAuthenticationSessionStore(secretStore);
+        var sessionRevocation = new SynchronizedAccountSessionRevocationStore(defaults, synchronizedStore);
+        var dataEraser = new ProjectZD8AccountDataEraser(
             accountSettingsStore,
-            defaultAdapterStore,
+            defaultAdapterStore.Remove,
             connectionSessionStorage,
             vehicleRepository,
             capabilityRepository);
@@ -244,13 +419,15 @@ public static class WindowsApplicationComposition
     /// <summary>
     /// アダプター探索と既定アダプター保存を結び付けた設定画面の表示モデルを作ります。
     /// </summary>
-    /// <remarks>責務: 探索・保存の実装を DeviceConnection のユースケースと設定画面の表示モデルへ注入します。</remarks>
+    /// <remarks>責務: COM ポート・Bluetooth Classic・BLE の探索をデモ候補付きで、既定アダプターの保存とともに設定画面へ注入します。</remarks>
     /// <param name="defaultAdapterStore">既定アダプターの保存先。</param>
     /// <returns>設定画面の表示モデル。</returns>
-    private static WindowsSettingsPresentationModel MakeSettingsPresentationModel(InterimDefaultAdapterPreferenceStore defaultAdapterStore)
+    private static WindowsSettingsPresentationModel MakeSettingsPresentationModel(IDefaultAdapterPreferencePort defaultAdapterStore)
     {
-        // 暫定: デバイス担当の Windows 探索（シリアルポート・BLE）をデモ候補付きで包んだものに差し替える。
-        var discoverAdapters = new DiscoverAdaptersUseCase(new InterimDemoAdapterDiscovery());
+        var discovery = new DemoIncludedAdapterDiscovery(
+            new CombinedAdapterDiscovery(new WindowsSystemAdapterDiscovery(), new WindowsBluetoothLEAdapterDiscovery()),
+            DemoOBDAdapter.UsbCandidates);
+        var discoverAdapters = new DiscoverAdaptersUseCase(discovery);
         return new WindowsSettingsPresentationModel(
             new WindowsSettingsState(),
             new LatestAdapterDiscoveryUseCase(discoverAdapters),
@@ -258,12 +435,22 @@ public static class WindowsApplicationComposition
     }
 
     /// <summary>
+    /// 計測を明示したときだけ ETW の取得性能イベントを出す境界を作ります。
+    /// </summary>
+    /// <remarks>責務: 環境変数の実行識別子を、取得性能イベントの出力先へ変換します。</remarks>
+    /// <returns>有効な識別子があれば ETW の境界、なければ何もしない境界。</returns>
+    private static IAcquisitionPerformanceEventPort MakeAcquisitionPerformanceEventPort() =>
+        (IAcquisitionPerformanceEventPort?)EventSourceAcquisitionPerformanceAdapter.MakeIfValid(
+            Environment.GetEnvironmentVariable("PROJECTZD8_ACQUISITION_PERFORMANCE_RUN_ID"))
+        ?? new NoOpAcquisitionPerformanceEventPort();
+
+    /// <summary>
     /// 新しいセッションの取得元として表示する端末を返します。
     /// </summary>
     /// <remarks>
     /// 責務: 取得元端末の表示情報を決めます。
     /// Domain の <see cref="ConnectionSessionAcquisitionPlatform"/> に Windows がなく、macOS と名乗ると事実と違うため、
-    /// 今は取得元を記録しません（履歴には「不明な端末」と出る）。Windows を足すかはリードの検討事項です。
+    /// 今は取得元を記録しません（履歴には「不明な端末」と出る）。PROGRESS.md の検討事項を参照。
     /// </remarks>
     /// <returns>取得元の端末。記録しないなら null。</returns>
     private static ConnectionSessionAcquisitionDevice? MakeConnectionSessionAcquisitionDevice() => null;

@@ -1,3 +1,4 @@
+using ProjectZD8.Data.Persistence;
 using ProjectZD8.Domain.Entities;
 using ProjectZD8.Domain.Errors;
 using ProjectZD8.Domain.Repositories;
@@ -14,7 +15,8 @@ public sealed class UnavailableConnectionSessionRepository :
     IAccountConnectionSessionErasureRepository,
     IConnectionSessionAcquisitionRepository,
     IConnectionSessionAcquisitionBatchRepository,
-    IConnectionSessionAcquisitionTerminationRepository
+    IConnectionSessionAcquisitionTerminationRepository,
+    IConnectionSessionStorage
 {
     /// <summary>manifest開始保存を利用不能として失敗させます。</summary>
     /// <remarks>責務: 取得開始要求を明示的な保存先利用不能へ変換します。</remarks>

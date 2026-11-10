@@ -1,0 +1,120 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "windows.login.continue_local" : {
+      "comment" : "Windows 版だけ。アカウントの設定がないローカルモードで、ログイン画面のボタン。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue on this PC" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Continuar en este equipo" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "この PC で続ける" } }
+      }
+    },
+    "windows.login.local_mode_notice" : {
+      "comment" : "Windows 版だけ。ローカルモードの説明。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Apple sign-in isn't set up on this PC, so your data is kept only on this PC and isn't synced with iPhone." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "El inicio de sesión de Apple no está configurado en este equipo, así que tus datos se guardan solo aquí y no se sincronizan con el iPhone." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "この PC では Apple のサインインを設定していないため、データはこの PC の中だけに保存し、iPhone とは同期しません。" } }
+      }
+    },
+    "settings.windows_cloud.eyebrow" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "ICLOUD" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "ICLOUD" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ICLOUD" } }
+      }
+    },
+    "settings.windows_cloud.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "iCloud sync" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sincronización con iCloud" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "iCloud 同期" } }
+      }
+    },
+    "settings.windows_cloud.description" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign in to iCloud with the same Apple ID as your iPhone to sync vehicles, maintenance records, and drive logs." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Inicia sesión en iCloud con el mismo Apple ID que tu iPhone para sincronizar vehículos, mantenimiento y registros de conducción." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "iPhone と同じ Apple ID で iCloud にサインインすると、車両・整備記録・走行ログを同期します。" } }
+      }
+    },
+    "windows.cloud.local_mode" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Local mode: iCloud isn't set up on this PC." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Modo local: iCloud no está configurado en este equipo." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ローカルモード：この PC では iCloud を設定していません。" } }
+      }
+    },
+    "windows.cloud.signed_in" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Signed in to iCloud" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sesión iniciada en iCloud" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "iCloud にサインイン済み" } }
+      }
+    },
+    "windows.cloud.signed_out" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not signed in to iCloud. Data stays on this PC until you sign in." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "No has iniciado sesión en iCloud. Los datos se quedan en este equipo hasta que inicies sesión." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "iCloud にサインインしていません。サインインするまで、データはこの PC の中だけです。" } }
+      }
+    },
+    "windows.cloud.sign_in" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign in to iCloud" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Iniciar sesión en iCloud" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "iCloud にサインイン" } }
+      }
+    },
+    "windows.cloud.sign_out" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sign out of iCloud" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cerrar sesión en iCloud" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "iCloud からサインアウト" } }
+      }
+    },
+    "windows.cloud.signing_in" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Finish signing in in your browser…" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Termina de iniciar sesión en el navegador…" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ブラウザーでサインインを済ませてください…" } }
+      }
+    },
+    "windows.cloud.sign_in_failed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't sign in to iCloud. Try again." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "No se pudo iniciar sesión en iCloud. Inténtalo de nuevo." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "iCloud にサインインできませんでした。もう一度お試しください。" } }
+      }
+    },
+    "windows.adapter_prompt.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your default adapter is nearby" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Tu adaptador predeterminado está cerca" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "既定のアダプターが見つかりました" } }
+      }
+    },
+    "windows.adapter_prompt.message" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connect to %@ and identify the vehicle?" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Conectar con %@ e identificar el vehículo?" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "%@ に接続して車両を確かめますか？" } }
+      }
+    },
+    "windows.adapter_prompt.connect" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connect" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Conectar" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "接続" } }
+      }
+    },
+    "windows.adapter_prompt.dismiss" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not now" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ahora no" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "あとで" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -1,3 +1,4 @@
+using ProjectZD8.Data.Persistence;
 using ProjectZD8.Application.Logging.Ports;
 using ProjectZD8.Data.Persistence.LogStore;
 using ProjectZD8.Data.Persistence.LogStore.Format;
@@ -31,6 +32,7 @@ public sealed class SqliteConnectionSessionRepository :
     IConnectionSessionAcquisitionRepository,
     IConnectionSessionAcquisitionBatchRepository,
     IConnectionSessionAcquisitionTerminationRepository,
+    IConnectionSessionStorage,
     IDisposable
 {
     /// <summary>LogStoreのディレクトリー名です。</summary>

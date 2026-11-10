@@ -85,6 +85,8 @@ public sealed partial class WindowsAppShellView : UserControl
     {
         _flow.Root.ConnectionHistory.PropertyChanged += OnHistoryChanged;
         _flow.Root.VehicleManagement.PropertyChanged += OnVehicleManagementChanged;
+        _flow.Root.AdapterArrivalPrompt.PropertyChanged += OnAdapterArrivalPromptChanged;
+        RenderAdapterArrivalPrompt();
         UpdateHistoryBadge();
     }
 
@@ -96,7 +98,43 @@ public sealed partial class WindowsAppShellView : UserControl
     {
         _flow.Root.ConnectionHistory.PropertyChanged -= OnHistoryChanged;
         _flow.Root.VehicleManagement.PropertyChanged -= OnVehicleManagementChanged;
+        _flow.Root.AdapterArrivalPrompt.PropertyChanged -= OnAdapterArrivalPromptChanged;
     }
+
+    /// <summary>到来したアダプターについて尋ねる表示モデルが変わったときの処理です。</summary>
+    /// <remarks>責務: 尋ねている終端があれば InfoBar を開き、なければ閉じます。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">変更の内容。</param>
+    private void OnAdapterArrivalPromptChanged(object? sender, PropertyChangedEventArgs e) => RenderAdapterArrivalPrompt();
+
+    /// <summary>到来したアダプターについての InfoBar を描きます。</summary>
+    /// <remarks>責務: 表示モデルの終端を InfoBar の題・本文・ボタンへ写します。</remarks>
+    private void RenderAdapterArrivalPrompt()
+    {
+        var endpoint = _flow.Root.AdapterArrivalPrompt.PendingEndpoint;
+        if (endpoint is null)
+        {
+            AdapterArrivalBar.IsOpen = false;
+            return;
+        }
+
+        AdapterArrivalBar.Title = LocalizedText.Get("windows.adapter_prompt.title");
+        AdapterArrivalBar.Message = LocalizedText.Format("windows.adapter_prompt.message", endpoint.DisplayName);
+        AdapterArrivalConnectButton.Content = LocalizedText.Get("windows.adapter_prompt.connect");
+        AdapterArrivalBar.IsOpen = true;
+    }
+
+    /// <summary>InfoBar の「接続」を押したときの処理です。</summary>
+    /// <remarks>責務: 接続を受け入れたことを表示モデルへ送ります。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">イベントの情報。</param>
+    private void OnAdapterArrivalAccepted(object sender, RoutedEventArgs e) => _flow.Root.AdapterArrivalPrompt.Accept();
+
+    /// <summary>InfoBar を閉じたときの処理です。</summary>
+    /// <remarks>責務: 今は接続しないことを表示モデルへ送ります。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="args">イベントの情報。</param>
+    private void OnAdapterArrivalDismissed(InfoBar sender, object args) => _flow.Root.AdapterArrivalPrompt.Decline();
 
     /// <summary>ナビゲーションで選んだときの処理です。</summary>
     /// <remarks>責務: 利用者が選んだ行き先の画面を出します。</remarks>
@@ -186,7 +224,7 @@ public sealed partial class WindowsAppShellView : UserControl
             WindowsSidebarDestination.History => new WindowsConnectionHistoryView(root.ConnectionHistory, root.SessionLogAnalysis),
             WindowsSidebarDestination.Maintenance => new WindowsMaintenanceView(root.Maintenance),
             WindowsSidebarDestination.Garage => new WindowsGarageView(root.VehicleManagement),
-            _ => new WindowsSettingsView(_flow.SettingsModel, root.AccountSettings, root.Authentication),
+            _ => new WindowsSettingsView(_flow.SettingsModel, root.AccountSettings, root.Authentication, root.CloudSync),
         };
     }
 

@@ -50,6 +50,24 @@
             </Border>
         </NavigationView.PaneFooter>
 
-        <Border x:Name="DestinationHost" />
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <!-- 既定のアダプターが近くに来たときに接続を尋ねる（iOS 版のローカル通知の代わり）。 -->
+            <InfoBar
+                x:Name="AdapterArrivalBar"
+                Severity="Informational"
+                IsClosable="True"
+                IsOpen="False"
+                Margin="24,12,24,0"
+                CloseButtonClick="OnAdapterArrivalDismissed">
+                <InfoBar.ActionButton>
+                    <Button x:Name="AdapterArrivalConnectButton" Style="{StaticResource AccentButtonStyle}" Click="OnAdapterArrivalAccepted" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+            <Border x:Name="DestinationHost" Grid.Row="1" />
+        </Grid>
     </NavigationView>
 </UserControl>

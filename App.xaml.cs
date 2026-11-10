@@ -74,6 +74,8 @@ public partial class App : Microsoft.UI.Xaml.Application
         var root = WindowsApplicationComposition.MakeRoot(Environment.GetCommandLineArgs());
         var flow = new WindowsApplicationFlow(root);
         _window = new MainWindow(flow);
+        _window.Closed += (_, _) => flow.Shutdown();
+        ProtocolActivated = root.DeliverProtocolActivation;
 
         var current = AppInstance.GetCurrent();
         current.Activated += OnRedirectedActivation;

@@ -23,7 +23,7 @@ internal static class SegmentFileFormat
     internal const int CompressedBlockHeaderSize = 12;
 
     /// <summary>圧縮ブロックの非圧縮バイト数です。</summary>
-    internal const int CompressedBlockSize = 256 * 1024;
+    internal const int CompressedBlockSize = 64 * 1024;
 
     /// <summary>非圧縮セグメントのマジックです。</summary>
     private static readonly byte[] Magic = Encoding.ASCII.GetBytes("ZD8LOGv1");
@@ -177,10 +177,13 @@ internal static class SegmentFileFormat
     /// <summary>圧縮セグメントの論理バイト列をブロック単位で展開して読むストリームです。</summary>
     private sealed class CompressedSegmentStream : Stream
     {
+        /// <summary>圧縮ファイルごとのブロック表です（圧縮ファイルは作成後に変わらないため、長さと更新日時が同じ間は再利用します）。</summary>
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, BlockTable> BlockTables = new(StringComparer.OrdinalIgnoreCase);
+
         /// <summary>圧縮ファイルです。</summary>
         private readonly FileStream _file;
         /// <summary>各ブロックの (論理開始位置, ファイル内位置, 非圧縮長, 圧縮長, CRC) です。</summary>
-        private readonly List<(long LogicalStart, long FileOffset, int RawLength, int CompressedLength, uint Checksum)> _blocks = [];
+        private readonly IReadOnlyList<(long LogicalStart, long FileOffset, int RawLength, int CompressedLength, uint Checksum)> _blocks;
         /// <summary>論理長です。</summary>
         private readonly long _length;
         /// <summary>展開済みブロックの番号です。</summary>
@@ -191,22 +194,42 @@ internal static class SegmentFileFormat
         private long _position;
 
         /// <summary>圧縮ファイルのブロック表を読み込みます。</summary>
-        /// <remarks>責務: ヘッダーと全ブロックヘッダーを走査して論理位置の対応表を作ります。</remarks>
+        /// <remarks>責務: キャッシュがあれば再利用し、なければヘッダーと全ブロックヘッダーを走査して論理位置の対応表を作ります。</remarks>
         /// <param name="file">開いた圧縮ファイル。</param>
         /// <exception cref="InvalidDataException">形式が不正な場合。</exception>
         public CompressedSegmentStream(FileStream file)
         {
             _file = file;
+            var stamp = File.GetLastWriteTimeUtc(file.Name).Ticks;
+            if (!BlockTables.TryGetValue(file.Name, out var table) || table.FileLength != file.Length || table.Stamp != stamp)
+            {
+                table = ReadBlockTable(file, stamp);
+                BlockTables[file.Name] = table;
+            }
+            _length = table.LogicalLength;
+            _blocks = table.Blocks;
+        }
+
+        /// <summary>ヘッダーと全ブロックヘッダーを走査してブロック表を作ります。</summary>
+        /// <remarks>責務: 圧縮ファイルの論理位置とファイル内位置の対応を検証しながら読みます。</remarks>
+        /// <param name="file">開いた圧縮ファイル。</param>
+        /// <param name="stamp">ファイルの更新日時。</param>
+        /// <returns>ブロック表。</returns>
+        /// <exception cref="InvalidDataException">形式が不正な場合。</exception>
+        private static BlockTable ReadBlockTable(FileStream file, long stamp)
+        {
+            file.Position = 0;
             Span<byte> header = stackalloc byte[CompressedHeaderSize];
             file.ReadExactly(header);
             if (!header[..8].SequenceEqual(CompressedMagic))
             {
                 throw new InvalidDataException("Invalid compressed segment header");
             }
-            _length = BinaryPrimitives.ReadInt64LittleEndian(header[16..]);
+            var length = BinaryPrimitives.ReadInt64LittleEndian(header[16..]);
+            var blocks = new List<(long, long, int, int, uint)>();
             Span<byte> blockHeader = stackalloc byte[CompressedBlockHeaderSize];
             long logical = 0;
-            while (logical < _length)
+            while (logical < length)
             {
                 file.ReadExactly(blockHeader);
                 var raw = BinaryPrimitives.ReadInt32LittleEndian(blockHeader);
@@ -216,11 +239,23 @@ internal static class SegmentFileFormat
                 {
                     throw new InvalidDataException("Invalid compressed block header");
                 }
-                _blocks.Add((logical, file.Position, raw, compressed, checksum));
+                blocks.Add((logical, file.Position, raw, compressed, checksum));
                 file.Seek(compressed, SeekOrigin.Current);
                 logical += raw;
             }
+            return new BlockTable(file.Length, stamp, length, blocks);
         }
+
+        /// <summary>1つの圧縮ファイルのブロック表です。</summary>
+        /// <param name="FileLength">圧縮ファイルの長さ。</param>
+        /// <param name="Stamp">圧縮ファイルの更新日時。</param>
+        /// <param name="LogicalLength">論理長。</param>
+        /// <param name="Blocks">ブロックの対応表。</param>
+        private sealed record BlockTable(
+            long FileLength,
+            long Stamp,
+            long LogicalLength,
+            IReadOnlyList<(long LogicalStart, long FileOffset, int RawLength, int CompressedLength, uint Checksum)> Blocks);
 
         /// <inheritdoc/>
         public override bool CanRead => true;

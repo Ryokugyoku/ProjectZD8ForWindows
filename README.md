@@ -91,4 +91,6 @@ dotnet run -c Release --project tools/ProjectZD8.LogStoreBenchmark
 
 ## ライセンス
 
-元の iOS 版は PolyForm Noncommercial License 1.0.0 で公開されています。Windows 版のライセンスはまだ決めていません（PROGRESS.md の検討事項を参照）。
+This project is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+
+本プロジェクトは、iOS 版と同じく [PolyForm Noncommercial License 1.0.0](LICENSE) に基づきソースを公開しています。著作権者本人を除き、商用目的での利用・改変・再配布は許可されません。

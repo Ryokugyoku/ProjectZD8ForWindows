@@ -1,7 +1,7 @@
 # ProjectZD8ForWindows 進捗
 
 最終更新: 2026-11-10
-README 確認済みのコミット: dbb884d
+README 確認済みのコミット: d085c46
 
 ## 概要
 - iOS/macOS アプリ「RevTorque Insight」（GitHub: Ryokugyoku/ProjectZD8、Swift/SwiftUI）を Windows（WinUI 3 / .NET 10）向けに作り直す。iOS 版と CloudKit で同期する。

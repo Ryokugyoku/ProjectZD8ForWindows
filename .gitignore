@@ -4,3 +4,9 @@ obj/
 *.user
 TestResults/
 AppPackages/
+
+# 開発者ごとの秘密の設定（Apple の Services ID、CloudKit の API トークンなど）。コミットしない。
+appsettings.Local.json
+*.local.json
+# 性能測定の出力
+BenchmarkResults/

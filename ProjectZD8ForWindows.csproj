@@ -30,14 +30,17 @@
 
   <!-- src/ と tests/ は別プロジェクト。アプリのビルドに取り込まないよう除外する。 -->
   <ItemGroup>
-    <Compile Remove="src\**;tests\**" />
-    <None Remove="src\**;tests\**" />
-    <Page Remove="src\**;tests\**" />
-    <Content Remove="src\**;tests\**" />
+    <Compile Remove="src\**;tests\**;tools\**;scripts\**" />
+    <None Remove="src\**;tests\**;tools\**;scripts\**" />
+    <Page Remove="src\**;tests\**;tools\**;scripts\**" />
+    <Content Remove="src\**;tests\**;tools\**;scripts\**" />
+    <PRIResource Remove="src\**;tests\**;tools\**;scripts\**" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="src\ProjectZD8.Domain\ProjectZD8.Domain.csproj" />
     <ProjectReference Include="src\ProjectZD8.Application\ProjectZD8.Application.csproj" />
+    <ProjectReference Include="src\ProjectZD8.Data\ProjectZD8.Data.csproj" />
+    <ProjectReference Include="src\ProjectZD8.Data.Windows\ProjectZD8.Data.Windows.csproj" />
   </ItemGroup>
 
   <!--

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- iOS 版 ProjectZD8/Data に対応する実装層のうち、OS に依存しない部分。Domain と Application の境界を実装する。 -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>ProjectZD8.Data</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="ProjectZD8.Data.Tests" />
+    <InternalsVisibleTo Include="ProjectZD8.Data.Windows" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
+    <!-- Microsoft.Data.Sqlite が既定で引く 2.1.11 には既知の脆弱性があるため、修正済みの版を明示する。 -->
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.14" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ProjectZD8.Domain\ProjectZD8.Domain.csproj" />
+    <ProjectReference Include="..\ProjectZD8.Application\ProjectZD8.Application.csproj" />
+  </ItemGroup>
+</Project>

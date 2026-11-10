@@ -1,0 +1,3633 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- scripts/ConvertXcstrings.cs が iOS 版の Localizable.xcstrings から生成。手で編集しない。 -->
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="k_________xf7fe73b2" xml:space="preserve">
+    <value>%1$@ / %2$@</value>
+    <comment>%@ / %@</comment>
+  </data>
+  <data name="k__lld_xdaea457f" xml:space="preserve">
+    <value>%lld</value>
+    <comment>%lld</comment>
+  </data>
+  <data name="k__lld____lld_x67c946e9" xml:space="preserve">
+    <value>%1$lld · %2$lld</value>
+    <comment>%lld · %lld</comment>
+  </data>
+  <data name="BRZ" xml:space="preserve">
+    <value>BRZ</value>
+    <comment>BRZ</comment>
+  </data>
+  <data name="R" xml:space="preserve">
+    <value>R</value>
+    <comment>R</comment>
+  </data>
+  <data name="RevTorque_Insight_x9cb2bd2f" xml:space="preserve">
+    <value>RevTorque Insight</value>
+    <comment>RevTorque Insight</comment>
+  </data>
+  <data name="VEHICLE___SESSION___SEQUENCE_x2f1083ce" xml:space="preserve">
+    <value>VEHICLE / SESSION / SEQUENCE</value>
+    <comment>VEHICLE / SESSION / SEQUENCE</comment>
+  </data>
+  <data name="ZD8" xml:space="preserve">
+    <value>ZD8</value>
+    <comment>ZD8</comment>
+  </data>
+  <data name="account_delete_cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>account.delete.cancel</comment>
+  </data>
+  <data name="account_delete_card_description" xml:space="preserve">
+    <value>Permanently remove this account's app settings and saved sign-in information.</value>
+    <comment>account.delete.card.description</comment>
+  </data>
+  <data name="account_delete_card_title" xml:space="preserve">
+    <value>Delete account</value>
+    <comment>account.delete.card.title</comment>
+  </data>
+  <data name="account_delete_confirm" xml:space="preserve">
+    <value>Delete account</value>
+    <comment>account.delete.confirm</comment>
+  </data>
+  <data name="account_delete_error" xml:space="preserve">
+    <value>Deletion could not be completed. Your sign-in information was retained so you can retry.</value>
+    <comment>account.delete.error</comment>
+  </data>
+  <data name="account_delete_item_adapter" xml:space="preserve">
+    <value>The default adapter and device-specific connection selection saved on this device</value>
+    <comment>account.delete.item.adapter</comment>
+  </data>
+  <data name="account_delete_item_credential" xml:space="preserve">
+    <value>The saved Apple sign-in identifier for this app</value>
+    <comment>account.delete.item.credential</comment>
+  </data>
+  <data name="account_delete_item_driving_data" xml:space="preserve">
+    <value>All connection sessions and undecoded OBD raw logs stored on your devices and in CloudKit</value>
+    <comment>account.delete.item.driving_data</comment>
+  </data>
+  <data name="account_delete_item_shared_settings" xml:space="preserve">
+    <value>Language and appearance settings stored locally and shared through iCloud</value>
+    <comment>account.delete.item.shared_settings</comment>
+  </data>
+  <data name="account_delete_item_vehicles" xml:space="preserve">
+    <value>Registered vehicle profiles and photos stored on your devices and in CloudKit</value>
+    <comment>account.delete.item.vehicles</comment>
+  </data>
+  <data name="account_delete_navigation_title" xml:space="preserve">
+    <value>Delete account</value>
+    <comment>account.delete.navigation_title</comment>
+  </data>
+  <data name="account_delete_next" xml:space="preserve">
+    <value>Next</value>
+    <comment>account.delete.next</comment>
+  </data>
+  <data name="account_delete_retry" xml:space="preserve">
+    <value>Retry deletion</value>
+    <comment>account.delete.retry</comment>
+  </data>
+  <data name="account_delete_review_message" xml:space="preserve">
+    <value>The following data will be permanently deleted and cannot be restored.</value>
+    <comment>account.delete.review.message</comment>
+  </data>
+  <data name="account_delete_review_title" xml:space="preserve">
+    <value>Items to be deleted</value>
+    <comment>account.delete.review.title</comment>
+  </data>
+  <data name="account_delete_start" xml:space="preserve">
+    <value>Start account deletion</value>
+    <comment>account.delete.start</comment>
+  </data>
+  <data name="account_delete_warning_message" xml:space="preserve">
+    <value>Deleting your account permanently removes all acquired driving data from your devices and CloudKit, along with app settings and saved sign-in information. This action cannot be undone.</value>
+    <comment>account.delete.warning.message</comment>
+  </data>
+  <data name="account_delete_warning_title" xml:space="preserve">
+    <value>Delete this account?</value>
+    <comment>account.delete.warning.title</comment>
+  </data>
+  <data name="analysis_back_session" xml:space="preserve">
+    <value>Back to session</value>
+    <comment>analysis.back.session</comment>
+  </data>
+  <data name="analysis_card_caption" xml:space="preserve">
+    <value>%lld chronological samples</value>
+    <comment>analysis.card.caption</comment>
+  </data>
+  <data name="analysis_card_value" xml:space="preserve">
+    <value>PID timeline</value>
+    <comment>analysis.card.value</comment>
+  </data>
+  <data name="analysis_chart_time" xml:space="preserve">
+    <value>Time</value>
+    <comment>analysis.chart.time</comment>
+  </data>
+  <data name="analysis_chart_value" xml:space="preserve">
+    <value>Value</value>
+    <comment>analysis.chart.value</comment>
+  </data>
+  <data name="analysis_column_pid" xml:space="preserve">
+    <value>PID</value>
+    <comment>analysis.column.pid</comment>
+  </data>
+  <data name="analysis_column_raw" xml:space="preserve">
+    <value>Raw payload</value>
+    <comment>analysis.column.raw</comment>
+  </data>
+  <data name="analysis_column_time" xml:space="preserve">
+    <value>Time</value>
+    <comment>analysis.column.time</comment>
+  </data>
+  <data name="analysis_column_value" xml:space="preserve">
+    <value>Decoded value</value>
+    <comment>analysis.column.value</comment>
+  </data>
+  <data name="analysis_components_diagnostics_body" xml:space="preserve">
+    <value>PID 31 is distance since codes were cleared; PID 21 is distance with the MIL on. They do not identify a clear date or fault cause and depend on ECU behavior.</value>
+    <comment>analysis.components.diagnostics.body</comment>
+  </data>
+  <data name="analysis_components_diagnostics_title" xml:space="preserve">
+    <value>Diagnostic distance history</value>
+    <comment>analysis.components.diagnostics.title</comment>
+  </data>
+  <data name="analysis_components_electrical_body" xml:space="preserve">
+    <value>ECU supply voltage can be compared across rpm and electrical load. It is not a direct alternator-output measurement or a standalone diagnosis.</value>
+    <comment>analysis.components.electrical.body</comment>
+  </data>
+  <data name="analysis_components_electrical_title" xml:space="preserve">
+    <value>Charging and electrical</value>
+    <comment>analysis.components.electrical.title</comment>
+  </data>
+  <data name="analysis_components_empty" xml:space="preserve">
+    <value>No recorded PID can be linked to a supported vehicle system.</value>
+    <comment>analysis.components.empty</comment>
+  </data>
+  <data name="analysis_components_exhaust_body" xml:space="preserve">
+    <value>Catalyst or DPF temperature shows thermal history. Temperature alone does not establish soot loading, regeneration success, or component health.</value>
+    <comment>analysis.components.exhaust.body</comment>
+  </data>
+  <data name="analysis_components_exhaust_title" xml:space="preserve">
+    <value>Exhaust aftertreatment</value>
+    <comment>analysis.components.exhaust.title</comment>
+  </data>
+  <data name="analysis_components_fuel_intake_body" xml:space="preserve">
+    <value>Fuel trims and airflow help compare mixture correction and intake demand. Interpret them with load, rpm, temperature, leaks, and service data.</value>
+    <comment>analysis.components.fuel_intake.body</comment>
+  </data>
+  <data name="analysis_components_fuel_intake_title" xml:space="preserve">
+    <value>Fuel and intake</value>
+    <comment>analysis.components.fuel_intake.title</comment>
+  </data>
+  <data name="analysis_components_statistics" xml:space="preserve">
+    <value>Latest %1$.1f / Min %2$.1f / Avg %3$.1f / Max %4$.1f %5$@</value>
+    <comment>analysis.components.statistics</comment>
+  </data>
+  <data name="analysis_components_subtitle" xml:space="preserve">
+    <value>Only systems backed by recorded PIDs are shown. Values are comparison clues, not standalone fault diagnoses.</value>
+    <comment>analysis.components.subtitle</comment>
+  </data>
+  <data name="analysis_components_thermal_body" xml:space="preserve">
+    <value>Coolant and oil temperatures show warm-up and heat trends. Compare similar conditions; one value does not identify a failed part.</value>
+    <comment>analysis.components.thermal.body</comment>
+  </data>
+  <data name="analysis_components_thermal_title" xml:space="preserve">
+    <value>Cooling and lubrication</value>
+    <comment>analysis.components.thermal.title</comment>
+  </data>
+  <data name="analysis_components_title" xml:space="preserve">
+    <value>Vehicle systems</value>
+    <comment>analysis.components.title</comment>
+  </data>
+  <data name="analysis_download_cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>analysis.download.cancel</comment>
+  </data>
+  <data name="analysis_download_confirm" xml:space="preserve">
+    <value>Download</value>
+    <comment>analysis.download.confirm</comment>
+  </data>
+  <data name="analysis_download_confirm_message" xml:space="preserve">
+    <value>Download the Raw log (%@) from iCloud and start PID timeline analysis?</value>
+    <comment>analysis.download.confirm.message</comment>
+  </data>
+  <data name="analysis_download_confirm_title" xml:space="preserve">
+    <value>Download from iCloud?</value>
+    <comment>analysis.download.confirm.title</comment>
+  </data>
+  <data name="analysis_download_progress" xml:space="preserve">
+    <value>Downloading from iCloud</value>
+    <comment>analysis.download.progress</comment>
+  </data>
+  <data name="analysis_empty_body" xml:space="preserve">
+    <value>This session has no retained raw PID responses.</value>
+    <comment>analysis.empty.body</comment>
+  </data>
+  <data name="analysis_empty_title" xml:space="preserve">
+    <value>No analysis data</value>
+    <comment>analysis.empty.title</comment>
+  </data>
+  <data name="analysis_error_storage" xml:space="preserve">
+    <value>Analysis data could not be loaded.</value>
+    <comment>analysis.error.storage</comment>
+  </data>
+  <data name="analysis_eyebrow" xml:space="preserve">
+    <value>SESSION DRIVING ANALYSIS</value>
+    <comment>analysis.eyebrow</comment>
+  </data>
+  <data name="analysis_hero_caption" xml:space="preserve">
+    <value>Decoded values remain traceable to their original response bytes.</value>
+    <comment>analysis.hero.caption</comment>
+  </data>
+  <data name="analysis_loading" xml:space="preserve">
+    <value>Loading analysis…</value>
+    <comment>analysis.loading</comment>
+  </data>
+  <data name="analysis_mode_overview" xml:space="preserve">
+    <value>Driving summary</value>
+    <comment>analysis.mode.overview</comment>
+  </data>
+  <data name="analysis_mode_relationships" xml:space="preserve">
+    <value>Relationships</value>
+    <comment>analysis.mode.relationships</comment>
+  </data>
+  <data name="analysis_mode_title" xml:space="preserve">
+    <value>View</value>
+    <comment>analysis.mode.title</comment>
+  </data>
+  <data name="analysis_mode_trends" xml:space="preserve">
+    <value>Trends</value>
+    <comment>analysis.mode.trends</comment>
+  </data>
+  <data name="analysis_open" xml:space="preserve">
+    <value>Log data analysis</value>
+    <comment>analysis.open</comment>
+  </data>
+  <data name="analysis_open_hint" xml:space="preserve">
+    <value>Open driving summary and charts</value>
+    <comment>analysis.open.hint</comment>
+  </data>
+  <data name="analysis_overview_distance" xml:space="preserve">
+    <value>Recorded session distance</value>
+    <comment>analysis.overview.distance</comment>
+  </data>
+  <data name="analysis_overview_estimate_note" xml:space="preserve">
+    <value>Moving time, estimated distance, and rankings use adjacent observations. Long gaps are excluded, so totals can be shorter than connection time.</value>
+    <comment>analysis.overview.estimate_note</comment>
+  </data>
+  <data name="analysis_overview_estimated_distance" xml:space="preserve">
+    <value>Estimated distance from speed</value>
+    <comment>analysis.overview.estimated_distance</comment>
+  </data>
+  <data name="analysis_overview_moving_duration" xml:space="preserve">
+    <value>Observed moving time</value>
+    <comment>analysis.overview.moving_duration</comment>
+  </data>
+  <data name="analysis_overview_ranking_empty" xml:space="preserve">
+    <value>Not enough continuous observations to estimate duration.</value>
+    <comment>analysis.overview.ranking_empty</comment>
+  </data>
+  <data name="analysis_overview_rpm_band" xml:space="preserve">
+    <value>%1$.0f–&lt;%2$.0f rpm</value>
+    <comment>analysis.overview.rpm_band</comment>
+  </data>
+  <data name="analysis_overview_rpm_ranking" xml:space="preserve">
+    <value>Most-used engine-speed ranges</value>
+    <comment>analysis.overview.rpm_ranking</comment>
+  </data>
+  <data name="analysis_overview_rpm_ranking_note" xml:space="preserve">
+    <value>Ranks 500 rpm ranges. Low rpm alone does not prove sludge risk; engine type, load, oil temperature, oil specification, trip length, and maintenance also matter.</value>
+    <comment>analysis.overview.rpm_ranking_note</comment>
+  </data>
+  <data name="analysis_overview_session_duration" xml:space="preserve">
+    <value>Connection time</value>
+    <comment>analysis.overview.session_duration</comment>
+  </data>
+  <data name="analysis_overview_speed_band" xml:space="preserve">
+    <value>%1$.0f–&lt;%2$.0f km/h</value>
+    <comment>analysis.overview.speed_band</comment>
+  </data>
+  <data name="analysis_overview_speed_ranking" xml:space="preserve">
+    <value>Most-used speed ranges</value>
+    <comment>analysis.overview.speed_ranking</comment>
+  </data>
+  <data name="analysis_overview_speed_ranking_note" xml:space="preserve">
+    <value>Ranks 10 km/h ranges by estimated observed duration. The 0–10 range includes stops and very low speed.</value>
+    <comment>analysis.overview.speed_ranking_note</comment>
+  </data>
+  <data name="analysis_overview_subtitle" xml:space="preserve">
+    <value>Shows time and distance separately from operating-range rankings.</value>
+    <comment>analysis.overview.subtitle</comment>
+  </data>
+  <data name="analysis_overview_title" xml:space="preserve">
+    <value>Session and driving summary</value>
+    <comment>analysis.overview.title</comment>
+  </data>
+  <data name="analysis_pid_identifier" xml:space="preserve">
+    <value>Mode %02X · PID %02X</value>
+    <comment>analysis.pid.identifier</comment>
+  </data>
+  <data name="analysis_raw_unavailable" xml:space="preserve">
+    <value>Raw only</value>
+    <comment>analysis.raw.unavailable</comment>
+  </data>
+  <data name="analysis_relationship_empty_body" xml:space="preserve">
+    <value>A scatter plot appears when a supported PID pair has at least two observations within three seconds.</value>
+    <comment>analysis.relationship.empty.body</comment>
+  </data>
+  <data name="analysis_relationship_empty_title" xml:space="preserve">
+    <value>No relationship available</value>
+    <comment>analysis.relationship.empty.title</comment>
+  </data>
+  <data name="analysis_relationship_guide_common" xml:space="preserve">
+    <value>Choose a PID pair, then look at the spread and clusters of dots. Each dot combines the nearest observations within three seconds; use the chart to compare operating patterns, not to prove causation or diagnose a fault by itself.</value>
+    <comment>analysis.relationship.guide.common</comment>
+  </data>
+  <data name="analysis_relationship_guide_rpm_load" xml:space="preserve">
+    <value>Engine speed × calculated load shows which speed and relative-load regions were used. Compare dense regions and outliers between sessions to understand operating-range differences.</value>
+    <comment>analysis.relationship.guide.rpm_load</comment>
+  </data>
+  <data name="analysis_relationship_guide_rpm_maf" xml:space="preserve">
+    <value>Engine speed × mass air flow shows how measured intake-air mass changed across engine speeds. Use changes in the curve or unusual clusters as comparison clues while accounting for load and driving conditions.</value>
+    <comment>analysis.relationship.guide.rpm_maf</comment>
+  </data>
+  <data name="analysis_relationship_guide_rpm_speed" xml:space="preserve">
+    <value>Engine speed × vehicle speed makes operating ranges, stops, acceleration, and possible shift-related changes easier to see. Compare the shape between similar routes; the plot does not identify a gear by itself.</value>
+    <comment>analysis.relationship.guide.rpm_speed</comment>
+  </data>
+  <data name="analysis_relationship_guide_speed_zd8_atf" xml:space="preserve">
+    <value>Vehicle speed × ZD8 AT fluid temperature helps compare transmission temperature changes with driving load. It is observational data, not a diagnostic threshold.</value>
+    <comment>analysis.relationship.guide.speed_zd8_atf</comment>
+  </data>
+  <data name="analysis_relationship_guide_throttle_load" xml:space="preserve">
+    <value>Throttle position × calculated load compares throttle opening with relative engine load. Look for response shape, lag-like spread, and session-to-session differences; throttle position is not always the accelerator-pedal position.</value>
+    <comment>analysis.relationship.guide.throttle_load</comment>
+  </data>
+  <data name="analysis_relationship_guide_title" xml:space="preserve">
+    <value>How to use this scatter plot</value>
+    <comment>analysis.relationship.guide.title</comment>
+  </data>
+  <data name="analysis_relationship_guide_trim_banks" xml:space="preserve">
+    <value>Short-term fuel trim Bank 1 × Bank 2 compares simultaneous correction tendencies between banks. A balanced cluster or persistent offset can guide comparison, but supported bank layout and other conditions must be confirmed before diagnosis.</value>
+    <comment>analysis.relationship.guide.trim_banks</comment>
+  </data>
+  <data name="analysis_relationship_pair" xml:space="preserve">
+    <value>PID pair</value>
+    <comment>analysis.relationship.pair</comment>
+  </data>
+  <data name="analysis_relationship_subtitle" xml:space="preserve">
+    <value>Pairs use the nearest observations within three seconds; this is not proof of causation.</value>
+    <comment>analysis.relationship.subtitle</comment>
+  </data>
+  <data name="analysis_relationship_title" xml:space="preserve">
+    <value>PID relationship</value>
+    <comment>analysis.relationship.title</comment>
+  </data>
+  <data name="analysis_summary_decoded" xml:space="preserve">
+    <value>Decoded</value>
+    <comment>analysis.summary.decoded</comment>
+  </data>
+  <data name="analysis_summary_raw" xml:space="preserve">
+    <value>Raw only</value>
+    <comment>analysis.summary.raw</comment>
+  </data>
+  <data name="analysis_summary_samples" xml:space="preserve">
+    <value>Samples</value>
+    <comment>analysis.summary.samples</comment>
+  </data>
+  <data name="analysis_timeline_subtitle" xml:space="preserve">
+    <value>Chronological order. Values use the saved PID definition revision.</value>
+    <comment>analysis.timeline.subtitle</comment>
+  </data>
+  <data name="analysis_timeline_title" xml:space="preserve">
+    <value>PID timeline</value>
+    <comment>analysis.timeline.title</comment>
+  </data>
+  <data name="analysis_title" xml:space="preserve">
+    <value>Driving analysis</value>
+    <comment>analysis.title</comment>
+  </data>
+  <data name="analysis_trend_average" xml:space="preserve">
+    <value>Average</value>
+    <comment>analysis.trend.average</comment>
+  </data>
+  <data name="analysis_trend_empty_body" xml:space="preserve">
+    <value>A line chart appears when at least one PID can be decoded to numeric values.</value>
+    <comment>analysis.trend.empty.body</comment>
+  </data>
+  <data name="analysis_trend_empty_title" xml:space="preserve">
+    <value>No numeric trend available</value>
+    <comment>analysis.trend.empty.title</comment>
+  </data>
+  <data name="analysis_trend_guide_codes_cleared_distance" xml:space="preserve">
+    <value>PID 31 is cumulative distance since trouble codes were cleared. It does not provide the clear date and behavior depends on the ECU.</value>
+    <comment>analysis.trend.guide.codes_cleared_distance</comment>
+  </data>
+  <data name="analysis_trend_guide_coolant" xml:space="preserve">
+    <value>Coolant temperature shows warm-up and cooling behavior. Compare similar conditions; one excursion does not identify the failed cooling part.</value>
+    <comment>analysis.trend.guide.coolant</comment>
+  </data>
+  <data name="analysis_trend_guide_exhaust_temperature" xml:space="preserve">
+    <value>Catalyst or DPF temperature shows thermal history. It does not quantify soot or prove regeneration or component health.</value>
+    <comment>analysis.trend.guide.exhaust_temperature</comment>
+  </data>
+  <data name="analysis_trend_guide_fuel_trim" xml:space="preserve">
+    <value>Fuel trim shows ECU mixture correction. Interpretation requires bank layout, closed-loop state, load, temperature, and vehicle limits.</value>
+    <comment>analysis.trend.guide.fuel_trim</comment>
+  </data>
+  <data name="analysis_trend_guide_generic" xml:space="preserve">
+    <value>This PID records the named value over time. Compare timing, range, and repeated changes with other conditions; do not infer a fault from this series alone.</value>
+    <comment>analysis.trend.guide.generic</comment>
+  </data>
+  <data name="analysis_trend_guide_load" xml:space="preserve">
+    <value>Calculated load is ECU-derived relative load, not measured torque. Compare it with rpm, throttle, airflow, and road conditions.</value>
+    <comment>analysis.trend.guide.load</comment>
+  </data>
+  <data name="analysis_trend_guide_maf" xml:space="preserve">
+    <value>Mass air flow is intake-air mass per second. Compare it with rpm, load, and throttle; conditions, leaks, restriction, contamination, or calibration can affect it.</value>
+    <comment>analysis.trend.guide.maf</comment>
+  </data>
+  <data name="analysis_trend_guide_mil_distance" xml:space="preserve">
+    <value>PID 21 is cumulative distance traveled while the MIL was on. It does not identify the fault cause or when the lamp came on.</value>
+    <comment>analysis.trend.guide.mil_distance</comment>
+  </data>
+  <data name="analysis_trend_guide_odometer" xml:space="preserve">
+    <value>PID A6 is an ECU-reported odometer. Availability varies and it is not a certified instrument reading.</value>
+    <comment>analysis.trend.guide.odometer</comment>
+  </data>
+  <data name="analysis_trend_guide_oil_temperature" xml:space="preserve">
+    <value>Oil temperature shows warm-up and heat exposure. It does not directly measure pressure, level, viscosity, or sludge.</value>
+    <comment>analysis.trend.guide.oil_temperature</comment>
+  </data>
+  <data name="analysis_trend_guide_rpm" xml:space="preserve">
+    <value>PID 0C is engine speed. It shows rpm ranges, idle, acceleration, and possible shift changes; it does not identify load or gear by itself.</value>
+    <comment>analysis.trend.guide.rpm</comment>
+  </data>
+  <data name="analysis_trend_guide_runtime" xml:space="preserve">
+    <value>PID 1F is engine run time since the current start, not this app's session duration.</value>
+    <comment>analysis.trend.guide.runtime</comment>
+  </data>
+  <data name="analysis_trend_guide_speed" xml:space="preserve">
+    <value>PID 0D is ECU-reported vehicle speed. It shows stops, cruising, and acceleration; GPS speed can differ.</value>
+    <comment>analysis.trend.guide.speed</comment>
+  </data>
+  <data name="analysis_trend_guide_throttle" xml:space="preserve">
+    <value>Throttle or pedal PIDs show commanded or measured position. Confirm the name: throttle and accelerator-pedal position are not interchangeable.</value>
+    <comment>analysis.trend.guide.throttle</comment>
+  </data>
+  <data name="analysis_trend_guide_voltage" xml:space="preserve">
+    <value>PID 42 is ECU supply voltage. Compare dips with rpm and electrical load; it is not direct alternator output.</value>
+    <comment>analysis.trend.guide.voltage</comment>
+  </data>
+  <data name="analysis_trend_guide_zd8_atf" xml:space="preserve">
+    <value>ZD8-specific AT fluid temperature is shown only after a response from the transmission ECU. Confirm operating conditions before interpreting it.</value>
+    <comment>analysis.trend.guide.zd8_atf</comment>
+  </data>
+  <data name="analysis_trend_guide_zd8_distance" xml:space="preserve">
+    <value>ZD8-specific vehicle distance is an ECU-reported cumulative value and is not a certified instrument reading.</value>
+    <comment>analysis.trend.guide.zd8_distance</comment>
+  </data>
+  <data name="analysis_trend_maximum" xml:space="preserve">
+    <value>Maximum</value>
+    <comment>analysis.trend.maximum</comment>
+  </data>
+  <data name="analysis_trend_minimum" xml:space="preserve">
+    <value>Minimum</value>
+    <comment>analysis.trend.minimum</comment>
+  </data>
+  <data name="analysis_trend_pid" xml:space="preserve">
+    <value>PID to chart</value>
+    <comment>analysis.trend.pid</comment>
+  </data>
+  <data name="analysis_trend_subtitle" xml:space="preserve">
+    <value>One PID is shown at a time so different units are never mixed.</value>
+    <comment>analysis.trend.subtitle</comment>
+  </data>
+  <data name="analysis_trend_title" xml:space="preserve">
+    <value>Time trend</value>
+    <comment>analysis.trend.title</comment>
+  </data>
+  <data name="analysis_value_estimated_distance" xml:space="preserve">
+    <value>~%.1f km</value>
+    <comment>analysis.value.estimated_distance</comment>
+  </data>
+  <data name="analysis_value_in_progress" xml:space="preserve">
+    <value>In progress</value>
+    <comment>analysis.value.in_progress</comment>
+  </data>
+  <data name="analysis_value_unavailable" xml:space="preserve">
+    <value>Not available</value>
+    <comment>analysis.value.unavailable</comment>
+  </data>
+  <data name="auth_capability_analysis" xml:space="preserve">
+    <value>Driving analysis</value>
+    <comment>auth.capability.analysis</comment>
+  </data>
+  <data name="auth_capability_logs" xml:space="preserve">
+    <value>Traceable logs</value>
+    <comment>auth.capability.logs</comment>
+  </data>
+  <data name="auth_capability_telemetry" xml:space="preserve">
+    <value>Live telemetry</value>
+    <comment>auth.capability.telemetry</comment>
+  </data>
+  <data name="auth_checking" xml:space="preserve">
+    <value>Checking your Apple account…</value>
+    <comment>auth.checking</comment>
+  </data>
+  <data name="auth_consent_hint" xml:space="preserve">
+    <value>You must review and accept the disclaimer before signing in.</value>
+    <comment>auth.consent_hint</comment>
+  </data>
+  <data name="auth_continue_with_apple" xml:space="preserve">
+    <value>Continue with Apple</value>
+    <comment>auth.continue_with_apple</comment>
+  </data>
+  <data name="auth_disclaimer_accept" xml:space="preserve">
+    <value>Accept and Sign in with Apple</value>
+    <comment>auth.disclaimer.accept</comment>
+  </data>
+  <data name="auth_disclaimer_cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>auth.disclaimer.cancel</comment>
+  </data>
+  <data name="auth_disclaimer_instruction" xml:space="preserve">
+    <value>Read every item and sign in only if you agree.</value>
+    <comment>auth.disclaimer.instruction</comment>
+  </data>
+  <data name="auth_disclaimer_introduction" xml:space="preserve">
+    <value>RevTorque Insight is a vehicle-data support app developed and provided by an individual. Please confirm the following before use.</value>
+    <comment>auth.disclaimer.introduction</comment>
+  </data>
+  <data name="auth_disclaimer_legal_note" xml:space="preserve">
+    <value>This notice is not legal advice and does not restrict rights granted by applicable law.</value>
+    <comment>auth.disclaimer.legal_note</comment>
+  </data>
+  <data name="auth_disclaimer_liability_body" xml:space="preserve">
+    <value>Except for intentional misconduct, gross negligence, or other liability that cannot legally be excluded, the developer is not liable for damage to vehicles, devices, data, property, or persons arising from use.</value>
+    <comment>auth.disclaimer.liability.body</comment>
+  </data>
+  <data name="auth_disclaimer_liability_title" xml:space="preserve">
+    <value>Limitation of liability</value>
+    <comment>auth.disclaimer.liability.title</comment>
+  </data>
+  <data name="auth_disclaimer_no_warranty_body" xml:space="preserve">
+    <value>Operation, accuracy, fitness, continued availability, data completeness, and compatibility with any vehicle or device are not guaranteed.</value>
+    <comment>auth.disclaimer.no_warranty.body</comment>
+  </data>
+  <data name="auth_disclaimer_no_warranty_title" xml:space="preserve">
+    <value>No warranty</value>
+    <comment>auth.disclaimer.no_warranty.title</comment>
+  </data>
+  <data name="auth_disclaimer_risk_body" xml:space="preserve">
+    <value>Use of this app, selection and connection of devices, and decisions based on acquired data are undertaken at your own judgment and risk.</value>
+    <comment>auth.disclaimer.risk.body</comment>
+  </data>
+  <data name="auth_disclaimer_risk_title" xml:space="preserve">
+    <value>Use at your own risk</value>
+    <comment>auth.disclaimer.risk.title</comment>
+  </data>
+  <data name="auth_disclaimer_safety_body" xml:space="preserve">
+    <value>Do not operate the app while driving. Follow vehicle and device manuals, and never use the app as the sole basis for safety decisions or fault diagnosis.</value>
+    <comment>auth.disclaimer.safety.body</comment>
+  </data>
+  <data name="auth_disclaimer_safety_title" xml:space="preserve">
+    <value>Safety first</value>
+    <comment>auth.disclaimer.safety.title</comment>
+  </data>
+  <data name="auth_disclaimer_title" xml:space="preserve">
+    <value>Important Notice</value>
+    <comment>auth.disclaimer.title</comment>
+  </data>
+  <data name="auth_error_remote_logout_persistence" xml:space="preserve">
+    <value>You were signed out by another device, but the local session could not be cleared completely. It will be retried after restart.</value>
+    <comment>auth.error.remote_logout_persistence</comment>
+  </data>
+  <data name="auth_error_session_check" xml:space="preserve">
+    <value>Your saved session could not be checked. You can sign in again.</value>
+    <comment>auth.error.session_check</comment>
+  </data>
+  <data name="auth_error_sign_in" xml:space="preserve">
+    <value>Sign in could not be completed. Please try again.</value>
+    <comment>auth.error.sign_in</comment>
+  </data>
+  <data name="auth_error_unavailable" xml:space="preserve">
+    <value>Apple sign-in is currently unavailable. Please try again later.</value>
+    <comment>auth.error.unavailable</comment>
+  </data>
+  <data name="auth_eyebrow" xml:space="preserve">
+    <value>DRIVE INTELLIGENCE</value>
+    <comment>auth.eyebrow</comment>
+  </data>
+  <data name="auth_panel_eyebrow" xml:space="preserve">
+    <value>SECURE ENTRY</value>
+    <comment>auth.panel.eyebrow</comment>
+  </data>
+  <data name="auth_panel_subtitle" xml:space="preserve">
+    <value>No password to create. Your Apple account is the only supported sign-in method.</value>
+    <comment>auth.panel.subtitle</comment>
+  </data>
+  <data name="auth_panel_title" xml:space="preserve">
+    <value>Welcome to the cockpit.</value>
+    <comment>auth.panel.title</comment>
+  </data>
+  <data name="auth_signing_in" xml:space="preserve">
+    <value>Signing in securely…</value>
+    <comment>auth.signing_in</comment>
+  </data>
+  <data name="auth_subtitle" xml:space="preserve">
+    <value>Turn every drive into clear, traceable vehicle insight.</value>
+    <comment>auth.subtitle</comment>
+  </data>
+  <data name="auth_title" xml:space="preserve">
+    <value>Know the machine.
+Own the drive.</value>
+    <comment>auth.title</comment>
+  </data>
+  <data name="auth_trust_apple_only" xml:space="preserve">
+    <value>Apple account only</value>
+    <comment>auth.trust.apple_only</comment>
+  </data>
+  <data name="auth_trust_local" xml:space="preserve">
+    <value>Minimal local identity</value>
+    <comment>auth.trust.local</comment>
+  </data>
+  <data name="auth_trust_private" xml:space="preserve">
+    <value>Protected by Keychain</value>
+    <comment>auth.trust.private</comment>
+  </data>
+  <data name="common_close" xml:space="preserve">
+    <value>Close</value>
+    <comment>common.close</comment>
+  </data>
+  <data name="default_adapter_arrival_body" xml:space="preserve">
+    <value>%@ is available. Open RevTorque Insight and connect?</value>
+    <comment>default-adapter-arrival-body</comment>
+  </data>
+  <data name="default_adapter_arrival_connect_action" xml:space="preserve">
+    <value>Open and Connect</value>
+    <comment>default-adapter-arrival-connect-action</comment>
+  </data>
+  <data name="default_adapter_arrival_decline_action" xml:space="preserve">
+    <value>Not Now</value>
+    <comment>default-adapter-arrival-decline-action</comment>
+  </data>
+  <data name="default_adapter_arrival_title" xml:space="preserve">
+    <value>Default adapter found</value>
+    <comment>default-adapter-arrival-title</comment>
+  </data>
+  <data name="garage_activity_duration" xml:space="preserve">
+    <value>Total time</value>
+    <comment>garage.activity.duration</comment>
+  </data>
+  <data name="garage_activity_last_log" xml:space="preserve">
+    <value>Last log</value>
+    <comment>garage.activity.last_log</comment>
+  </data>
+  <data name="garage_activity_no_logs" xml:space="preserve">
+    <value>No logs yet</value>
+    <comment>garage.activity.no_logs</comment>
+  </data>
+  <data name="garage_activity_odometer" xml:space="preserve">
+    <value>Latest odometer</value>
+    <comment>garage.activity.odometer</comment>
+  </data>
+  <data name="garage_activity_sessions" xml:space="preserve">
+    <value>Sessions</value>
+    <comment>garage.activity.sessions</comment>
+  </data>
+  <data name="garage_cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>garage.cancel</comment>
+  </data>
+  <data name="garage_connection_active" xml:space="preserve">
+    <value>Connected</value>
+    <comment>garage.connection.active</comment>
+  </data>
+  <data name="garage_connection_handoff" xml:space="preserve">
+    <value>Starting the vehicle connection…</value>
+    <comment>garage.connection.handoff</comment>
+  </data>
+  <data name="garage_connection_in_progress" xml:space="preserve">
+    <value>Connecting to vehicle…</value>
+    <comment>garage.connection.in_progress</comment>
+  </data>
+  <data name="garage_default" xml:space="preserve">
+    <value>Default</value>
+    <comment>garage.default</comment>
+  </data>
+  <data name="garage_delete_action" xml:space="preserve">
+    <value>Delete</value>
+    <comment>garage.delete.action</comment>
+  </data>
+  <data name="garage_delete_message" xml:space="preserve">
+    <value>This permanently deletes the vehicle and all of its sessions and Raw logs from every device. This action cannot be undone.</value>
+    <comment>garage.delete.message</comment>
+  </data>
+  <data name="garage_delete_title" xml:space="preserve">
+    <value>Delete vehicle?</value>
+    <comment>garage.delete.title</comment>
+  </data>
+  <data name="garage_edit" xml:space="preserve">
+    <value>Edit</value>
+    <comment>garage.edit</comment>
+  </data>
+  <data name="garage_editor_save_hint" xml:space="preserve">
+    <value>Apply this profile</value>
+    <comment>garage.editor.save_hint</comment>
+  </data>
+  <data name="garage_editor_studio" xml:space="preserve">
+    <value>VEHICLE STUDIO</value>
+    <comment>garage.editor.studio</comment>
+  </data>
+  <data name="garage_editor_title" xml:space="preserve">
+    <value>Vehicle profile</value>
+    <comment>garage.editor.title</comment>
+  </data>
+  <data name="garage_empty_description" xml:space="preserve">
+    <value>Connect from Home to identify and register a vehicle.</value>
+    <comment>garage.empty.description</comment>
+  </data>
+  <data name="garage_empty_title" xml:space="preserve">
+    <value>No vehicles yet</value>
+    <comment>garage.empty.title</comment>
+  </data>
+  <data name="garage_energy_cng" xml:space="preserve">
+    <value>CNG</value>
+    <comment>garage.energy.cng</comment>
+  </data>
+  <data name="garage_energy_diesel" xml:space="preserve">
+    <value>Diesel</value>
+    <comment>garage.energy.diesel</comment>
+  </data>
+  <data name="garage_energy_electricity" xml:space="preserve">
+    <value>Electricity</value>
+    <comment>garage.energy.electricity</comment>
+  </data>
+  <data name="garage_energy_gasoline" xml:space="preserve">
+    <value>Gasoline</value>
+    <comment>garage.energy.gasoline</comment>
+  </data>
+  <data name="garage_energy_gasolinePremium" xml:space="preserve">
+    <value>Premium</value>
+    <comment>garage.energy.gasolinePremium</comment>
+  </data>
+  <data name="garage_energy_gasolineRegular" xml:space="preserve">
+    <value>Regular</value>
+    <comment>garage.energy.gasolineRegular</comment>
+  </data>
+  <data name="garage_energy_hydrogen" xml:space="preserve">
+    <value>Hydrogen</value>
+    <comment>garage.energy.hydrogen</comment>
+  </data>
+  <data name="garage_energy_lpg" xml:space="preserve">
+    <value>LPG</value>
+    <comment>garage.energy.lpg</comment>
+  </data>
+  <data name="garage_energy_other" xml:space="preserve">
+    <value>Other</value>
+    <comment>garage.energy.other</comment>
+  </data>
+  <data name="garage_error_command_rejected" xml:space="preserve">
+    <value>The adapter or vehicle rejected the identification request.</value>
+    <comment>garage.error.command_rejected</comment>
+  </data>
+  <data name="garage_error_connection" xml:space="preserve">
+    <value>The selected OBD serial connection could not be opened.</value>
+    <comment>garage.error.connection</comment>
+  </data>
+  <data name="garage_error_delete" xml:space="preserve">
+    <value>The vehicle could not be deleted.</value>
+    <comment>garage.error.delete</comment>
+  </data>
+  <data name="garage_error_delete_active_session" xml:space="preserve">
+    <value>Disconnect the active vehicle session before deleting this vehicle.</value>
+    <comment>garage.error.delete_active_session</comment>
+  </data>
+  <data name="garage_error_malformed_response" xml:space="preserve">
+    <value>The returned vehicle identifier could not be parsed.</value>
+    <comment>garage.error.malformed_response</comment>
+  </data>
+  <data name="garage_error_obd_unavailable" xml:space="preserve">
+    <value>Vehicle identification is not available until the verified OBD runtime is connected.</value>
+    <comment>garage.error.obd_unavailable</comment>
+  </data>
+  <data name="garage_error_photo" xml:space="preserve">
+    <value>The selected photo could not be loaded.</value>
+    <comment>garage.error.photo</comment>
+  </data>
+  <data name="garage_error_pid_catalog" xml:space="preserve">
+    <value>The verified PID catalog could not be prepared.</value>
+    <comment>garage.error.pid_catalog</comment>
+  </data>
+  <data name="garage_error_save" xml:space="preserve">
+    <value>The vehicle could not be saved.</value>
+    <comment>garage.error.save</comment>
+  </data>
+  <data name="garage_error_sync" xml:space="preserve">
+    <value>Vehicles could not be synchronized. Check iCloud and try again.</value>
+    <comment>garage.error.sync</comment>
+  </data>
+  <data name="garage_error_timeout" xml:space="preserve">
+    <value>The OBD adapter response timed out.</value>
+    <comment>garage.error.timeout</comment>
+  </data>
+  <data name="garage_error_title" xml:space="preserve">
+    <value>Could not continue</value>
+    <comment>garage.error.title</comment>
+  </data>
+  <data name="garage_error_vin_unavailable" xml:space="preserve">
+    <value>A vehicle identifier was not returned, so registration cannot continue.</value>
+    <comment>garage.error.vin_unavailable</comment>
+  </data>
+  <data name="garage_eyebrow" xml:space="preserve">
+    <value>VEHICLE COLLECTION</value>
+    <comment>garage.eyebrow</comment>
+  </data>
+  <data name="garage_field_default" xml:space="preserve">
+    <value>Use as default vehicle</value>
+    <comment>garage.field.default</comment>
+  </data>
+  <data name="garage_field_energy" xml:space="preserve">
+    <value>Energy sources</value>
+    <comment>garage.field.energy</comment>
+  </data>
+  <data name="garage_field_engine_model" xml:space="preserve">
+    <value>Engine model</value>
+    <comment>garage.field.engine_model</comment>
+  </data>
+  <data name="garage_field_manufacturer" xml:space="preserve">
+    <value>Manufacturer</value>
+    <comment>garage.field.manufacturer</comment>
+  </data>
+  <data name="garage_field_model_year" xml:space="preserve">
+    <value>Model year</value>
+    <comment>garage.field.model_year</comment>
+  </data>
+  <data name="garage_field_name" xml:space="preserve">
+    <value>Vehicle name</value>
+    <comment>garage.field.name</comment>
+  </data>
+  <data name="garage_field_note" xml:space="preserve">
+    <value>Notes</value>
+    <comment>garage.field.note</comment>
+  </data>
+  <data name="garage_field_obd_identifier" xml:space="preserve">
+    <value>OBD-reported identifier</value>
+    <comment>garage.field.obd_identifier</comment>
+  </data>
+  <data name="garage_field_powertrain" xml:space="preserve">
+    <value>Powertrain class</value>
+    <comment>garage.field.powertrain</comment>
+  </data>
+  <data name="garage_field_tank" xml:space="preserve">
+    <value>Tank capacity (L)</value>
+    <comment>garage.field.tank</comment>
+  </data>
+  <data name="garage_field_vin" xml:space="preserve">
+    <value>VIN</value>
+    <comment>garage.field.vin</comment>
+  </data>
+  <data name="garage_identification_all_fields" xml:space="preserve">
+    <value>All acquired information</value>
+    <comment>garage.identification.all_fields</comment>
+  </data>
+  <data name="garage_identification_confirm" xml:space="preserve">
+    <value>Register this vehicle</value>
+    <comment>garage.identification.confirm</comment>
+  </data>
+  <data name="garage_identification_description" xml:space="preserve">
+    <value>Review the OBD-reported identifier and every acquired item before continuing. Unavailable values are not inferred.</value>
+    <comment>garage.identification.description</comment>
+  </data>
+  <data name="garage_identification_eyebrow" xml:space="preserve">
+    <value>OBD IDENTIFICATION</value>
+    <comment>garage.identification.eyebrow</comment>
+  </data>
+  <data name="garage_identification_failure_stage" xml:space="preserve">
+    <value>Failure stage:</value>
+    <comment>garage.identification.failure_stage</comment>
+  </data>
+  <data name="garage_identification_loading_hint" xml:space="preserve">
+    <value>Requesting VIN and all available identification data.</value>
+    <comment>garage.identification.loading_hint</comment>
+  </data>
+  <data name="garage_identification_title" xml:space="preserve">
+    <value>Is this your vehicle?</value>
+    <comment>garage.identification.title</comment>
+  </data>
+  <data name="garage_identification_vin" xml:space="preserve">
+    <value>Vehicle Identification Number</value>
+    <comment>garage.identification.vin</comment>
+  </data>
+  <data name="garage_photo" xml:space="preserve">
+    <value>Vehicle photo</value>
+    <comment>garage.photo</comment>
+  </data>
+  <data name="garage_photo_choose" xml:space="preserve">
+    <value>Choose photo</value>
+    <comment>garage.photo.choose</comment>
+  </data>
+  <data name="garage_pid_settings_collecting" xml:space="preserve">
+    <value>Collecting</value>
+    <comment>garage.pid_settings.collecting</comment>
+  </data>
+  <data name="garage_pid_settings_empty" xml:space="preserve">
+    <value>Supported PIDs have not been collected yet</value>
+    <comment>garage.pid_settings.empty</comment>
+  </data>
+  <data name="garage_pid_settings_error" xml:space="preserve">
+    <value>PID collection settings could not be loaded or saved</value>
+    <comment>garage.pid_settings.error</comment>
+  </data>
+  <data name="garage_pid_settings_filter" xml:space="preserve">
+    <value>Collection status</value>
+    <comment>garage.pid_settings.filter</comment>
+  </data>
+  <data name="garage_pid_settings_filter_all" xml:space="preserve">
+    <value>All</value>
+    <comment>garage.pid_settings.filter.all</comment>
+  </data>
+  <data name="garage_pid_settings_filter_disabled" xml:space="preserve">
+    <value>Paused</value>
+    <comment>garage.pid_settings.filter.disabled</comment>
+  </data>
+  <data name="garage_pid_settings_filter_enabled" xml:space="preserve">
+    <value>Active</value>
+    <comment>garage.pid_settings.filter.enabled</comment>
+  </data>
+  <data name="garage_pid_settings_no_results" xml:space="preserve">
+    <value>No matching PIDs</value>
+    <comment>garage.pid_settings.no_results</comment>
+  </data>
+  <data name="garage_pid_settings_open" xml:space="preserve">
+    <value>PID collection</value>
+    <comment>garage.pid_settings.open</comment>
+  </data>
+  <data name="garage_pid_settings_paused" xml:space="preserve">
+    <value>Paused</value>
+    <comment>garage.pid_settings.paused</comment>
+  </data>
+  <data name="garage_pid_settings_results" xml:space="preserve">
+    <value>Supported PIDs</value>
+    <comment>garage.pid_settings.results</comment>
+  </data>
+  <data name="garage_pid_settings_search" xml:space="preserve">
+    <value>Search by name, mode, or PID</value>
+    <comment>garage.pid_settings.search</comment>
+  </data>
+  <data name="garage_pid_settings_summary__lld__lld_x3b5822b8" xml:space="preserve">
+    <value>%1$lld of %2$lld PIDs enabled</value>
+    <comment>garage.pid_settings.summary %lld %lld</comment>
+  </data>
+  <data name="garage_pid_settings_title" xml:space="preserve">
+    <value>Collected PIDs</value>
+    <comment>garage.pid_settings.title</comment>
+  </data>
+  <data name="garage_pid_settings_unconfirmed" xml:space="preserve">
+    <value>Unverified</value>
+    <comment>garage.pid_settings.unconfirmed</comment>
+  </data>
+  <data name="garage_powertrain_batteryElectric" xml:space="preserve">
+    <value>Battery electric</value>
+    <comment>garage.powertrain.batteryElectric</comment>
+  </data>
+  <data name="garage_powertrain_combustion" xml:space="preserve">
+    <value>Combustion</value>
+    <comment>garage.powertrain.combustion</comment>
+  </data>
+  <data name="garage_powertrain_fuelCell" xml:space="preserve">
+    <value>Fuel cell</value>
+    <comment>garage.powertrain.fuelCell</comment>
+  </data>
+  <data name="garage_powertrain_hybrid" xml:space="preserve">
+    <value>Hybrid</value>
+    <comment>garage.powertrain.hybrid</comment>
+  </data>
+  <data name="garage_powertrain_other" xml:space="preserve">
+    <value>Other</value>
+    <comment>garage.powertrain.other</comment>
+  </data>
+  <data name="garage_powertrain_plugInHybrid" xml:space="preserve">
+    <value>Plug-in hybrid</value>
+    <comment>garage.powertrain.plugInHybrid</comment>
+  </data>
+  <data name="garage_ready" xml:space="preserve">
+    <value>Vehicle identified and ready for connection.</value>
+    <comment>garage.ready</comment>
+  </data>
+  <data name="garage_ready_title" xml:space="preserve">
+    <value>Vehicle identified</value>
+    <comment>garage.ready.title</comment>
+  </data>
+  <data name="garage_refresh" xml:space="preserve">
+    <value>Sync</value>
+    <comment>garage.refresh</comment>
+  </data>
+  <data name="garage_registration_navigation" xml:space="preserve">
+    <value>Vehicle registration</value>
+    <comment>garage.registration.navigation</comment>
+  </data>
+  <data name="garage_retry" xml:space="preserve">
+    <value>Try again</value>
+    <comment>garage.retry</comment>
+  </data>
+  <data name="garage_save" xml:space="preserve">
+    <value>Save vehicle</value>
+    <comment>garage.save</comment>
+  </data>
+  <data name="garage_section_energy" xml:space="preserve">
+    <value>Power and energy</value>
+    <comment>garage.section.energy</comment>
+  </data>
+  <data name="garage_section_identity" xml:space="preserve">
+    <value>Basic information</value>
+    <comment>garage.section.identity</comment>
+  </data>
+  <data name="garage_section_other" xml:space="preserve">
+    <value>Vehicle information</value>
+    <comment>garage.section.other</comment>
+  </data>
+  <data name="garage_status_identifying" xml:space="preserve">
+    <value>Reading vehicle information…</value>
+    <comment>garage.status.identifying</comment>
+  </data>
+  <data name="garage_status_loading" xml:space="preserve">
+    <value>Synchronizing vehicles…</value>
+    <comment>garage.status.loading</comment>
+  </data>
+  <data name="garage_subtitle" xml:space="preserve">
+    <value>Your synchronized collection of registered vehicles.</value>
+    <comment>garage.subtitle</comment>
+  </data>
+  <data name="garage_summary_connected" xml:space="preserve">
+    <value>Connected now</value>
+    <comment>garage.summary.connected</comment>
+  </data>
+  <data name="garage_summary_sessions" xml:space="preserve">
+    <value>Recorded sessions</value>
+    <comment>garage.summary.sessions</comment>
+  </data>
+  <data name="garage_summary_vehicles" xml:space="preserve">
+    <value>Registered vehicles</value>
+    <comment>garage.summary.vehicles</comment>
+  </data>
+  <data name="garage_synced" xml:space="preserve">
+    <value>Cloud synchronization target</value>
+    <comment>garage.synced</comment>
+  </data>
+  <data name="garage_title" xml:space="preserve">
+    <value>Garage</value>
+    <comment>garage.title</comment>
+  </data>
+  <data name="garage_unknown_manufacturer" xml:space="preserve">
+    <value>Unknown manufacturer</value>
+    <comment>garage.unknown_manufacturer</comment>
+  </data>
+  <data name="history_active_elapsed" xml:space="preserve">
+    <value>Elapsed</value>
+    <comment>history.active.elapsed</comment>
+  </data>
+  <data name="history_active_recording" xml:space="preserve">
+    <value>RECORDING IN PROGRESS</value>
+    <comment>history.active.recording</comment>
+  </data>
+  <data name="history_active_title" xml:space="preserve">
+    <value>Active session</value>
+    <comment>history.active.title</comment>
+  </data>
+  <data name="history_archive_empty" xml:space="preserve">
+    <value>Completed sessions will be organized here by vehicle.</value>
+    <comment>history.archive.empty</comment>
+  </data>
+  <data name="history_archive_title" xml:space="preserve">
+    <value>Vehicle archive</value>
+    <comment>history.archive.title</comment>
+  </data>
+  <data name="history_delete_button" xml:space="preserve">
+    <value>Delete session</value>
+    <comment>history.delete.button</comment>
+  </data>
+  <data name="history_delete_cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>history.delete.cancel</comment>
+  </data>
+  <data name="history_delete_confirm" xml:space="preserve">
+    <value>Delete permanently</value>
+    <comment>history.delete.confirm</comment>
+  </data>
+  <data name="history_delete_error" xml:space="preserve">
+    <value>The session could not be deleted from every device. No local-only deletion was reported as complete.</value>
+    <comment>history.delete.error</comment>
+  </data>
+  <data name="history_delete_error_dismiss" xml:space="preserve">
+    <value>Close</value>
+    <comment>history.delete.error.dismiss</comment>
+  </data>
+  <data name="history_delete_error_title" xml:space="preserve">
+    <value>Deletion failed</value>
+    <comment>history.delete.error.title</comment>
+  </data>
+  <data name="history_delete_warning_message" xml:space="preserve">
+    <value>%lld Raw records (%@) and this session will be permanently deleted from this device, iCloud, and every synced device. It cannot be restored.</value>
+    <comment>history.delete.warning.message</comment>
+  </data>
+  <data name="history_delete_warning_title" xml:space="preserve">
+    <value>Permanently delete this session?</value>
+    <comment>history.delete.warning.title</comment>
+  </data>
+  <data name="history_detail_back" xml:space="preserve">
+    <value>Back to sessions</value>
+    <comment>history.detail.back</comment>
+  </data>
+  <data name="history_detail_development_badge" xml:space="preserve">
+    <value>IN DEVELOPMENT</value>
+    <comment>history.detail.development.badge</comment>
+  </data>
+  <data name="history_detail_development_body" xml:space="preserve">
+    <value>Driving signals, charts, and event timelines for this session will appear here in a future update.</value>
+    <comment>history.detail.development.body</comment>
+  </data>
+  <data name="history_detail_development_title" xml:space="preserve">
+    <value>Driving log is coming soon</value>
+    <comment>history.detail.development.title</comment>
+  </data>
+  <data name="history_detail_disposition_regular" xml:space="preserve">
+    <value>Regular data</value>
+    <comment>history.detail.disposition.regular</comment>
+  </data>
+  <data name="history_detail_disposition_review" xml:space="preserve">
+    <value>Confirmation required</value>
+    <comment>history.detail.disposition.review</comment>
+  </data>
+  <data name="history_detail_disposition_title" xml:space="preserve">
+    <value>Session handling</value>
+    <comment>history.detail.disposition.title</comment>
+  </data>
+  <data name="history_detail_disposition_user_accepted" xml:space="preserve">
+    <value>User-confirmed stop</value>
+    <comment>history.detail.disposition.user_accepted</comment>
+  </data>
+  <data name="history_detail_title" xml:space="preserve">
+    <value>Session details</value>
+    <comment>history.detail.title</comment>
+  </data>
+  <data name="history_device_unknown" xml:space="preserve">
+    <value>Acquisition device unknown</value>
+    <comment>history.device.unknown</comment>
+  </data>
+  <data name="history_distance_unsupported" xml:space="preserve">
+    <value>Distance unsupported</value>
+    <comment>history.distance.unsupported</comment>
+  </data>
+  <data name="history_duration_zero" xml:space="preserve">
+    <value>0 min</value>
+    <comment>history.duration.zero</comment>
+  </data>
+  <data name="history_empty_body" xml:space="preserve">
+    <value>Start a connection from Home. Each session will be saved here automatically.</value>
+    <comment>history.empty.body</comment>
+  </data>
+  <data name="history_empty_title" xml:space="preserve">
+    <value>No connection history yet</value>
+    <comment>history.empty.title</comment>
+  </data>
+  <data name="history_ended" xml:space="preserve">
+    <value>Ended</value>
+    <comment>history.ended</comment>
+  </data>
+  <data name="history_error_local_removal" xml:space="preserve">
+    <value>The raw log could not be removed from this iPhone.</value>
+    <comment>history.error.local_removal</comment>
+  </data>
+  <data name="history_error_retry" xml:space="preserve">
+    <value>Try again</value>
+    <comment>history.error.retry</comment>
+  </data>
+  <data name="history_error_storage" xml:space="preserve">
+    <value>Connection history could not be loaded.</value>
+    <comment>history.error.storage</comment>
+  </data>
+  <data name="history_eyebrow" xml:space="preserve">
+    <value>SESSION ARCHIVE</value>
+    <comment>history.eyebrow</comment>
+  </data>
+  <data name="history_filter_empty" xml:space="preserve">
+    <value>No matching sessions</value>
+    <comment>history.filter.empty</comment>
+  </data>
+  <data name="history_filter_empty_body" xml:space="preserve">
+    <value>Try changing the date range or end reason.</value>
+    <comment>history.filter.empty.body</comment>
+  </data>
+  <data name="history_filter_from" xml:space="preserve">
+    <value>From</value>
+    <comment>history.filter.from</comment>
+  </data>
+  <data name="history_filter_reason" xml:space="preserve">
+    <value>End reason</value>
+    <comment>history.filter.reason</comment>
+  </data>
+  <data name="history_filter_reset" xml:space="preserve">
+    <value>Reset</value>
+    <comment>history.filter.reset</comment>
+  </data>
+  <data name="history_filter_title" xml:space="preserve">
+    <value>Find sessions</value>
+    <comment>history.filter.title</comment>
+  </data>
+  <data name="history_filter_to" xml:space="preserve">
+    <value>To</value>
+    <comment>history.filter.to</comment>
+  </data>
+  <data name="history_in_progress" xml:space="preserve">
+    <value>In progress</value>
+    <comment>history.in.progress</comment>
+  </data>
+  <data name="history_navigation_back" xml:space="preserve">
+    <value>Back to vehicle archive</value>
+    <comment>history.navigation.back</comment>
+  </data>
+  <data name="history_raw_badge" xml:space="preserve">
+    <value>RAW SESSION</value>
+    <comment>history.raw.badge</comment>
+  </data>
+  <data name="history_raw_bytes" xml:space="preserve">
+    <value>Payload</value>
+    <comment>history.raw.bytes</comment>
+  </data>
+  <data name="history_raw_cloud_failed" xml:space="preserve">
+    <value>Retry needed</value>
+    <comment>history.raw.cloud.failed</comment>
+  </data>
+  <data name="history_raw_cloud_not_uploaded" xml:space="preserve">
+    <value>Not uploaded</value>
+    <comment>history.raw.cloud.not_uploaded</comment>
+  </data>
+  <data name="history_raw_cloud_pending" xml:space="preserve">
+    <value>Waiting to upload</value>
+    <comment>history.raw.cloud.pending</comment>
+  </data>
+  <data name="history_raw_cloud_uploaded" xml:space="preserve">
+    <value>Upload complete</value>
+    <comment>history.raw.cloud.uploaded</comment>
+  </data>
+  <data name="history_raw_local_available" xml:space="preserve">
+    <value>Saved on this device</value>
+    <comment>history.raw.local.available</comment>
+  </data>
+  <data name="history_raw_local_empty" xml:space="preserve">
+    <value>No data</value>
+    <comment>history.raw.local.empty</comment>
+  </data>
+  <data name="history_raw_local_removed" xml:space="preserve">
+    <value>Not saved on this device</value>
+    <comment>history.raw.local.removed</comment>
+  </data>
+  <data name="history_raw_mac_pending" xml:space="preserve">
+    <value>Not confirmed</value>
+    <comment>history.raw.mac.pending</comment>
+  </data>
+  <data name="history_raw_mac_receipt" xml:space="preserve">
+    <value>Mac import receipt</value>
+    <comment>history.raw.mac.receipt</comment>
+  </data>
+  <data name="history_raw_mac_receipt_missing" xml:space="preserve">
+    <value>No durable Mac import has been confirmed.</value>
+    <comment>history.raw.mac.receipt_missing</comment>
+  </data>
+  <data name="history_raw_mac_verified" xml:space="preserve">
+    <value>Verified</value>
+    <comment>history.raw.mac.verified</comment>
+  </data>
+  <data name="history_raw_precision" xml:space="preserve">
+    <value>Timing</value>
+    <comment>history.raw.precision</comment>
+  </data>
+  <data name="history_raw_records" xml:space="preserve">
+    <value>Raw records</value>
+    <comment>history.raw.records</comment>
+  </data>
+  <data name="history_raw_remove_button" xml:space="preserve">
+    <value>Free up device storage</value>
+    <comment>history.raw.remove.button</comment>
+  </data>
+  <data name="history_raw_remove_cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>history.raw.remove.cancel</comment>
+  </data>
+  <data name="history_raw_remove_completed" xml:space="preserve">
+    <value>Raw log is no longer stored on this iPhone</value>
+    <comment>history.raw.remove.completed</comment>
+  </data>
+  <data name="history_raw_remove_confirm" xml:space="preserve">
+    <value>Free up storage</value>
+    <comment>history.raw.remove.confirm</comment>
+  </data>
+  <data name="history_raw_remove_safe_message" xml:space="preserve">
+    <value>The raw log is stored in iCloud. Remove %lld raw records (%@) from this device? Nothing is deleted from iCloud; the session remains and the raw log downloads again when needed.</value>
+    <comment>history.raw.remove.safe.message</comment>
+  </data>
+  <data name="history_raw_remove_safe_title" xml:space="preserve">
+    <value>Remove local raw log?</value>
+    <comment>history.raw.remove.safe.title</comment>
+  </data>
+  <data name="history_raw_remove_warning_message" xml:space="preserve">
+    <value>iCloud storage has not been confirmed. Removing %lld raw records (%@) may permanently lose source data.</value>
+    <comment>history.raw.remove.warning.message</comment>
+  </data>
+  <data name="history_raw_remove_warning_title" xml:space="preserve">
+    <value>Not stored in iCloud</value>
+    <comment>history.raw.remove.warning.title</comment>
+  </data>
+  <data name="history_raw_storage_cloud" xml:space="preserve">
+    <value>Private CloudKit</value>
+    <comment>history.raw.storage.cloud</comment>
+  </data>
+  <data name="history_raw_storage_iphone" xml:space="preserve">
+    <value>iPhone local store</value>
+    <comment>history.raw.storage.iphone</comment>
+  </data>
+  <data name="history_raw_storage_mac" xml:space="preserve">
+    <value>Mac archive</value>
+    <comment>history.raw.storage.mac</comment>
+  </data>
+  <data name="history_raw_storage_title" xml:space="preserve">
+    <value>Storage journey</value>
+    <comment>history.raw.storage.title</comment>
+  </data>
+  <data name="history_raw_subtitle" xml:space="preserve">
+    <value>Original OBD response bytes are preserved before decoding.</value>
+    <comment>history.raw.subtitle</comment>
+  </data>
+  <data name="history_reason_accountSignedOut" xml:space="preserve">
+    <value>Signed out</value>
+    <comment>history.reason.accountSignedOut</comment>
+  </data>
+  <data name="history_reason_acquisitionFailed" xml:space="preserve">
+    <value>Acquisition failed</value>
+    <comment>history.reason.acquisitionFailed</comment>
+  </data>
+  <data name="history_reason_all" xml:space="preserve">
+    <value>All end reasons</value>
+    <comment>history.reason.all</comment>
+  </data>
+  <data name="history_reason_connectionLost" xml:space="preserve">
+    <value>Device connection lost (possibly unplugged)</value>
+    <comment>history.reason.connectionLost</comment>
+  </data>
+  <data name="history_reason_superseded" xml:space="preserve">
+    <value>Replaced by new session</value>
+    <comment>history.reason.superseded</comment>
+  </data>
+  <data name="history_reason_unexpectedTermination" xml:space="preserve">
+    <value>Unexpected termination</value>
+    <comment>history.reason.unexpectedTermination</comment>
+  </data>
+  <data name="history_reason_userDisconnected" xml:space="preserve">
+    <value>Normal disconnect</value>
+    <comment>history.reason.userDisconnected</comment>
+  </data>
+  <data name="history_reason_vehicleNoResponse" xml:space="preserve">
+    <value>Vehicle response stopped (possibly ignition off)</value>
+    <comment>history.reason.vehicleNoResponse</comment>
+  </data>
+  <data name="history_refresh" xml:space="preserve">
+    <value>Refresh history</value>
+    <comment>history.refresh</comment>
+  </data>
+  <data name="history_session_id" xml:space="preserve">
+    <value>SESSION ID</value>
+    <comment>history.session.id</comment>
+  </data>
+  <data name="history_sort_longestDuration" xml:space="preserve">
+    <value>Longest duration</value>
+    <comment>history.sort.longestDuration</comment>
+  </data>
+  <data name="history_sort_newest" xml:space="preserve">
+    <value>Newest first</value>
+    <comment>history.sort.newest</comment>
+  </data>
+  <data name="history_sort_oldest" xml:space="preserve">
+    <value>Oldest first</value>
+    <comment>history.sort.oldest</comment>
+  </data>
+  <data name="history_sort_shortestDuration" xml:space="preserve">
+    <value>Shortest duration</value>
+    <comment>history.sort.shortestDuration</comment>
+  </data>
+  <data name="history_sort_title" xml:space="preserve">
+    <value>Sort</value>
+    <comment>history.sort.title</comment>
+  </data>
+  <data name="history_started" xml:space="preserve">
+    <value>Started</value>
+    <comment>history.started</comment>
+  </data>
+  <data name="history_status_completed" xml:space="preserve">
+    <value>Completed</value>
+    <comment>history.status.completed</comment>
+  </data>
+  <data name="history_status_connected" xml:space="preserve">
+    <value>Connected</value>
+    <comment>history.status.connected</comment>
+  </data>
+  <data name="history_status_interrupted" xml:space="preserve">
+    <value>Interrupted</value>
+    <comment>history.status.interrupted</comment>
+  </data>
+  <data name="history_stop_review_accepted" xml:space="preserve">
+    <value>Recorded as an intentional user stop. The observed end reason is preserved.</value>
+    <comment>history.stop_review.accepted</comment>
+  </data>
+  <data name="history_stop_review_cancel" xml:space="preserve">
+    <value>Keep warning</value>
+    <comment>history.stop_review.cancel</comment>
+  </data>
+  <data name="history_stop_review_card_action" xml:space="preserve">
+    <value>Review stop</value>
+    <comment>history.stop_review.card.action</comment>
+  </data>
+  <data name="history_stop_review_card_connection_lost" xml:space="preserve">
+    <value>The adapter or device connection disappeared. Confirm only if you intentionally unplugged it.</value>
+    <comment>history.stop_review.card.connection_lost</comment>
+  </data>
+  <data name="history_stop_review_card_no_response" xml:space="preserve">
+    <value>The vehicle stopped responding. Confirm only if you intentionally switched the ignition off.</value>
+    <comment>history.stop_review.card.no_response</comment>
+  </data>
+  <data name="history_stop_review_card_title" xml:space="preserve">
+    <value>Was this an intentional stop?</value>
+    <comment>history.stop_review.card.title</comment>
+  </data>
+  <data name="history_stop_review_confirm" xml:space="preserve">
+    <value>Use as regular data</value>
+    <comment>history.stop_review.confirm</comment>
+  </data>
+  <data name="history_stop_review_error" xml:space="preserve">
+    <value>The stop confirmation could not be saved. The warning remains unchanged.</value>
+    <comment>history.stop_review.error</comment>
+  </data>
+  <data name="history_stop_review_error_dismiss" xml:space="preserve">
+    <value>OK</value>
+    <comment>history.stop_review.error.dismiss</comment>
+  </data>
+  <data name="history_stop_review_error_title" xml:space="preserve">
+    <value>Could not save confirmation</value>
+    <comment>history.stop_review.error.title</comment>
+  </data>
+  <data name="history_stop_review_message_connection_lost" xml:space="preserve">
+    <value>The app observed a lost device connection. If you intentionally unplugged the OBD device, it can be treated as regular data while preserving this observed reason.</value>
+    <comment>history.stop_review.message.connection_lost</comment>
+  </data>
+  <data name="history_stop_review_message_no_response" xml:space="preserve">
+    <value>The app observed that the vehicle stopped responding. If you intentionally switched the ignition off, it can be treated as regular data while preserving this observed reason.</value>
+    <comment>history.stop_review.message.no_response</comment>
+  </data>
+  <data name="history_stop_review_title" xml:space="preserve">
+    <value>Confirm session stop</value>
+    <comment>history.stop_review.title</comment>
+  </data>
+  <data name="history_subtitle" xml:space="preserve">
+    <value>Review every vehicle connection by session.</value>
+    <comment>history.subtitle</comment>
+  </data>
+  <data name="history_summary_connected" xml:space="preserve">
+    <value>Connected</value>
+    <comment>history.summary.connected</comment>
+  </data>
+  <data name="history_summary_distance" xml:space="preserve">
+    <value>Driving distance</value>
+    <comment>history.summary.distance</comment>
+  </data>
+  <data name="history_summary_duration" xml:space="preserve">
+    <value>Driving time</value>
+    <comment>history.summary.duration</comment>
+  </data>
+  <data name="history_summary_total" xml:space="preserve">
+    <value>Total</value>
+    <comment>history.summary.total</comment>
+  </data>
+  <data name="history_title" xml:space="preserve">
+    <value>Connection history</value>
+    <comment>history.title</comment>
+  </data>
+  <data name="history_training_badge" xml:space="preserve">
+    <value>TRAINING ARCHIVE</value>
+    <comment>history.training.badge</comment>
+  </data>
+  <data name="history_training_integrity_pending" xml:space="preserve">
+    <value>Pending</value>
+    <comment>history.training.integrity.pending</comment>
+  </data>
+  <data name="history_training_integrity_title" xml:space="preserve">
+    <value>Integrity</value>
+    <comment>history.training.integrity.title</comment>
+  </data>
+  <data name="history_training_integrity_verified" xml:space="preserve">
+    <value>Verified</value>
+    <comment>history.training.integrity.verified</comment>
+  </data>
+  <data name="history_training_lineage_body" xml:space="preserve">
+    <value>Decoded values and future features remain derived data. Original bytes stay unchanged.</value>
+    <comment>history.training.lineage.body</comment>
+  </data>
+  <data name="history_training_lineage_title" xml:space="preserve">
+    <value>Immutable source lineage</value>
+    <comment>history.training.lineage.title</comment>
+  </data>
+  <data name="history_training_pending" xml:space="preserve">
+    <value>Needs attention</value>
+    <comment>history.training.pending</comment>
+  </data>
+  <data name="history_training_pending_body" xml:space="preserve">
+    <value>A vehicle link, local raw payload, and matching import receipt are required before training use.</value>
+    <comment>history.training.pending.body</comment>
+  </data>
+  <data name="history_training_raw_title" xml:space="preserve">
+    <value>Raw records</value>
+    <comment>history.training.raw.title</comment>
+  </data>
+  <data name="history_training_ready" xml:space="preserve">
+    <value>Training ready</value>
+    <comment>history.training.ready</comment>
+  </data>
+  <data name="history_training_ready_body" xml:space="preserve">
+    <value>This session is durably stored and can be selected by vehicle for future dataset generation.</value>
+    <comment>history.training.ready.body</comment>
+  </data>
+  <data name="history_training_scope" xml:space="preserve">
+    <value>EXTRACTION KEY</value>
+    <comment>history.training.scope</comment>
+  </data>
+  <data name="history_training_title" xml:space="preserve">
+    <value>Vehicle-scoped learning data</value>
+    <comment>history.training.title</comment>
+  </data>
+  <data name="history_training_vehicle_title" xml:space="preserve">
+    <value>Vehicle scope</value>
+    <comment>history.training.vehicle.title</comment>
+  </data>
+  <data name="history_training_vehicle_unassigned" xml:space="preserve">
+    <value>UNASSIGNED</value>
+    <comment>history.training.vehicle.unassigned</comment>
+  </data>
+  <data name="history_upload_button" xml:space="preserve">
+    <value>Upload to iCloud</value>
+    <comment>history.upload.button</comment>
+  </data>
+  <data name="history_upload_error_dismiss" xml:space="preserve">
+    <value>Close</value>
+    <comment>history.upload.error.dismiss</comment>
+  </data>
+  <data name="history_upload_error_message" xml:space="preserve">
+    <value>The session remains on this device. Check your iCloud connection, then retry.</value>
+    <comment>history.upload.error.message</comment>
+  </data>
+  <data name="history_upload_error_title" xml:space="preserve">
+    <value>Could Not Upload</value>
+    <comment>history.upload.error.title</comment>
+  </data>
+  <data name="history_upload_in_progress" xml:space="preserve">
+    <value>Uploading to iCloud</value>
+    <comment>history.upload.in_progress</comment>
+  </data>
+  <data name="history_upload_retry" xml:space="preserve">
+    <value>Retry Upload</value>
+    <comment>history.upload.retry</comment>
+  </data>
+  <data name="history_upload_retry_description" xml:space="preserve">
+    <value>Check iCloud and send this session again.</value>
+    <comment>history.upload.retry.description</comment>
+  </data>
+  <data name="history_vehicle_pending" xml:space="preserve">
+    <value>Identifying vehicle</value>
+    <comment>history.vehicle.pending</comment>
+  </data>
+  <data name="history_vehicle_sessions" xml:space="preserve">
+    <value>sessions</value>
+    <comment>history.vehicle.sessions</comment>
+  </data>
+  <data name="history_vehicle_unassigned" xml:space="preserve">
+    <value>Unassigned vehicle</value>
+    <comment>history.vehicle.unassigned</comment>
+  </data>
+  <data name="history_warning_interrupted" xml:space="preserve">
+    <value>Sessions needing attention</value>
+    <comment>history.warning.interrupted</comment>
+  </data>
+  <data name="home_action_connect" xml:space="preserve">
+    <value>Connect</value>
+    <comment>home.action.connect</comment>
+  </data>
+  <data name="home_action_connect_unavailable" xml:space="preserve">
+    <value>Connection will be enabled in the next implementation phase.</value>
+    <comment>home.action.connect_unavailable</comment>
+  </data>
+  <data name="home_action_disconnect" xml:space="preserve">
+    <value>Disconnect</value>
+    <comment>home.action.disconnect</comment>
+  </data>
+  <data name="home_action_setup_adapter" xml:space="preserve">
+    <value>Set Up Adapter</value>
+    <comment>home.action.setup_adapter</comment>
+  </data>
+  <data name="home_action_setup_hint" xml:space="preserve">
+    <value>Choose the adapter to use by default.</value>
+    <comment>home.action.setup_hint</comment>
+  </data>
+  <data name="home_adapter_detected" xml:space="preserve">
+    <value>Default adapter detected</value>
+    <comment>home.adapter.detected</comment>
+  </data>
+  <data name="home_adapter_eyebrow" xml:space="preserve">
+    <value>DEFAULT ADAPTER</value>
+    <comment>home.adapter.eyebrow</comment>
+  </data>
+  <data name="home_adapter_not_configured" xml:space="preserve">
+    <value>No adapter configured</value>
+    <comment>home.adapter.not_configured</comment>
+  </data>
+  <data name="home_adapter_not_detected" xml:space="preserve">
+    <value>The default adapter was not detected. Set it up again.</value>
+    <comment>home.adapter.not_detected</comment>
+  </data>
+  <data name="home_adapter_setup_required" xml:space="preserve">
+    <value>Setup required before connection</value>
+    <comment>home.adapter.setup_required</comment>
+  </data>
+  <data name="home_eyebrow" xml:space="preserve">
+    <value>DRIVE CONSOLE</value>
+    <comment>home.eyebrow</comment>
+  </data>
+  <data name="home_future_caption" xml:space="preserve">
+    <value>Telemetry and analysis modules will be added here as capabilities grow.</value>
+    <comment>home.future.caption</comment>
+  </data>
+  <data name="home_subtitle" xml:space="preserve">
+    <value>Prepare your diagnostic adapter before starting a drive session.</value>
+    <comment>home.subtitle</comment>
+  </data>
+  <data name="home_title" xml:space="preserve">
+    <value>Ready for the next drive.</value>
+    <comment>home.title</comment>
+  </data>
+  <data name="ios_navigation_history" xml:space="preserve">
+    <value>History</value>
+    <comment>ios.navigation.history</comment>
+  </data>
+  <data name="ios_navigation_home" xml:space="preserve">
+    <value>Home</value>
+    <comment>ios.navigation.home</comment>
+  </data>
+  <data name="ios_navigation_live_log" xml:space="preserve">
+    <value>Live</value>
+    <comment>ios.navigation.live_log</comment>
+  </data>
+  <data name="ios_navigation_maintenance" xml:space="preserve">
+    <value>Service</value>
+    <comment>ios.navigation.maintenance</comment>
+  </data>
+  <data name="ios_navigation_settings" xml:space="preserve">
+    <value>Settings</value>
+    <comment>ios.navigation.settings</comment>
+  </data>
+  <data name="ios_settings_adapter_connection_state_connected" xml:space="preserve">
+    <value>Connected</value>
+    <comment>ios.settings.adapter.connection_state.connected</comment>
+  </data>
+  <data name="ios_settings_adapter_connection_state_connecting" xml:space="preserve">
+    <value>Connecting</value>
+    <comment>ios.settings.adapter.connection_state.connecting</comment>
+  </data>
+  <data name="ios_settings_adapter_connection_state_disconnected" xml:space="preserve">
+    <value>Disconnected</value>
+    <comment>ios.settings.adapter.connection_state.disconnected</comment>
+  </data>
+  <data name="ios_settings_adapter_connection_state_disconnecting" xml:space="preserve">
+    <value>Disconnecting</value>
+    <comment>ios.settings.adapter.connection_state.disconnecting</comment>
+  </data>
+  <data name="ios_settings_adapter_details_advertisement_local_name" xml:space="preserve">
+    <value>Advertisement Local Name</value>
+    <comment>ios.settings.adapter.details.advertisement_local_name</comment>
+  </data>
+  <data name="ios_settings_adapter_details_available" xml:space="preserve">
+    <value>Present</value>
+    <comment>ios.settings.adapter.details.available</comment>
+  </data>
+  <data name="ios_settings_adapter_details_confirm_hint" xml:space="preserve">
+    <value>Selects this device as the primary adapter candidate without starting a vehicle connection.</value>
+    <comment>ios.settings.adapter.details.confirm_hint</comment>
+  </data>
+  <data name="ios_settings_adapter_details_connection_state" xml:space="preserve">
+    <value>State when discovered</value>
+    <comment>ios.settings.adapter.details.connection_state</comment>
+  </data>
+  <data name="ios_settings_adapter_details_display_name" xml:space="preserve">
+    <value>Display name</value>
+    <comment>ios.settings.adapter.details.display_name</comment>
+  </data>
+  <data name="ios_settings_adapter_details_manufacturer_data" xml:space="preserve">
+    <value>Manufacturer Data</value>
+    <comment>ios.settings.adapter.details.manufacturer_data</comment>
+  </data>
+  <data name="ios_settings_adapter_details_not_available" xml:space="preserve">
+    <value>Not present</value>
+    <comment>ios.settings.adapter.details.not_available</comment>
+  </data>
+  <data name="ios_settings_adapter_details_peripheral_uuid" xml:space="preserve">
+    <value>Peripheral UUID</value>
+    <comment>ios.settings.adapter.details.peripheral_uuid</comment>
+  </data>
+  <data name="ios_settings_adapter_details_secondary_confirm_hint" xml:space="preserve">
+    <value>Selects this device as the receive-only secondary adapter candidate without starting a vehicle connection.</value>
+    <comment>ios.settings.adapter.details.secondary_confirm_hint</comment>
+  </data>
+  <data name="ios_settings_adapter_details_secondary_notice" xml:space="preserve">
+    <value>This sets a receive-only secondary adapter candidate. It does not establish a vehicle connection.</value>
+    <comment>ios.settings.adapter.details.secondary_notice</comment>
+  </data>
+  <data name="ios_settings_adapter_details_service_uuids" xml:space="preserve">
+    <value>Advertised Service UUIDs</value>
+    <comment>ios.settings.adapter.details.service_uuids</comment>
+  </data>
+  <data name="ios_settings_adapter_selector_empty_description" xml:space="preserve">
+    <value>No nearby Bluetooth Low Energy adapters were found. Put the adapter in discovery mode, then scan again.</value>
+    <comment>ios.settings.adapter.selector.empty.description</comment>
+  </data>
+  <data name="ios_settings_adapter_selector_failed_description" xml:space="preserve">
+    <value>Bluetooth discovery could not be completed. Try scanning again.</value>
+    <comment>ios.settings.adapter.selector.failed.description</comment>
+  </data>
+  <data name="ios_settings_adapter_selector_inspect_hint" xml:space="preserve">
+    <value>Shows Bluetooth connection details before selection.</value>
+    <comment>ios.settings.adapter.selector.inspect_hint</comment>
+  </data>
+  <data name="ios_settings_adapter_selector_searching" xml:space="preserve">
+    <value>Looking for nearby Bluetooth Low Energy adapters…</value>
+    <comment>ios.settings.adapter.selector.searching</comment>
+  </data>
+  <data name="ios_settings_adapter_selector_title" xml:space="preserve">
+    <value>Select Bluetooth adapter</value>
+    <comment>ios.settings.adapter.selector.title</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_powered_off_description" xml:space="preserve">
+    <value>Turn on Bluetooth in Settings, then scan again.</value>
+    <comment>ios.settings.adapter.unavailable.powered_off.description</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_powered_off_title" xml:space="preserve">
+    <value>Bluetooth is off</value>
+    <comment>ios.settings.adapter.unavailable.powered_off.title</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_unauthorized_description" xml:space="preserve">
+    <value>Allow Bluetooth access for RevTorque Insight in Settings, then scan again.</value>
+    <comment>ios.settings.adapter.unavailable.unauthorized.description</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_unauthorized_title" xml:space="preserve">
+    <value>Bluetooth access is not allowed</value>
+    <comment>ios.settings.adapter.unavailable.unauthorized.title</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_unsupported_description" xml:space="preserve">
+    <value>Bluetooth Low Energy discovery is not supported in this environment.</value>
+    <comment>ios.settings.adapter.unavailable.unsupported.description</comment>
+  </data>
+  <data name="ios_settings_adapter_unavailable_unsupported_title" xml:space="preserve">
+    <value>Bluetooth is not supported</value>
+    <comment>ios.settings.adapter.unavailable.unsupported.title</comment>
+  </data>
+  <data name="ios_shell_tagline" xml:space="preserve">
+    <value>MOBILE COCKPIT</value>
+    <comment>ios.shell.tagline</comment>
+  </data>
+  <data name="km" xml:space="preserve">
+    <value>km</value>
+    <comment>km</comment>
+  </data>
+  <data name="maintenance_add_fastener" xml:space="preserve">
+    <value>Add fastener</value>
+    <comment>maintenance.add.fastener</comment>
+  </data>
+  <data name="maintenance_add_fastener_group" xml:space="preserve">
+    <value>Add fastener group</value>
+    <comment>maintenance.add.fastener_group</comment>
+  </data>
+  <data name="maintenance_add_photo" xml:space="preserve">
+    <value>Add photo</value>
+    <comment>maintenance.add.photo</comment>
+  </data>
+  <data name="maintenance_add_work_item" xml:space="preserve">
+    <value>Add work item</value>
+    <comment>maintenance.add.work_item</comment>
+  </data>
+  <data name="maintenance_cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>maintenance.cancel</comment>
+  </data>
+  <data name="maintenance_component_air_conditioning" xml:space="preserve">
+    <value>Air conditioning</value>
+    <comment>maintenance.component.air_conditioning</comment>
+  </data>
+  <data name="maintenance_component_air_filter" xml:space="preserve">
+    <value>Air filter</value>
+    <comment>maintenance.component.air_filter</comment>
+  </data>
+  <data name="maintenance_component_auxiliary_battery" xml:space="preserve">
+    <value>12V battery</value>
+    <comment>maintenance.component.auxiliary_battery</comment>
+  </data>
+  <data name="maintenance_component_belts" xml:space="preserve">
+    <value>Belts</value>
+    <comment>maintenance.component.belts</comment>
+  </data>
+  <data name="maintenance_component_body_frame" xml:space="preserve">
+    <value>Body / frame</value>
+    <comment>maintenance.component.body_frame</comment>
+  </data>
+  <data name="maintenance_component_brake_pads" xml:space="preserve">
+    <value>Brake pads</value>
+    <comment>maintenance.component.brake_pads</comment>
+  </data>
+  <data name="maintenance_component_braking_system" xml:space="preserve">
+    <value>Brake system</value>
+    <comment>maintenance.component.braking_system</comment>
+  </data>
+  <data name="maintenance_component_bulbs" xml:space="preserve">
+    <value>Lights / bulbs</value>
+    <comment>maintenance.component.bulbs</comment>
+  </data>
+  <data name="maintenance_component_coolant" xml:space="preserve">
+    <value>Coolant</value>
+    <comment>maintenance.component.coolant</comment>
+  </data>
+  <data name="maintenance_component_cooling_system" xml:space="preserve">
+    <value>Cooling system</value>
+    <comment>maintenance.component.cooling_system</comment>
+  </data>
+  <data name="maintenance_component_differential_fluid" xml:space="preserve">
+    <value>Differential oil</value>
+    <comment>maintenance.component.differential_fluid</comment>
+  </data>
+  <data name="maintenance_component_driveline" xml:space="preserve">
+    <value>Driveline</value>
+    <comment>maintenance.component.driveline</comment>
+  </data>
+  <data name="maintenance_component_electrical" xml:space="preserve">
+    <value>Electrical system</value>
+    <comment>maintenance.component.electrical</comment>
+  </data>
+  <data name="maintenance_component_engine_assembly" xml:space="preserve">
+    <value>Engine assembly</value>
+    <comment>maintenance.component.engine_assembly</comment>
+  </data>
+  <data name="maintenance_component_engine_oil" xml:space="preserve">
+    <value>Engine oil</value>
+    <comment>maintenance.component.engine_oil</comment>
+  </data>
+  <data name="maintenance_component_exhaust" xml:space="preserve">
+    <value>Exhaust system</value>
+    <comment>maintenance.component.exhaust</comment>
+  </data>
+  <data name="maintenance_component_fuel_system" xml:space="preserve">
+    <value>Fuel system</value>
+    <comment>maintenance.component.fuel_system</comment>
+  </data>
+  <data name="maintenance_component_high_voltage_battery" xml:space="preserve">
+    <value>High-voltage battery</value>
+    <comment>maintenance.component.high_voltage_battery</comment>
+  </data>
+  <data name="maintenance_component_oil_filter" xml:space="preserve">
+    <value>Oil filter</value>
+    <comment>maintenance.component.oil_filter</comment>
+  </data>
+  <data name="maintenance_component_other" xml:space="preserve">
+    <value>Other</value>
+    <comment>maintenance.component.other</comment>
+  </data>
+  <data name="maintenance_component_safety_system" xml:space="preserve">
+    <value>Safety system</value>
+    <comment>maintenance.component.safety_system</comment>
+  </data>
+  <data name="maintenance_component_spark_plugs" xml:space="preserve">
+    <value>Spark plugs</value>
+    <comment>maintenance.component.spark_plugs</comment>
+  </data>
+  <data name="maintenance_component_steering" xml:space="preserve">
+    <value>Steering</value>
+    <comment>maintenance.component.steering</comment>
+  </data>
+  <data name="maintenance_component_suspension" xml:space="preserve">
+    <value>Suspension</value>
+    <comment>maintenance.component.suspension</comment>
+  </data>
+  <data name="maintenance_component_tires" xml:space="preserve">
+    <value>Tires</value>
+    <comment>maintenance.component.tires</comment>
+  </data>
+  <data name="maintenance_component_traction_motor" xml:space="preserve">
+    <value>Traction motor / generator</value>
+    <comment>maintenance.component.traction_motor</comment>
+  </data>
+  <data name="maintenance_component_transmission" xml:space="preserve">
+    <value>Transmission</value>
+    <comment>maintenance.component.transmission</comment>
+  </data>
+  <data name="maintenance_component_transmission_fluid" xml:space="preserve">
+    <value>Transmission fluid</value>
+    <comment>maintenance.component.transmission_fluid</comment>
+  </data>
+  <data name="maintenance_component_wipers" xml:space="preserve">
+    <value>Wipers</value>
+    <comment>maintenance.component.wipers</comment>
+  </data>
+  <data name="maintenance_delete" xml:space="preserve">
+    <value>Delete record</value>
+    <comment>maintenance.delete</comment>
+  </data>
+  <data name="maintenance_empty_message" xml:space="preserve">
+    <value>Create a service record for the selected vehicle.</value>
+    <comment>maintenance.empty.message</comment>
+  </data>
+  <data name="maintenance_empty_title" xml:space="preserve">
+    <value>No maintenance records</value>
+    <comment>maintenance.empty.title</comment>
+  </data>
+  <data name="maintenance_error_delete" xml:space="preserve">
+    <value>Deletion is saved locally and will sync later.</value>
+    <comment>maintenance.error.delete</comment>
+  </data>
+  <data name="maintenance_error_load" xml:space="preserve">
+    <value>Local maintenance records could not be loaded.</value>
+    <comment>maintenance.error.load</comment>
+  </data>
+  <data name="maintenance_error_photo" xml:space="preserve">
+    <value>The selected photo could not be read.</value>
+    <comment>maintenance.error.photo</comment>
+  </data>
+  <data name="maintenance_error_required" xml:space="preserve">
+    <value>Enter a title and at least one work item.</value>
+    <comment>maintenance.error.required</comment>
+  </data>
+  <data name="maintenance_error_save" xml:space="preserve">
+    <value>The maintenance record could not be saved.</value>
+    <comment>maintenance.error.save</comment>
+  </data>
+  <data name="maintenance_error_sync" xml:space="preserve">
+    <value>Saved locally. Cloud sync will be retried.</value>
+    <comment>maintenance.error.sync</comment>
+  </data>
+  <data name="maintenance_error_vehicle_required" xml:space="preserve">
+    <value>Register and select a vehicle first.</value>
+    <comment>maintenance.error.vehicle_required</comment>
+  </data>
+  <data name="maintenance_fastener_confirm" xml:space="preserve">
+    <value>Record tightening</value>
+    <comment>maintenance.fastener.confirm</comment>
+  </data>
+  <data name="maintenance_fastener_guidance" xml:space="preserve">
+    <value>Record every removed fastener, then preserve torque, tool, technician, time, and photo evidence during assembly.</value>
+    <comment>maintenance.fastener.guidance</comment>
+  </data>
+  <data name="maintenance_fastener_link_photo" xml:space="preserve">
+    <value>Link latest photo</value>
+    <comment>maintenance.fastener.link_photo</comment>
+  </data>
+  <data name="maintenance_field_component" xml:space="preserve">
+    <value>Component / consumable</value>
+    <comment>maintenance.field.component</comment>
+  </data>
+  <data name="maintenance_field_expected_count" xml:space="preserve">
+    <value>Expected</value>
+    <comment>maintenance.field.expected_count</comment>
+  </data>
+  <data name="maintenance_field_fastener_group" xml:space="preserve">
+    <value>Fastener group</value>
+    <comment>maintenance.field.fastener_group</comment>
+  </data>
+  <data name="maintenance_field_fastener_position" xml:space="preserve">
+    <value>Exact position</value>
+    <comment>maintenance.field.fastener_position</comment>
+  </data>
+  <data name="maintenance_field_item_notes" xml:space="preserve">
+    <value>Work details</value>
+    <comment>maintenance.field.item_notes</comment>
+  </data>
+  <data name="maintenance_field_location" xml:space="preserve">
+    <value>Location</value>
+    <comment>maintenance.field.location</comment>
+  </data>
+  <data name="maintenance_field_manufacturer" xml:space="preserve">
+    <value>Manufacturer</value>
+    <comment>maintenance.field.manufacturer</comment>
+  </data>
+  <data name="maintenance_field_notes" xml:space="preserve">
+    <value>Detailed work record</value>
+    <comment>maintenance.field.notes</comment>
+  </data>
+  <data name="maintenance_field_odometer" xml:space="preserve">
+    <value>Odometer (km)</value>
+    <comment>maintenance.field.odometer</comment>
+  </data>
+  <data name="maintenance_field_operation" xml:space="preserve">
+    <value>Operation</value>
+    <comment>maintenance.field.operation</comment>
+  </data>
+  <data name="maintenance_field_part_name" xml:space="preserve">
+    <value>Part name</value>
+    <comment>maintenance.field.part_name</comment>
+  </data>
+  <data name="maintenance_field_performed_at" xml:space="preserve">
+    <value>Performed at</value>
+    <comment>maintenance.field.performed_at</comment>
+  </data>
+  <data name="maintenance_field_product_name" xml:space="preserve">
+    <value>Product name</value>
+    <comment>maintenance.field.product_name</comment>
+  </data>
+  <data name="maintenance_field_quantity" xml:space="preserve">
+    <value>Quantity</value>
+    <comment>maintenance.field.quantity</comment>
+  </data>
+  <data name="maintenance_field_removal_notes" xml:space="preserve">
+    <value>Disassembly order / storage / findings</value>
+    <comment>maintenance.field.removal_notes</comment>
+  </data>
+  <data name="maintenance_field_removed_count" xml:space="preserve">
+    <value>Removed</value>
+    <comment>maintenance.field.removed_count</comment>
+  </data>
+  <data name="maintenance_field_specification" xml:space="preserve">
+    <value>Specification / viscosity / part no.</value>
+    <comment>maintenance.field.specification</comment>
+  </data>
+  <data name="maintenance_field_technician" xml:space="preserve">
+    <value>Technician</value>
+    <comment>maintenance.field.technician</comment>
+  </data>
+  <data name="maintenance_field_title" xml:space="preserve">
+    <value>Title</value>
+    <comment>maintenance.field.title</comment>
+  </data>
+  <data name="maintenance_field_tool" xml:space="preserve">
+    <value>Torque tool</value>
+    <comment>maintenance.field.tool</comment>
+  </data>
+  <data name="maintenance_field_torque" xml:space="preserve">
+    <value>Torque (N·m)</value>
+    <comment>maintenance.field.torque</comment>
+  </data>
+  <data name="maintenance_field_unit" xml:space="preserve">
+    <value>Unit</value>
+    <comment>maintenance.field.unit</comment>
+  </data>
+  <data name="maintenance_filter" xml:space="preserve">
+    <value>Filter</value>
+    <comment>maintenance.filter</comment>
+  </data>
+  <data name="maintenance_filter_all" xml:space="preserve">
+    <value>All</value>
+    <comment>maintenance.filter.all</comment>
+  </data>
+  <data name="maintenance_kind_heavy" xml:space="preserve">
+    <value>Heavy service</value>
+    <comment>maintenance.kind.heavy</comment>
+  </data>
+  <data name="maintenance_kind_heavy_hint" xml:space="preserve">
+    <value>Professional repair and overhaul evidence</value>
+    <comment>maintenance.kind.heavy.hint</comment>
+  </data>
+  <data name="maintenance_kind_light" xml:space="preserve">
+    <value>Light service</value>
+    <comment>maintenance.kind.light</comment>
+  </data>
+  <data name="maintenance_kind_light_hint" xml:space="preserve">
+    <value>Fast consumable replacement with detailed products</value>
+    <comment>maintenance.kind.light.hint</comment>
+  </data>
+  <data name="maintenance_operation_adjustment" xml:space="preserve">
+    <value>Adjustment</value>
+    <comment>maintenance.operation.adjustment</comment>
+  </data>
+  <data name="maintenance_operation_cleaning" xml:space="preserve">
+    <value>Cleaning</value>
+    <comment>maintenance.operation.cleaning</comment>
+  </data>
+  <data name="maintenance_operation_diagnosis" xml:space="preserve">
+    <value>Diagnosis</value>
+    <comment>maintenance.operation.diagnosis</comment>
+  </data>
+  <data name="maintenance_operation_fabrication" xml:space="preserve">
+    <value>Fabrication</value>
+    <comment>maintenance.operation.fabrication</comment>
+  </data>
+  <data name="maintenance_operation_inspection" xml:space="preserve">
+    <value>Inspection</value>
+    <comment>maintenance.operation.inspection</comment>
+  </data>
+  <data name="maintenance_operation_overhaul" xml:space="preserve">
+    <value>Overhaul</value>
+    <comment>maintenance.operation.overhaul</comment>
+  </data>
+  <data name="maintenance_operation_repair" xml:space="preserve">
+    <value>Repair</value>
+    <comment>maintenance.operation.repair</comment>
+  </data>
+  <data name="maintenance_operation_replacement" xml:space="preserve">
+    <value>Replacement</value>
+    <comment>maintenance.operation.replacement</comment>
+  </data>
+  <data name="maintenance_overview_message" xml:space="preserve">
+    <value>Enter routine consumables quickly and preserve overhaul evidence down to every fastener.</value>
+    <comment>maintenance.overview.message</comment>
+  </data>
+  <data name="maintenance_overview_title" xml:space="preserve">
+    <value>A complete service history for every vehicle</value>
+    <comment>maintenance.overview.title</comment>
+  </data>
+  <data name="maintenance_remove" xml:space="preserve">
+    <value>Remove item</value>
+    <comment>maintenance.remove</comment>
+  </data>
+  <data name="maintenance_remove_group" xml:space="preserve">
+    <value>Remove group</value>
+    <comment>maintenance.remove.group</comment>
+  </data>
+  <data name="maintenance_save" xml:space="preserve">
+    <value>Save</value>
+    <comment>maintenance.save</comment>
+  </data>
+  <data name="maintenance_section_fasteners" xml:space="preserve">
+    <value>Disassembly and torque evidence</value>
+    <comment>maintenance.section.fasteners</comment>
+  </data>
+  <data name="maintenance_section_overview" xml:space="preserve">
+    <value>Overview</value>
+    <comment>maintenance.section.overview</comment>
+  </data>
+  <data name="maintenance_section_photos" xml:space="preserve">
+    <value>Photo evidence</value>
+    <comment>maintenance.section.photos</comment>
+  </data>
+  <data name="maintenance_section_work_items" xml:space="preserve">
+    <value>Parts and work</value>
+    <comment>maintenance.section.work_items</comment>
+  </data>
+  <data name="maintenance_subtitle" xml:space="preserve">
+    <value>Vehicle-scoped service evidence</value>
+    <comment>maintenance.subtitle</comment>
+  </data>
+  <data name="maintenance_sync" xml:space="preserve">
+    <value>Sync maintenance</value>
+    <comment>maintenance.sync</comment>
+  </data>
+  <data name="maintenance_syncing" xml:space="preserve">
+    <value>Syncing iPhone and Mac…</value>
+    <comment>maintenance.syncing</comment>
+  </data>
+  <data name="maintenance_vehicle" xml:space="preserve">
+    <value>Vehicle</value>
+    <comment>maintenance.vehicle</comment>
+  </data>
+  <data name="maintenance_vehicle_empty" xml:space="preserve">
+    <value>Register a vehicle in Garage first.</value>
+    <comment>maintenance.vehicle.empty</comment>
+  </data>
+  <data name="obd_pid_01_00_name" xml:space="preserve">
+    <value>Unverified (PID 0x00)</value>
+    <comment>obd.pid.01.00.name</comment>
+  </data>
+  <data name="obd_pid_01_01_name" xml:space="preserve">
+    <value>Unverified (PID 0x01)</value>
+    <comment>obd.pid.01.01.name</comment>
+  </data>
+  <data name="obd_pid_01_02_name" xml:space="preserve">
+    <value>Unverified (PID 0x02)</value>
+    <comment>obd.pid.01.02.name</comment>
+  </data>
+  <data name="obd_pid_01_03_name" xml:space="preserve">
+    <value>Unverified (PID 0x03)</value>
+    <comment>obd.pid.01.03.name</comment>
+  </data>
+  <data name="obd_pid_01_04_name" xml:space="preserve">
+    <value>Calculated engine load</value>
+    <comment>obd.pid.01.04.name</comment>
+  </data>
+  <data name="obd_pid_01_05_name" xml:space="preserve">
+    <value>Engine coolant temperature</value>
+    <comment>obd.pid.01.05.name</comment>
+  </data>
+  <data name="obd_pid_01_06_name" xml:space="preserve">
+    <value>Short-term fuel trim bank 1</value>
+    <comment>obd.pid.01.06.name</comment>
+  </data>
+  <data name="obd_pid_01_07_name" xml:space="preserve">
+    <value>Long-term fuel trim bank 1</value>
+    <comment>obd.pid.01.07.name</comment>
+  </data>
+  <data name="obd_pid_01_08_name" xml:space="preserve">
+    <value>Short-term fuel trim bank 2</value>
+    <comment>obd.pid.01.08.name</comment>
+  </data>
+  <data name="obd_pid_01_09_name" xml:space="preserve">
+    <value>Long-term fuel trim bank 2</value>
+    <comment>obd.pid.01.09.name</comment>
+  </data>
+  <data name="obd_pid_01_0A_name" xml:space="preserve">
+    <value>Fuel pressure</value>
+    <comment>obd.pid.01.0A.name</comment>
+  </data>
+  <data name="obd_pid_01_0B_name" xml:space="preserve">
+    <value>Intake manifold pressure</value>
+    <comment>obd.pid.01.0B.name</comment>
+  </data>
+  <data name="obd_pid_01_0C_name" xml:space="preserve">
+    <value>Engine speed</value>
+    <comment>obd.pid.01.0C.name</comment>
+  </data>
+  <data name="obd_pid_01_0D_name" xml:space="preserve">
+    <value>Vehicle speed</value>
+    <comment>obd.pid.01.0D.name</comment>
+  </data>
+  <data name="obd_pid_01_0E_name" xml:space="preserve">
+    <value>Timing advance</value>
+    <comment>obd.pid.01.0E.name</comment>
+  </data>
+  <data name="obd_pid_01_0F_name" xml:space="preserve">
+    <value>Intake air temperature</value>
+    <comment>obd.pid.01.0F.name</comment>
+  </data>
+  <data name="obd_pid_01_10_name" xml:space="preserve">
+    <value>Mass air flow rate</value>
+    <comment>obd.pid.01.10.name</comment>
+  </data>
+  <data name="obd_pid_01_11_name" xml:space="preserve">
+    <value>Absolute throttle position</value>
+    <comment>obd.pid.01.11.name</comment>
+  </data>
+  <data name="obd_pid_01_12_name" xml:space="preserve">
+    <value>Unverified (PID 0x12)</value>
+    <comment>obd.pid.01.12.name</comment>
+  </data>
+  <data name="obd_pid_01_13_name" xml:space="preserve">
+    <value>Unverified (PID 0x13)</value>
+    <comment>obd.pid.01.13.name</comment>
+  </data>
+  <data name="obd_pid_01_14_name" xml:space="preserve">
+    <value>Oxygen sensor B1S1 voltage</value>
+    <comment>obd.pid.01.14.name</comment>
+  </data>
+  <data name="obd_pid_01_15_name" xml:space="preserve">
+    <value>Oxygen sensor B1S2 voltage</value>
+    <comment>obd.pid.01.15.name</comment>
+  </data>
+  <data name="obd_pid_01_16_name" xml:space="preserve">
+    <value>Oxygen sensor B1S3 voltage</value>
+    <comment>obd.pid.01.16.name</comment>
+  </data>
+  <data name="obd_pid_01_17_name" xml:space="preserve">
+    <value>Oxygen sensor B1S4 voltage</value>
+    <comment>obd.pid.01.17.name</comment>
+  </data>
+  <data name="obd_pid_01_18_name" xml:space="preserve">
+    <value>Oxygen sensor B2S1 voltage</value>
+    <comment>obd.pid.01.18.name</comment>
+  </data>
+  <data name="obd_pid_01_19_name" xml:space="preserve">
+    <value>Oxygen sensor B2S2 voltage</value>
+    <comment>obd.pid.01.19.name</comment>
+  </data>
+  <data name="obd_pid_01_1A_name" xml:space="preserve">
+    <value>Oxygen sensor B2S3 voltage</value>
+    <comment>obd.pid.01.1A.name</comment>
+  </data>
+  <data name="obd_pid_01_1B_name" xml:space="preserve">
+    <value>Oxygen sensor B2S4 voltage</value>
+    <comment>obd.pid.01.1B.name</comment>
+  </data>
+  <data name="obd_pid_01_1C_name" xml:space="preserve">
+    <value>Unverified (PID 0x1C)</value>
+    <comment>obd.pid.01.1C.name</comment>
+  </data>
+  <data name="obd_pid_01_1D_name" xml:space="preserve">
+    <value>Unverified (PID 0x1D)</value>
+    <comment>obd.pid.01.1D.name</comment>
+  </data>
+  <data name="obd_pid_01_1E_name" xml:space="preserve">
+    <value>Unverified (PID 0x1E)</value>
+    <comment>obd.pid.01.1E.name</comment>
+  </data>
+  <data name="obd_pid_01_1F_name" xml:space="preserve">
+    <value>Run time since engine start</value>
+    <comment>obd.pid.01.1F.name</comment>
+  </data>
+  <data name="obd_pid_01_20_name" xml:space="preserve">
+    <value>Unverified (PID 0x20)</value>
+    <comment>obd.pid.01.20.name</comment>
+  </data>
+  <data name="obd_pid_01_21_name" xml:space="preserve">
+    <value>Distance with MIL on</value>
+    <comment>obd.pid.01.21.name</comment>
+  </data>
+  <data name="obd_pid_01_22_name" xml:space="preserve">
+    <value>Fuel rail pressure relative to manifold</value>
+    <comment>obd.pid.01.22.name</comment>
+  </data>
+  <data name="obd_pid_01_23_name" xml:space="preserve">
+    <value>Fuel rail gauge pressure</value>
+    <comment>obd.pid.01.23.name</comment>
+  </data>
+  <data name="obd_pid_01_24_name" xml:space="preserve">
+    <value>Oxygen sensor 1 equivalence ratio</value>
+    <comment>obd.pid.01.24.name</comment>
+  </data>
+  <data name="obd_pid_01_25_name" xml:space="preserve">
+    <value>Oxygen sensor 2 equivalence ratio</value>
+    <comment>obd.pid.01.25.name</comment>
+  </data>
+  <data name="obd_pid_01_26_name" xml:space="preserve">
+    <value>Oxygen sensor 3 equivalence ratio</value>
+    <comment>obd.pid.01.26.name</comment>
+  </data>
+  <data name="obd_pid_01_27_name" xml:space="preserve">
+    <value>Oxygen sensor 4 equivalence ratio</value>
+    <comment>obd.pid.01.27.name</comment>
+  </data>
+  <data name="obd_pid_01_28_name" xml:space="preserve">
+    <value>Oxygen sensor 5 equivalence ratio</value>
+    <comment>obd.pid.01.28.name</comment>
+  </data>
+  <data name="obd_pid_01_29_name" xml:space="preserve">
+    <value>Oxygen sensor 6 equivalence ratio</value>
+    <comment>obd.pid.01.29.name</comment>
+  </data>
+  <data name="obd_pid_01_2A_name" xml:space="preserve">
+    <value>Oxygen sensor 7 equivalence ratio</value>
+    <comment>obd.pid.01.2A.name</comment>
+  </data>
+  <data name="obd_pid_01_2B_name" xml:space="preserve">
+    <value>Oxygen sensor 8 equivalence ratio</value>
+    <comment>obd.pid.01.2B.name</comment>
+  </data>
+  <data name="obd_pid_01_2C_name" xml:space="preserve">
+    <value>Commanded EGR</value>
+    <comment>obd.pid.01.2C.name</comment>
+  </data>
+  <data name="obd_pid_01_2D_name" xml:space="preserve">
+    <value>EGR error</value>
+    <comment>obd.pid.01.2D.name</comment>
+  </data>
+  <data name="obd_pid_01_2E_name" xml:space="preserve">
+    <value>Commanded evaporative purge</value>
+    <comment>obd.pid.01.2E.name</comment>
+  </data>
+  <data name="obd_pid_01_2F_name" xml:space="preserve">
+    <value>Fuel tank level</value>
+    <comment>obd.pid.01.2F.name</comment>
+  </data>
+  <data name="obd_pid_01_30_name" xml:space="preserve">
+    <value>Warm-ups since codes cleared</value>
+    <comment>obd.pid.01.30.name</comment>
+  </data>
+  <data name="obd_pid_01_31_name" xml:space="preserve">
+    <value>Distance since codes cleared</value>
+    <comment>obd.pid.01.31.name</comment>
+  </data>
+  <data name="obd_pid_01_32_name" xml:space="preserve">
+    <value>EVAP system vapor pressure</value>
+    <comment>obd.pid.01.32.name</comment>
+  </data>
+  <data name="obd_pid_01_33_name" xml:space="preserve">
+    <value>Absolute barometric pressure</value>
+    <comment>obd.pid.01.33.name</comment>
+  </data>
+  <data name="obd_pid_01_34_name" xml:space="preserve">
+    <value>Oxygen sensor 1 equivalence ratio (current)</value>
+    <comment>obd.pid.01.34.name</comment>
+  </data>
+  <data name="obd_pid_01_35_name" xml:space="preserve">
+    <value>Oxygen sensor 2 equivalence ratio (current)</value>
+    <comment>obd.pid.01.35.name</comment>
+  </data>
+  <data name="obd_pid_01_36_name" xml:space="preserve">
+    <value>Oxygen sensor 3 equivalence ratio (current)</value>
+    <comment>obd.pid.01.36.name</comment>
+  </data>
+  <data name="obd_pid_01_37_name" xml:space="preserve">
+    <value>Oxygen sensor 4 equivalence ratio (current)</value>
+    <comment>obd.pid.01.37.name</comment>
+  </data>
+  <data name="obd_pid_01_38_name" xml:space="preserve">
+    <value>Oxygen sensor 5 equivalence ratio (current)</value>
+    <comment>obd.pid.01.38.name</comment>
+  </data>
+  <data name="obd_pid_01_39_name" xml:space="preserve">
+    <value>Oxygen sensor 6 equivalence ratio (current)</value>
+    <comment>obd.pid.01.39.name</comment>
+  </data>
+  <data name="obd_pid_01_3A_name" xml:space="preserve">
+    <value>Oxygen sensor 7 equivalence ratio (current)</value>
+    <comment>obd.pid.01.3A.name</comment>
+  </data>
+  <data name="obd_pid_01_3B_name" xml:space="preserve">
+    <value>Oxygen sensor 8 equivalence ratio (current)</value>
+    <comment>obd.pid.01.3B.name</comment>
+  </data>
+  <data name="obd_pid_01_3C_name" xml:space="preserve">
+    <value>Catalyst temperature B1S1</value>
+    <comment>obd.pid.01.3C.name</comment>
+  </data>
+  <data name="obd_pid_01_3D_name" xml:space="preserve">
+    <value>Catalyst temperature B2S1</value>
+    <comment>obd.pid.01.3D.name</comment>
+  </data>
+  <data name="obd_pid_01_3E_name" xml:space="preserve">
+    <value>Catalyst temperature B1S2</value>
+    <comment>obd.pid.01.3E.name</comment>
+  </data>
+  <data name="obd_pid_01_3F_name" xml:space="preserve">
+    <value>Catalyst temperature B2S2</value>
+    <comment>obd.pid.01.3F.name</comment>
+  </data>
+  <data name="obd_pid_01_40_name" xml:space="preserve">
+    <value>Unverified (PID 0x40)</value>
+    <comment>obd.pid.01.40.name</comment>
+  </data>
+  <data name="obd_pid_01_41_name" xml:space="preserve">
+    <value>Unverified (PID 0x41)</value>
+    <comment>obd.pid.01.41.name</comment>
+  </data>
+  <data name="obd_pid_01_42_name" xml:space="preserve">
+    <value>Control module voltage</value>
+    <comment>obd.pid.01.42.name</comment>
+  </data>
+  <data name="obd_pid_01_43_name" xml:space="preserve">
+    <value>Absolute load value</value>
+    <comment>obd.pid.01.43.name</comment>
+  </data>
+  <data name="obd_pid_01_44_name" xml:space="preserve">
+    <value>Commanded equivalence ratio</value>
+    <comment>obd.pid.01.44.name</comment>
+  </data>
+  <data name="obd_pid_01_45_name" xml:space="preserve">
+    <value>Relative throttle position</value>
+    <comment>obd.pid.01.45.name</comment>
+  </data>
+  <data name="obd_pid_01_46_name" xml:space="preserve">
+    <value>Ambient air temperature</value>
+    <comment>obd.pid.01.46.name</comment>
+  </data>
+  <data name="obd_pid_01_47_name" xml:space="preserve">
+    <value>Absolute throttle position B</value>
+    <comment>obd.pid.01.47.name</comment>
+  </data>
+  <data name="obd_pid_01_48_name" xml:space="preserve">
+    <value>Absolute throttle position C</value>
+    <comment>obd.pid.01.48.name</comment>
+  </data>
+  <data name="obd_pid_01_49_name" xml:space="preserve">
+    <value>Accelerator pedal position D</value>
+    <comment>obd.pid.01.49.name</comment>
+  </data>
+  <data name="obd_pid_01_4A_name" xml:space="preserve">
+    <value>Accelerator pedal position E</value>
+    <comment>obd.pid.01.4A.name</comment>
+  </data>
+  <data name="obd_pid_01_4B_name" xml:space="preserve">
+    <value>Accelerator pedal position F</value>
+    <comment>obd.pid.01.4B.name</comment>
+  </data>
+  <data name="obd_pid_01_4C_name" xml:space="preserve">
+    <value>Commanded throttle actuator</value>
+    <comment>obd.pid.01.4C.name</comment>
+  </data>
+  <data name="obd_pid_01_4D_name" xml:space="preserve">
+    <value>Time run with MIL on</value>
+    <comment>obd.pid.01.4D.name</comment>
+  </data>
+  <data name="obd_pid_01_4E_name" xml:space="preserve">
+    <value>Time since DTCs cleared</value>
+    <comment>obd.pid.01.4E.name</comment>
+  </data>
+  <data name="obd_pid_01_4F_name" xml:space="preserve">
+    <value>Unverified (PID 0x4F)</value>
+    <comment>obd.pid.01.4F.name</comment>
+  </data>
+  <data name="obd_pid_01_50_name" xml:space="preserve">
+    <value>Maximum MAF air flow rate</value>
+    <comment>obd.pid.01.50.name</comment>
+  </data>
+  <data name="obd_pid_01_51_name" xml:space="preserve">
+    <value>Unverified (PID 0x51)</value>
+    <comment>obd.pid.01.51.name</comment>
+  </data>
+  <data name="obd_pid_01_52_name" xml:space="preserve">
+    <value>Ethanol fuel percentage</value>
+    <comment>obd.pid.01.52.name</comment>
+  </data>
+  <data name="obd_pid_01_53_name" xml:space="preserve">
+    <value>Absolute evaporative-system vapor pressure</value>
+    <comment>obd.pid.01.53.name</comment>
+  </data>
+  <data name="obd_pid_01_54_name" xml:space="preserve">
+    <value>Evaporative-system vapor pressure</value>
+    <comment>obd.pid.01.54.name</comment>
+  </data>
+  <data name="obd_pid_01_55_name" xml:space="preserve">
+    <value>Unverified (PID 0x55)</value>
+    <comment>obd.pid.01.55.name</comment>
+  </data>
+  <data name="obd_pid_01_56_name" xml:space="preserve">
+    <value>Unverified (PID 0x56)</value>
+    <comment>obd.pid.01.56.name</comment>
+  </data>
+  <data name="obd_pid_01_57_name" xml:space="preserve">
+    <value>Unverified (PID 0x57)</value>
+    <comment>obd.pid.01.57.name</comment>
+  </data>
+  <data name="obd_pid_01_58_name" xml:space="preserve">
+    <value>Unverified (PID 0x58)</value>
+    <comment>obd.pid.01.58.name</comment>
+  </data>
+  <data name="obd_pid_01_59_name" xml:space="preserve">
+    <value>Fuel rail absolute pressure</value>
+    <comment>obd.pid.01.59.name</comment>
+  </data>
+  <data name="obd_pid_01_5A_name" xml:space="preserve">
+    <value>Relative accelerator pedal position</value>
+    <comment>obd.pid.01.5A.name</comment>
+  </data>
+  <data name="obd_pid_01_5B_name" xml:space="preserve">
+    <value>Hybrid battery remaining life</value>
+    <comment>obd.pid.01.5B.name</comment>
+  </data>
+  <data name="obd_pid_01_5C_name" xml:space="preserve">
+    <value>Engine oil temperature</value>
+    <comment>obd.pid.01.5C.name</comment>
+  </data>
+  <data name="obd_pid_01_5D_name" xml:space="preserve">
+    <value>Fuel injection timing</value>
+    <comment>obd.pid.01.5D.name</comment>
+  </data>
+  <data name="obd_pid_01_5E_name" xml:space="preserve">
+    <value>Engine fuel rate</value>
+    <comment>obd.pid.01.5E.name</comment>
+  </data>
+  <data name="obd_pid_01_5F_name" xml:space="preserve">
+    <value>Unverified (PID 0x5F)</value>
+    <comment>obd.pid.01.5F.name</comment>
+  </data>
+  <data name="obd_pid_01_60_name" xml:space="preserve">
+    <value>Unverified (PID 0x60)</value>
+    <comment>obd.pid.01.60.name</comment>
+  </data>
+  <data name="obd_pid_01_61_name" xml:space="preserve">
+    <value>Demanded engine torque percentage</value>
+    <comment>obd.pid.01.61.name</comment>
+  </data>
+  <data name="obd_pid_01_62_name" xml:space="preserve">
+    <value>Actual engine torque percentage</value>
+    <comment>obd.pid.01.62.name</comment>
+  </data>
+  <data name="obd_pid_01_63_name" xml:space="preserve">
+    <value>Engine reference torque</value>
+    <comment>obd.pid.01.63.name</comment>
+  </data>
+  <data name="obd_pid_01_64_name" xml:space="preserve">
+    <value>Unverified (PID 0x64)</value>
+    <comment>obd.pid.01.64.name</comment>
+  </data>
+  <data name="obd_pid_01_65_name" xml:space="preserve">
+    <value>Unverified (PID 0x65)</value>
+    <comment>obd.pid.01.65.name</comment>
+  </data>
+  <data name="obd_pid_01_66_name" xml:space="preserve">
+    <value>Unverified (PID 0x66)</value>
+    <comment>obd.pid.01.66.name</comment>
+  </data>
+  <data name="obd_pid_01_67_name" xml:space="preserve">
+    <value>Unverified (PID 0x67)</value>
+    <comment>obd.pid.01.67.name</comment>
+  </data>
+  <data name="obd_pid_01_68_name" xml:space="preserve">
+    <value>Unverified (PID 0x68)</value>
+    <comment>obd.pid.01.68.name</comment>
+  </data>
+  <data name="obd_pid_01_69_name" xml:space="preserve">
+    <value>Unverified (PID 0x69)</value>
+    <comment>obd.pid.01.69.name</comment>
+  </data>
+  <data name="obd_pid_01_6A_name" xml:space="preserve">
+    <value>Unverified (PID 0x6A)</value>
+    <comment>obd.pid.01.6A.name</comment>
+  </data>
+  <data name="obd_pid_01_6B_name" xml:space="preserve">
+    <value>Unverified (PID 0x6B)</value>
+    <comment>obd.pid.01.6B.name</comment>
+  </data>
+  <data name="obd_pid_01_6C_name" xml:space="preserve">
+    <value>Unverified (PID 0x6C)</value>
+    <comment>obd.pid.01.6C.name</comment>
+  </data>
+  <data name="obd_pid_01_6D_name" xml:space="preserve">
+    <value>Unverified (PID 0x6D)</value>
+    <comment>obd.pid.01.6D.name</comment>
+  </data>
+  <data name="obd_pid_01_6E_name" xml:space="preserve">
+    <value>Unverified (PID 0x6E)</value>
+    <comment>obd.pid.01.6E.name</comment>
+  </data>
+  <data name="obd_pid_01_6F_name" xml:space="preserve">
+    <value>Unverified (PID 0x6F)</value>
+    <comment>obd.pid.01.6F.name</comment>
+  </data>
+  <data name="obd_pid_01_70_name" xml:space="preserve">
+    <value>Unverified (PID 0x70)</value>
+    <comment>obd.pid.01.70.name</comment>
+  </data>
+  <data name="obd_pid_01_71_name" xml:space="preserve">
+    <value>Unverified (PID 0x71)</value>
+    <comment>obd.pid.01.71.name</comment>
+  </data>
+  <data name="obd_pid_01_72_name" xml:space="preserve">
+    <value>Unverified (PID 0x72)</value>
+    <comment>obd.pid.01.72.name</comment>
+  </data>
+  <data name="obd_pid_01_73_name" xml:space="preserve">
+    <value>Unverified (PID 0x73)</value>
+    <comment>obd.pid.01.73.name</comment>
+  </data>
+  <data name="obd_pid_01_74_name" xml:space="preserve">
+    <value>Unverified (PID 0x74)</value>
+    <comment>obd.pid.01.74.name</comment>
+  </data>
+  <data name="obd_pid_01_75_name" xml:space="preserve">
+    <value>Unverified (PID 0x75)</value>
+    <comment>obd.pid.01.75.name</comment>
+  </data>
+  <data name="obd_pid_01_76_name" xml:space="preserve">
+    <value>Unverified (PID 0x76)</value>
+    <comment>obd.pid.01.76.name</comment>
+  </data>
+  <data name="obd_pid_01_77_name" xml:space="preserve">
+    <value>Unverified (PID 0x77)</value>
+    <comment>obd.pid.01.77.name</comment>
+  </data>
+  <data name="obd_pid_01_78_name" xml:space="preserve">
+    <value>Unverified (PID 0x78)</value>
+    <comment>obd.pid.01.78.name</comment>
+  </data>
+  <data name="obd_pid_01_79_name" xml:space="preserve">
+    <value>Unverified (PID 0x79)</value>
+    <comment>obd.pid.01.79.name</comment>
+  </data>
+  <data name="obd_pid_01_7A_name" xml:space="preserve">
+    <value>Unverified (PID 0x7A)</value>
+    <comment>obd.pid.01.7A.name</comment>
+  </data>
+  <data name="obd_pid_01_7B_name" xml:space="preserve">
+    <value>Unverified (PID 0x7B)</value>
+    <comment>obd.pid.01.7B.name</comment>
+  </data>
+  <data name="obd_pid_01_7C_name" xml:space="preserve">
+    <value>Diesel particulate filter temperature</value>
+    <comment>obd.pid.01.7C.name</comment>
+  </data>
+  <data name="obd_pid_01_7D_name" xml:space="preserve">
+    <value>Unverified (PID 0x7D)</value>
+    <comment>obd.pid.01.7D.name</comment>
+  </data>
+  <data name="obd_pid_01_7E_name" xml:space="preserve">
+    <value>Unverified (PID 0x7E)</value>
+    <comment>obd.pid.01.7E.name</comment>
+  </data>
+  <data name="obd_pid_01_7F_name" xml:space="preserve">
+    <value>Unverified (PID 0x7F)</value>
+    <comment>obd.pid.01.7F.name</comment>
+  </data>
+  <data name="obd_pid_01_80_name" xml:space="preserve">
+    <value>Unverified (PID 0x80)</value>
+    <comment>obd.pid.01.80.name</comment>
+  </data>
+  <data name="obd_pid_01_81_name" xml:space="preserve">
+    <value>Unverified (PID 0x81)</value>
+    <comment>obd.pid.01.81.name</comment>
+  </data>
+  <data name="obd_pid_01_82_name" xml:space="preserve">
+    <value>Unverified (PID 0x82)</value>
+    <comment>obd.pid.01.82.name</comment>
+  </data>
+  <data name="obd_pid_01_83_name" xml:space="preserve">
+    <value>Unverified (PID 0x83)</value>
+    <comment>obd.pid.01.83.name</comment>
+  </data>
+  <data name="obd_pid_01_84_name" xml:space="preserve">
+    <value>Unverified (PID 0x84)</value>
+    <comment>obd.pid.01.84.name</comment>
+  </data>
+  <data name="obd_pid_01_85_name" xml:space="preserve">
+    <value>Unverified (PID 0x85)</value>
+    <comment>obd.pid.01.85.name</comment>
+  </data>
+  <data name="obd_pid_01_86_name" xml:space="preserve">
+    <value>Unverified (PID 0x86)</value>
+    <comment>obd.pid.01.86.name</comment>
+  </data>
+  <data name="obd_pid_01_87_name" xml:space="preserve">
+    <value>Unverified (PID 0x87)</value>
+    <comment>obd.pid.01.87.name</comment>
+  </data>
+  <data name="obd_pid_01_88_name" xml:space="preserve">
+    <value>Unverified (PID 0x88)</value>
+    <comment>obd.pid.01.88.name</comment>
+  </data>
+  <data name="obd_pid_01_89_name" xml:space="preserve">
+    <value>Unverified (PID 0x89)</value>
+    <comment>obd.pid.01.89.name</comment>
+  </data>
+  <data name="obd_pid_01_8A_name" xml:space="preserve">
+    <value>Unverified (PID 0x8A)</value>
+    <comment>obd.pid.01.8A.name</comment>
+  </data>
+  <data name="obd_pid_01_8B_name" xml:space="preserve">
+    <value>Unverified (PID 0x8B)</value>
+    <comment>obd.pid.01.8B.name</comment>
+  </data>
+  <data name="obd_pid_01_8C_name" xml:space="preserve">
+    <value>Unverified (PID 0x8C)</value>
+    <comment>obd.pid.01.8C.name</comment>
+  </data>
+  <data name="obd_pid_01_8D_name" xml:space="preserve">
+    <value>Throttle position G</value>
+    <comment>obd.pid.01.8D.name</comment>
+  </data>
+  <data name="obd_pid_01_8E_name" xml:space="preserve">
+    <value>Engine friction torque percentage</value>
+    <comment>obd.pid.01.8E.name</comment>
+  </data>
+  <data name="obd_pid_01_8F_name" xml:space="preserve">
+    <value>Unverified (PID 0x8F)</value>
+    <comment>obd.pid.01.8F.name</comment>
+  </data>
+  <data name="obd_pid_01_90_name" xml:space="preserve">
+    <value>Unverified (PID 0x90)</value>
+    <comment>obd.pid.01.90.name</comment>
+  </data>
+  <data name="obd_pid_01_91_name" xml:space="preserve">
+    <value>Unverified (PID 0x91)</value>
+    <comment>obd.pid.01.91.name</comment>
+  </data>
+  <data name="obd_pid_01_92_name" xml:space="preserve">
+    <value>Unverified (PID 0x92)</value>
+    <comment>obd.pid.01.92.name</comment>
+  </data>
+  <data name="obd_pid_01_93_name" xml:space="preserve">
+    <value>Unverified (PID 0x93)</value>
+    <comment>obd.pid.01.93.name</comment>
+  </data>
+  <data name="obd_pid_01_94_name" xml:space="preserve">
+    <value>Unverified (PID 0x94)</value>
+    <comment>obd.pid.01.94.name</comment>
+  </data>
+  <data name="obd_pid_01_98_name" xml:space="preserve">
+    <value>Unverified (PID 0x98)</value>
+    <comment>obd.pid.01.98.name</comment>
+  </data>
+  <data name="obd_pid_01_99_name" xml:space="preserve">
+    <value>Unverified (PID 0x99)</value>
+    <comment>obd.pid.01.99.name</comment>
+  </data>
+  <data name="obd_pid_01_9A_name" xml:space="preserve">
+    <value>Unverified (PID 0x9A)</value>
+    <comment>obd.pid.01.9A.name</comment>
+  </data>
+  <data name="obd_pid_01_9B_name" xml:space="preserve">
+    <value>Unverified (PID 0x9B)</value>
+    <comment>obd.pid.01.9B.name</comment>
+  </data>
+  <data name="obd_pid_01_9C_name" xml:space="preserve">
+    <value>Unverified (PID 0x9C)</value>
+    <comment>obd.pid.01.9C.name</comment>
+  </data>
+  <data name="obd_pid_01_9D_name" xml:space="preserve">
+    <value>Unverified (PID 0x9D)</value>
+    <comment>obd.pid.01.9D.name</comment>
+  </data>
+  <data name="obd_pid_01_9E_name" xml:space="preserve">
+    <value>Unverified (PID 0x9E)</value>
+    <comment>obd.pid.01.9E.name</comment>
+  </data>
+  <data name="obd_pid_01_9F_name" xml:space="preserve">
+    <value>Unverified (PID 0x9F)</value>
+    <comment>obd.pid.01.9F.name</comment>
+  </data>
+  <data name="obd_pid_01_A0_name" xml:space="preserve">
+    <value>Unverified (PID 0xA0)</value>
+    <comment>obd.pid.01.A0.name</comment>
+  </data>
+  <data name="obd_pid_01_A1_name" xml:space="preserve">
+    <value>Unverified (PID 0xA1)</value>
+    <comment>obd.pid.01.A1.name</comment>
+  </data>
+  <data name="obd_pid_01_A2_name" xml:space="preserve">
+    <value>Cylinder fuel rate</value>
+    <comment>obd.pid.01.A2.name</comment>
+  </data>
+  <data name="obd_pid_01_A3_name" xml:space="preserve">
+    <value>Unverified (PID 0xA3)</value>
+    <comment>obd.pid.01.A3.name</comment>
+  </data>
+  <data name="obd_pid_01_A4_name" xml:space="preserve">
+    <value>Transmission actual gear ratio</value>
+    <comment>obd.pid.01.A4.name</comment>
+  </data>
+  <data name="obd_pid_01_A5_name" xml:space="preserve">
+    <value>Commanded diesel exhaust fluid dosing</value>
+    <comment>obd.pid.01.A5.name</comment>
+  </data>
+  <data name="obd_pid_01_A6_name" xml:space="preserve">
+    <value>Odometer</value>
+    <comment>obd.pid.01.A6.name</comment>
+  </data>
+  <data name="obd_pid_01_A7_name" xml:space="preserve">
+    <value>Unverified (PID 0xA7)</value>
+    <comment>obd.pid.01.A7.name</comment>
+  </data>
+  <data name="obd_pid_01_A8_name" xml:space="preserve">
+    <value>Unverified (PID 0xA8)</value>
+    <comment>obd.pid.01.A8.name</comment>
+  </data>
+  <data name="obd_pid_01_C0_name" xml:space="preserve">
+    <value>Unverified (PID 0xC0)</value>
+    <comment>obd.pid.01.C0.name</comment>
+  </data>
+  <data name="obd_pid_absolute_barometric_pressure" xml:space="preserve">
+    <value>Absolute barometric pressure</value>
+    <comment>obd.pid.absolute_barometric_pressure</comment>
+  </data>
+  <data name="obd_pid_absolute_load_value" xml:space="preserve">
+    <value>Absolute load value</value>
+    <comment>obd.pid.absolute_load_value</comment>
+  </data>
+  <data name="obd_pid_absolute_throttle_position" xml:space="preserve">
+    <value>Absolute throttle position</value>
+    <comment>obd.pid.absolute_throttle_position</comment>
+  </data>
+  <data name="obd_pid_absolute_throttle_position_b" xml:space="preserve">
+    <value>Absolute throttle position B</value>
+    <comment>obd.pid.absolute_throttle_position_b</comment>
+  </data>
+  <data name="obd_pid_absolute_throttle_position_c" xml:space="preserve">
+    <value>Absolute throttle position C</value>
+    <comment>obd.pid.absolute_throttle_position_c</comment>
+  </data>
+  <data name="obd_pid_accelerator_pedal_position_d" xml:space="preserve">
+    <value>Accelerator pedal position D</value>
+    <comment>obd.pid.accelerator_pedal_position_d</comment>
+  </data>
+  <data name="obd_pid_accelerator_pedal_position_e" xml:space="preserve">
+    <value>Accelerator pedal position E</value>
+    <comment>obd.pid.accelerator_pedal_position_e</comment>
+  </data>
+  <data name="obd_pid_accelerator_pedal_position_f" xml:space="preserve">
+    <value>Accelerator pedal position F</value>
+    <comment>obd.pid.accelerator_pedal_position_f</comment>
+  </data>
+  <data name="obd_pid_ambient_air_temperature" xml:space="preserve">
+    <value>Ambient air temperature</value>
+    <comment>obd.pid.ambient_air_temperature</comment>
+  </data>
+  <data name="obd_pid_calculated_engine_load" xml:space="preserve">
+    <value>Calculated engine load</value>
+    <comment>obd.pid.calculated_engine_load</comment>
+  </data>
+  <data name="obd_pid_catalyst_temperature_b1s1" xml:space="preserve">
+    <value>Catalyst temperature B1S1</value>
+    <comment>obd.pid.catalyst_temperature_b1s1</comment>
+  </data>
+  <data name="obd_pid_catalyst_temperature_b1s2" xml:space="preserve">
+    <value>Catalyst temperature B1S2</value>
+    <comment>obd.pid.catalyst_temperature_b1s2</comment>
+  </data>
+  <data name="obd_pid_catalyst_temperature_b2s1" xml:space="preserve">
+    <value>Catalyst temperature B2S1</value>
+    <comment>obd.pid.catalyst_temperature_b2s1</comment>
+  </data>
+  <data name="obd_pid_catalyst_temperature_b2s2" xml:space="preserve">
+    <value>Catalyst temperature B2S2</value>
+    <comment>obd.pid.catalyst_temperature_b2s2</comment>
+  </data>
+  <data name="obd_pid_commanded_egr" xml:space="preserve">
+    <value>Commanded EGR</value>
+    <comment>obd.pid.commanded_egr</comment>
+  </data>
+  <data name="obd_pid_commanded_equivalence_ratio" xml:space="preserve">
+    <value>Commanded equivalence ratio</value>
+    <comment>obd.pid.commanded_equivalence_ratio</comment>
+  </data>
+  <data name="obd_pid_commanded_evaporative_purge" xml:space="preserve">
+    <value>Commanded evaporative purge</value>
+    <comment>obd.pid.commanded_evaporative_purge</comment>
+  </data>
+  <data name="obd_pid_commanded_throttle_actuator" xml:space="preserve">
+    <value>Commanded throttle actuator</value>
+    <comment>obd.pid.commanded_throttle_actuator</comment>
+  </data>
+  <data name="obd_pid_control_module_voltage" xml:space="preserve">
+    <value>Control module voltage</value>
+    <comment>obd.pid.control_module_voltage</comment>
+  </data>
+  <data name="obd_pid_distance_since_codes_cleared" xml:space="preserve">
+    <value>Distance since codes cleared</value>
+    <comment>obd.pid.distance_since_codes_cleared</comment>
+  </data>
+  <data name="obd_pid_distance_with_mil_on" xml:space="preserve">
+    <value>Distance with MIL on</value>
+    <comment>obd.pid.distance_with_mil_on</comment>
+  </data>
+  <data name="obd_pid_egr_error" xml:space="preserve">
+    <value>EGR error</value>
+    <comment>obd.pid.egr_error</comment>
+  </data>
+  <data name="obd_pid_engine_coolant_temperature" xml:space="preserve">
+    <value>Engine coolant temperature</value>
+    <comment>obd.pid.engine_coolant_temperature</comment>
+  </data>
+  <data name="obd_pid_engine_speed" xml:space="preserve">
+    <value>Engine speed</value>
+    <comment>obd.pid.engine_speed</comment>
+  </data>
+  <data name="obd_pid_evap_system_vapor_pressure" xml:space="preserve">
+    <value>EVAP system vapor pressure</value>
+    <comment>obd.pid.evap_system_vapor_pressure</comment>
+  </data>
+  <data name="obd_pid_fuel_pressure" xml:space="preserve">
+    <value>Fuel pressure</value>
+    <comment>obd.pid.fuel_pressure</comment>
+  </data>
+  <data name="obd_pid_fuel_rail_gauge_pressure" xml:space="preserve">
+    <value>Fuel rail gauge pressure</value>
+    <comment>obd.pid.fuel_rail_gauge_pressure</comment>
+  </data>
+  <data name="obd_pid_fuel_rail_pressure_relative" xml:space="preserve">
+    <value>Fuel rail pressure relative to manifold</value>
+    <comment>obd.pid.fuel_rail_pressure_relative</comment>
+  </data>
+  <data name="obd_pid_fuel_tank_level" xml:space="preserve">
+    <value>Fuel tank level</value>
+    <comment>obd.pid.fuel_tank_level</comment>
+  </data>
+  <data name="obd_pid_help_diagnostics_correlation" xml:space="preserve">
+    <value>Compare voltage, engine speed, speed, DTC/MIL state, warm-ups, and related time or distance items.</value>
+    <comment>obd.pid.help.diagnostics.correlation</comment>
+  </data>
+  <data name="obd_pid_help_diagnostics_high" xml:space="preserve">
+    <value>Meaning depends on the item and history. For voltage inspect charging; for time/distance inspect elapsed diagnostic history.</value>
+    <comment>obd.pid.help.diagnostics.high</comment>
+  </data>
+  <data name="obd_pid_help_diagnostics_low" xml:space="preserve">
+    <value>Meaning depends on the item and history. For voltage inspect battery/wiring; for time/distance inspect recent resets.</value>
+    <comment>obd.pid.help.diagnostics.low</comment>
+  </data>
+  <data name="obd_pid_help_diagnostics_summary" xml:space="preserve">
+    <value>Represents operating time, distance, power supply, diagnostic, or encoded state.</value>
+    <comment>obd.pid.help.diagnostics.summary</comment>
+  </data>
+  <data name="obd_pid_help_driving_correlation" xml:space="preserve">
+    <value>Compare speed, engine speed, load, pedal positions, throttle channels, demanded and actual values.</value>
+    <comment>obd.pid.help.driving.correlation</comment>
+  </data>
+  <data name="obd_pid_help_driving_high" xml:space="preserve">
+    <value>A high value may be normal for the input; mismatch or sticking can indicate a control or sensor issue.</value>
+    <comment>obd.pid.help.driving.high</comment>
+  </data>
+  <data name="obd_pid_help_driving_low" xml:space="preserve">
+    <value>A low value may be normal for the input; failure to follow demand can indicate an input, actuator, or sensor issue.</value>
+    <comment>obd.pid.help.driving.low</comment>
+  </data>
+  <data name="obd_pid_help_driving_summary" xml:space="preserve">
+    <value>Represents vehicle speed, driver input, or actuator position.</value>
+    <comment>obd.pid.help.driving.summary</comment>
+  </data>
+  <data name="obd_pid_help_engine_correlation" xml:space="preserve">
+    <value>Compare with engine speed, vehicle speed, throttle, air flow, fuel trims, and temperatures.</value>
+    <comment>obd.pid.help.engine.correlation</comment>
+  </data>
+  <data name="obd_pid_help_engine_high" xml:space="preserve">
+    <value>A high value for the driving condition can indicate heavy demand or an intake, exhaust, or control issue.</value>
+    <comment>obd.pid.help.engine.high</comment>
+  </data>
+  <data name="obd_pid_help_engine_low" xml:space="preserve">
+    <value>A low value for the driving condition can indicate weak output, misfire, or a sensor/control issue.</value>
+    <comment>obd.pid.help.engine.low</comment>
+  </data>
+  <data name="obd_pid_help_engine_summary" xml:space="preserve">
+    <value>Represents engine load, speed, or ignition operation.</value>
+    <comment>obd.pid.help.engine.summary</comment>
+  </data>
+  <data name="obd_pid_help_fuelAndAir_correlation" xml:space="preserve">
+    <value>Compare load, engine speed, throttle, manifold pressure, air flow, fuel trims, and oxygen sensors.</value>
+    <comment>obd.pid.help.fuelAndAir.correlation</comment>
+  </data>
+  <data name="obd_pid_help_fuelAndAir_high" xml:space="preserve">
+    <value>A high value can relate to load, mixture correction, pressure, airflow restriction, injection, or sensor issues.</value>
+    <comment>obd.pid.help.fuelAndAir.high</comment>
+  </data>
+  <data name="obd_pid_help_fuelAndAir_low" xml:space="preserve">
+    <value>A low value can relate to fuel shortage, leaks, low pressure, under-reported airflow, injection, or sensor issues.</value>
+    <comment>obd.pid.help.fuelAndAir.low</comment>
+  </data>
+  <data name="obd_pid_help_fuelAndAir_summary" xml:space="preserve">
+    <value>Represents fuel delivery, intake, exhaust, or oxygen-sensor operation.</value>
+    <comment>obd.pid.help.fuelAndAir.summary</comment>
+  </data>
+  <data name="obd_pid_help_temperature_correlation" xml:space="preserve">
+    <value>Compare with load, engine speed, speed, air flow, fuel trims, and related temperature sensors.</value>
+    <comment>obd.pid.help.temperature.correlation</comment>
+  </data>
+  <data name="obd_pid_help_temperature_high" xml:space="preserve">
+    <value>A high value can relate to heavy load, insufficient cooling, heat soak, catalyst load, or a sensor issue.</value>
+    <comment>obd.pid.help.temperature.high</comment>
+  </data>
+  <data name="obd_pid_help_temperature_low" xml:space="preserve">
+    <value>A low value can relate to warm-up state, ambient conditions, thermostat, wiring, or a sensor issue.</value>
+    <comment>obd.pid.help.temperature.low</comment>
+  </data>
+  <data name="obd_pid_help_temperature_summary" xml:space="preserve">
+    <value>Represents a vehicle temperature sensor or thermal condition.</value>
+    <comment>obd.pid.help.temperature.summary</comment>
+  </data>
+  <data name="obd_pid_help_unconfirmed_correlation" xml:space="preserve">
+    <value>Compare engine speed, load, temperature, fuel and air values from the same time, together with vehicle-specific service information.</value>
+    <comment>obd.pid.help.unconfirmed.correlation</comment>
+  </data>
+  <data name="obd_pid_help_unconfirmed_high" xml:space="preserve">
+    <value>No high-value assessment is made without a verified conversion. Consult service information and vehicle conditions.</value>
+    <comment>obd.pid.help.unconfirmed.high</comment>
+  </data>
+  <data name="obd_pid_help_unconfirmed_low" xml:space="preserve">
+    <value>No low-value assessment is made without a verified conversion. Consult service information and vehicle conditions.</value>
+    <comment>obd.pid.help.unconfirmed.low</comment>
+  </data>
+  <data name="obd_pid_help_unconfirmed_summary" xml:space="preserve">
+    <value>The conversion for this PID is unverified, so raw data is not guessed into a numeric value.</value>
+    <comment>obd.pid.help.unconfirmed.summary</comment>
+  </data>
+  <data name="obd_pid_intake_air_temperature" xml:space="preserve">
+    <value>Intake air temperature</value>
+    <comment>obd.pid.intake_air_temperature</comment>
+  </data>
+  <data name="obd_pid_intake_manifold_pressure" xml:space="preserve">
+    <value>Intake manifold pressure</value>
+    <comment>obd.pid.intake_manifold_pressure</comment>
+  </data>
+  <data name="obd_pid_long_term_fuel_trim_bank_1" xml:space="preserve">
+    <value>Long-term fuel trim bank 1</value>
+    <comment>obd.pid.long_term_fuel_trim_bank_1</comment>
+  </data>
+  <data name="obd_pid_long_term_fuel_trim_bank_2" xml:space="preserve">
+    <value>Long-term fuel trim bank 2</value>
+    <comment>obd.pid.long_term_fuel_trim_bank_2</comment>
+  </data>
+  <data name="obd_pid_mass_air_flow_rate" xml:space="preserve">
+    <value>Mass air flow rate</value>
+    <comment>obd.pid.mass_air_flow_rate</comment>
+  </data>
+  <data name="obd_pid_odometer" xml:space="preserve">
+    <value>Odometer</value>
+    <comment>obd.pid.odometer</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b1s1_voltage" xml:space="preserve">
+    <value>Oxygen sensor B1S1 voltage</value>
+    <comment>obd.pid.oxygen_sensor_b1s1_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b1s2_voltage" xml:space="preserve">
+    <value>Oxygen sensor B1S2 voltage</value>
+    <comment>obd.pid.oxygen_sensor_b1s2_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b1s3_voltage" xml:space="preserve">
+    <value>Oxygen sensor B1S3 voltage</value>
+    <comment>obd.pid.oxygen_sensor_b1s3_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b1s4_voltage" xml:space="preserve">
+    <value>Oxygen sensor B1S4 voltage</value>
+    <comment>obd.pid.oxygen_sensor_b1s4_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b2s1_voltage" xml:space="preserve">
+    <value>Oxygen sensor B2S1 voltage</value>
+    <comment>obd.pid.oxygen_sensor_b2s1_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b2s2_voltage" xml:space="preserve">
+    <value>Oxygen sensor B2S2 voltage</value>
+    <comment>obd.pid.oxygen_sensor_b2s2_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b2s3_voltage" xml:space="preserve">
+    <value>Oxygen sensor B2S3 voltage</value>
+    <comment>obd.pid.oxygen_sensor_b2s3_voltage</comment>
+  </data>
+  <data name="obd_pid_oxygen_sensor_b2s4_voltage" xml:space="preserve">
+    <value>Oxygen sensor B2S4 voltage</value>
+    <comment>obd.pid.oxygen_sensor_b2s4_voltage</comment>
+  </data>
+  <data name="obd_pid_relative_throttle_position" xml:space="preserve">
+    <value>Relative throttle position</value>
+    <comment>obd.pid.relative_throttle_position</comment>
+  </data>
+  <data name="obd_pid_run_time_since_engine_start" xml:space="preserve">
+    <value>Run time since engine start</value>
+    <comment>obd.pid.run_time_since_engine_start</comment>
+  </data>
+  <data name="obd_pid_short_term_fuel_trim_bank_1" xml:space="preserve">
+    <value>Short-term fuel trim bank 1</value>
+    <comment>obd.pid.short_term_fuel_trim_bank_1</comment>
+  </data>
+  <data name="obd_pid_short_term_fuel_trim_bank_2" xml:space="preserve">
+    <value>Short-term fuel trim bank 2</value>
+    <comment>obd.pid.short_term_fuel_trim_bank_2</comment>
+  </data>
+  <data name="obd_pid_time_run_with_mil_on" xml:space="preserve">
+    <value>Time run with MIL on</value>
+    <comment>obd.pid.time_run_with_mil_on</comment>
+  </data>
+  <data name="obd_pid_timing_advance" xml:space="preserve">
+    <value>Timing advance</value>
+    <comment>obd.pid.timing_advance</comment>
+  </data>
+  <data name="obd_pid_vehicle_speed" xml:space="preserve">
+    <value>Vehicle speed</value>
+    <comment>obd.pid.vehicle_speed</comment>
+  </data>
+  <data name="obd_pid_warmups_since_codes_cleared" xml:space="preserve">
+    <value>Warm-ups since codes cleared</value>
+    <comment>obd.pid.warmups_since_codes_cleared</comment>
+  </data>
+  <data name="obd_pid_zd8_21_02_correlation" xml:space="preserve">
+    <value>Compare start and end values within the same session; do not compare unrelated vehicles or reset histories.</value>
+    <comment>obd.pid.zd8.21.02.correlation</comment>
+  </data>
+  <data name="obd_pid_zd8_21_02_name" xml:space="preserve">
+    <value>Vehicle Distance</value>
+    <comment>obd.pid.zd8.21.02.name</comment>
+  </data>
+  <data name="obd_pid_zd8_21_02_summary" xml:space="preserve">
+    <value>ZD8-specific cumulative vehicle distance reported by the engine ECU.</value>
+    <comment>obd.pid.zd8.21.02.summary</comment>
+  </data>
+  <data name="obd_pid_zd8_21_17_correlation" xml:space="preserve">
+    <value>Compare with vehicle speed and elapsed driving time under the same ambient and operating conditions.</value>
+    <comment>obd.pid.zd8.21.17.correlation</comment>
+  </data>
+  <data name="obd_pid_zd8_21_17_high" xml:space="preserve">
+    <value>A high value alone does not identify a fault. Reduce load safely and follow the vehicle manual or professional inspection guidance.</value>
+    <comment>obd.pid.zd8.21.17.high</comment>
+  </data>
+  <data name="obd_pid_zd8_21_17_low" xml:space="preserve">
+    <value>A low value may reflect ambient temperature or warm-up state. Confirm elapsed time and operating conditions.</value>
+    <comment>obd.pid.zd8.21.17.low</comment>
+  </data>
+  <data name="obd_pid_zd8_21_17_name" xml:space="preserve">
+    <value>AT Fluid Temperature</value>
+    <comment>obd.pid.zd8.21.17.name</comment>
+  </data>
+  <data name="obd_pid_zd8_21_17_summary" xml:space="preserve">
+    <value>ZD8 automatic-transmission fluid temperature reported by the transmission ECU.</value>
+    <comment>obd.pid.zd8.21.17.summary</comment>
+  </data>
+  <data name="settings_adapter_description" xml:space="preserve">
+    <value>The primary adapter is saved as your default for future launches.</value>
+    <comment>settings.adapter.description</comment>
+  </data>
+  <data name="settings_adapter_details_assignment_conflict" xml:space="preserve">
+    <value>This device is already assigned to the other adapter role. Select a different physical adapter.</value>
+    <comment>settings.adapter.details.assignment_conflict</comment>
+  </data>
+  <data name="settings_adapter_details_confirm" xml:space="preserve">
+    <value>Use this adapter</value>
+    <comment>settings.adapter.details.confirm</comment>
+  </data>
+  <data name="settings_adapter_details_decline" xml:space="preserve">
+    <value>Do not set</value>
+    <comment>settings.adapter.details.decline</comment>
+  </data>
+  <data name="settings_adapter_details_identifier" xml:space="preserve">
+    <value>System identifier</value>
+    <comment>settings.adapter.details.identifier</comment>
+  </data>
+  <data name="settings_adapter_details_manufacturer" xml:space="preserve">
+    <value>Manufacturer</value>
+    <comment>settings.adapter.details.manufacturer</comment>
+  </data>
+  <data name="settings_adapter_details_notice" xml:space="preserve">
+    <value>Selecting a device saves it as the primary adapter candidate. It does not establish a vehicle connection.</value>
+    <comment>settings.adapter.details.notice</comment>
+  </data>
+  <data name="settings_adapter_details_product" xml:space="preserve">
+    <value>Product</value>
+    <comment>settings.adapter.details.product</comment>
+  </data>
+  <data name="settings_adapter_details_product_id" xml:space="preserve">
+    <value>Product ID</value>
+    <comment>settings.adapter.details.product_id</comment>
+  </data>
+  <data name="settings_adapter_details_serial" xml:space="preserve">
+    <value>Serial number</value>
+    <comment>settings.adapter.details.serial</comment>
+  </data>
+  <data name="settings_adapter_details_title" xml:space="preserve">
+    <value>Connection details</value>
+    <comment>settings.adapter.details.title</comment>
+  </data>
+  <data name="settings_adapter_details_transport" xml:space="preserve">
+    <value>Connection mode</value>
+    <comment>settings.adapter.details.transport</comment>
+  </data>
+  <data name="settings_adapter_details_unknown" xml:space="preserve">
+    <value>Not provided by the system</value>
+    <comment>settings.adapter.details.unknown</comment>
+  </data>
+  <data name="settings_adapter_details_vendor_id" xml:space="preserve">
+    <value>Vendor ID</value>
+    <comment>settings.adapter.details.vendor_id</comment>
+  </data>
+  <data name="settings_adapter_eyebrow" xml:space="preserve">
+    <value>CONNECTION</value>
+    <comment>settings.adapter.eyebrow</comment>
+  </data>
+  <data name="settings_adapter_not_selected" xml:space="preserve">
+    <value>Not selected</value>
+    <comment>settings.adapter.not_selected</comment>
+  </data>
+  <data name="settings_adapter_primary" xml:space="preserve">
+    <value>Primary adapter</value>
+    <comment>settings.adapter.primary</comment>
+  </data>
+  <data name="settings_adapter_receive_only" xml:space="preserve">
+    <value>RECEIVE ONLY</value>
+    <comment>settings.adapter.receive_only</comment>
+  </data>
+  <data name="settings_adapter_required" xml:space="preserve">
+    <value>REQUIRED</value>
+    <comment>settings.adapter.required</comment>
+  </data>
+  <data name="settings_adapter_secondary" xml:space="preserve">
+    <value>Secondary adapter</value>
+    <comment>settings.adapter.secondary</comment>
+  </data>
+  <data name="settings_adapter_select" xml:space="preserve">
+    <value>Select</value>
+    <comment>settings.adapter.select</comment>
+  </data>
+  <data name="settings_adapter_selector_cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>settings.adapter.selector.cancel</comment>
+  </data>
+  <data name="settings_adapter_selector_description" xml:space="preserve">
+    <value>Choose USB or Bluetooth, then inspect a connected device before setting it.</value>
+    <comment>settings.adapter.selector.description</comment>
+  </data>
+  <data name="settings_adapter_selector_empty_description" xml:space="preserve">
+    <value>Connect the adapter to this device, then try again.</value>
+    <comment>settings.adapter.selector.empty.description</comment>
+  </data>
+  <data name="settings_adapter_selector_empty_title" xml:space="preserve">
+    <value>No connected devices</value>
+    <comment>settings.adapter.selector.empty.title</comment>
+  </data>
+  <data name="settings_adapter_selector_failed_description" xml:space="preserve">
+    <value>Check the connection mode, Bluetooth state, and macOS permissions, then try again.</value>
+    <comment>settings.adapter.selector.failed.description</comment>
+  </data>
+  <data name="settings_adapter_selector_failed_title" xml:space="preserve">
+    <value>Discovery unavailable</value>
+    <comment>settings.adapter.selector.failed.title</comment>
+  </data>
+  <data name="settings_adapter_selector_mode" xml:space="preserve">
+    <value>Connection mode</value>
+    <comment>settings.adapter.selector.mode</comment>
+  </data>
+  <data name="settings_adapter_selector_refresh" xml:space="preserve">
+    <value>Scan again</value>
+    <comment>settings.adapter.selector.refresh</comment>
+  </data>
+  <data name="settings_adapter_selector_searching" xml:space="preserve">
+    <value>Looking for devices connected to this Mac…</value>
+    <comment>settings.adapter.selector.searching</comment>
+  </data>
+  <data name="settings_adapter_selector_secondary_title" xml:space="preserve">
+    <value>Select secondary adapter</value>
+    <comment>settings.adapter.selector.secondary.title</comment>
+  </data>
+  <data name="settings_adapter_selector_title" xml:space="preserve">
+    <value>Select primary adapter</value>
+    <comment>settings.adapter.selector.title</comment>
+  </data>
+  <data name="settings_adapter_title" xml:space="preserve">
+    <value>Adapters</value>
+    <comment>settings.adapter.title</comment>
+  </data>
+  <data name="settings_adapter_transport_bluetooth" xml:space="preserve">
+    <value>Bluetooth</value>
+    <comment>settings.adapter.transport.bluetooth</comment>
+  </data>
+  <data name="settings_adapter_transport_usb" xml:space="preserve">
+    <value>USB</value>
+    <comment>settings.adapter.transport.usb</comment>
+  </data>
+  <data name="settings_adapter_unavailable_close" xml:space="preserve">
+    <value>Close</value>
+    <comment>settings.adapter.unavailable.close</comment>
+  </data>
+  <data name="settings_adapter_unavailable_description" xml:space="preserve">
+    <value>Adapter discovery is not connected yet. No device has been selected.</value>
+    <comment>settings.adapter.unavailable.description</comment>
+  </data>
+  <data name="settings_appearance_dark" xml:space="preserve">
+    <value>Dark</value>
+    <comment>settings.appearance.dark</comment>
+  </data>
+  <data name="settings_appearance_description" xml:space="preserve">
+    <value>Tune the cockpit for your environment.</value>
+    <comment>settings.appearance.description</comment>
+  </data>
+  <data name="settings_appearance_eyebrow" xml:space="preserve">
+    <value>APPEARANCE</value>
+    <comment>settings.appearance.eyebrow</comment>
+  </data>
+  <data name="settings_appearance_light" xml:space="preserve">
+    <value>Light</value>
+    <comment>settings.appearance.light</comment>
+  </data>
+  <data name="settings_appearance_system" xml:space="preserve">
+    <value>System</value>
+    <comment>settings.appearance.system</comment>
+  </data>
+  <data name="settings_appearance_title" xml:space="preserve">
+    <value>Appearance mode</value>
+    <comment>settings.appearance.title</comment>
+  </data>
+  <data name="settings_language_description" xml:space="preserve">
+    <value>Switch the interface language immediately.</value>
+    <comment>settings.language.description</comment>
+  </data>
+  <data name="settings_language_english" xml:space="preserve">
+    <value>English</value>
+    <comment>settings.language.english</comment>
+  </data>
+  <data name="settings_language_eyebrow" xml:space="preserve">
+    <value>LANGUAGE</value>
+    <comment>settings.language.eyebrow</comment>
+  </data>
+  <data name="settings_language_japanese" xml:space="preserve">
+    <value>Japanese</value>
+    <comment>settings.language.japanese</comment>
+  </data>
+  <data name="settings_language_spanish" xml:space="preserve">
+    <value>Spanish</value>
+    <comment>settings.language.spanish</comment>
+  </data>
+  <data name="settings_language_title" xml:space="preserve">
+    <value>Language</value>
+    <comment>settings.language.title</comment>
+  </data>
+  <data name="settings_more_caption" xml:space="preserve">
+    <value>More settings will be added as RevTorque Insight evolves.</value>
+    <comment>settings.more.caption</comment>
+  </data>
+  <data name="settings_storage_coming_soon" xml:space="preserve">
+    <value>Planned for a future update</value>
+    <comment>settings.storage.coming_soon</comment>
+  </data>
+  <data name="settings_storage_description" xml:space="preserve">
+    <value>Review log capacity and retention controls here in the future.</value>
+    <comment>settings.storage.description</comment>
+  </data>
+  <data name="settings_storage_eyebrow" xml:space="preserve">
+    <value>STORAGE</value>
+    <comment>settings.storage.eyebrow</comment>
+  </data>
+  <data name="settings_storage_title" xml:space="preserve">
+    <value>Storage</value>
+    <comment>settings.storage.title</comment>
+  </data>
+  <data name="settings_subtitle" xml:space="preserve">
+    <value>Shape RevTorque Insight around the way you drive and work.</value>
+    <comment>settings.subtitle</comment>
+  </data>
+  <data name="settings_title" xml:space="preserve">
+    <value>Settings</value>
+    <comment>settings.title</comment>
+  </data>
+  <data name="settings_upload_automatic" xml:space="preserve">
+    <value>Upload automatically when a session ends</value>
+    <comment>settings.upload.automatic</comment>
+  </data>
+  <data name="settings_upload_description" xml:space="preserve">
+    <value>When off, only unsent sessions show an iCloud upload button in Connection History.</value>
+    <comment>settings.upload.description</comment>
+  </data>
+  <data name="settings_upload_eyebrow" xml:space="preserve">
+    <value>iCLOUD</value>
+    <comment>settings.upload.eyebrow</comment>
+  </data>
+  <data name="settings_upload_title" xml:space="preserve">
+    <value>Session Upload</value>
+    <comment>settings.upload.title</comment>
+  </data>
+  <data name="shell_destination_placeholder" xml:space="preserve">
+    <value>Feature content will appear here.</value>
+    <comment>shell.destination.placeholder</comment>
+  </data>
+  <data name="sidebar_brand_tagline" xml:space="preserve">
+    <value>DRIVE INTELLIGENCE</value>
+    <comment>sidebar.brand.tagline</comment>
+  </data>
+  <data name="sidebar_connection_history" xml:space="preserve">
+    <value>Connection history</value>
+    <comment>sidebar.connection_history</comment>
+  </data>
+  <data name="sidebar_connection_history_subtitle" xml:space="preserve">
+    <value>Sessions and driving records</value>
+    <comment>sidebar.connection_history.subtitle</comment>
+  </data>
+  <data name="sidebar_footer_caption" xml:space="preserve">
+    <value>Modern driving workspace</value>
+    <comment>sidebar.footer.caption</comment>
+  </data>
+  <data name="sidebar_garage" xml:space="preserve">
+    <value>Garage</value>
+    <comment>sidebar.garage</comment>
+  </data>
+  <data name="sidebar_garage_subtitle" xml:space="preserve">
+    <value>Vehicles and profiles</value>
+    <comment>sidebar.garage.subtitle</comment>
+  </data>
+  <data name="sidebar_home" xml:space="preserve">
+    <value>Home</value>
+    <comment>sidebar.home</comment>
+  </data>
+  <data name="sidebar_home_subtitle" xml:space="preserve">
+    <value>Overview and highlights</value>
+    <comment>sidebar.home.subtitle</comment>
+  </data>
+  <data name="sidebar_live_log" xml:space="preserve">
+    <value>Real-Time Log Output</value>
+    <comment>sidebar.live_log</comment>
+  </data>
+  <data name="sidebar_live_log_subtitle" xml:space="preserve">
+    <value>Live vehicle signals</value>
+    <comment>sidebar.live_log.subtitle</comment>
+  </data>
+  <data name="sidebar_maintenance" xml:space="preserve">
+    <value>Maintenance</value>
+    <comment>sidebar.maintenance</comment>
+  </data>
+  <data name="sidebar_maintenance_subtitle" xml:space="preserve">
+    <value>Service insights</value>
+    <comment>sidebar.maintenance.subtitle</comment>
+  </data>
+  <data name="sidebar_section_navigation" xml:space="preserve">
+    <value>NAVIGATION</value>
+    <comment>sidebar.section.navigation</comment>
+  </data>
+  <data name="sidebar_settings" xml:space="preserve">
+    <value>Settings</value>
+    <comment>sidebar.settings</comment>
+  </data>
+  <data name="sidebar_settings_subtitle" xml:space="preserve">
+    <value>Personalize your workspace</value>
+    <comment>sidebar.settings.subtitle</comment>
+  </data>
+  <data name="telemetry_category_diagnostics" xml:space="preserve">
+    <value>Operation and diagnostics</value>
+    <comment>telemetry.category.diagnostics</comment>
+  </data>
+  <data name="telemetry_category_driving" xml:space="preserve">
+    <value>Driving input</value>
+    <comment>telemetry.category.driving</comment>
+  </data>
+  <data name="telemetry_category_engine" xml:space="preserve">
+    <value>Engine</value>
+    <comment>telemetry.category.engine</comment>
+  </data>
+  <data name="telemetry_category_fuelAndAir" xml:space="preserve">
+    <value>Fuel and air</value>
+    <comment>telemetry.category.fuelAndAir</comment>
+  </data>
+  <data name="telemetry_category_temperature" xml:space="preserve">
+    <value>Temperatures</value>
+    <comment>telemetry.category.temperature</comment>
+  </data>
+  <data name="telemetry_disconnected_connection_lost" xml:space="preserve">
+    <value>The adapter connection was lost. Acquisition ended safely.</value>
+    <comment>telemetry.disconnected.connection_lost</comment>
+  </data>
+  <data name="telemetry_disconnected_no_response" xml:space="preserve">
+    <value>The vehicle stopped responding. Ignition may be off; acquisition ended safely.</value>
+    <comment>telemetry.disconnected.no_response</comment>
+  </data>
+  <data name="telemetry_error_pid_catalog_unavailable" xml:space="preserve">
+    <value>The PID definition database is unavailable. No sensor request was sent.</value>
+    <comment>telemetry.error.pid_catalog_unavailable</comment>
+  </data>
+  <data name="telemetry_error_read_failed" xml:space="preserve">
+    <value>Major PIDs could not be read. Check the adapter and vehicle state.</value>
+    <comment>telemetry.error.read_failed</comment>
+  </data>
+  <data name="telemetry_error_unavailable" xml:space="preserve">
+    <value>Verified PID reading is not available on this platform.</value>
+    <comment>telemetry.error.unavailable</comment>
+  </data>
+  <data name="telemetry_eyebrow" xml:space="preserve">
+    <value>OBD LIVE CHECK</value>
+    <comment>telemetry.eyebrow</comment>
+  </data>
+  <data name="telemetry_help_correlation" xml:space="preserve">
+    <value>Correlated items</value>
+    <comment>telemetry.help.correlation</comment>
+  </data>
+  <data name="telemetry_help_high" xml:space="preserve">
+    <value>When unusually high</value>
+    <comment>telemetry.help.high</comment>
+  </data>
+  <data name="telemetry_help_low" xml:space="preserve">
+    <value>When unusually low</value>
+    <comment>telemetry.help.low</comment>
+  </data>
+  <data name="telemetry_help_open" xml:space="preserve">
+    <value>Show item information</value>
+    <comment>telemetry.help.open</comment>
+  </data>
+  <data name="telemetry_help_summary" xml:space="preserve">
+    <value>Overview</value>
+    <comment>telemetry.help.summary</comment>
+  </data>
+  <data name="telemetry_read" xml:space="preserve">
+    <value>Read major PIDs</value>
+    <comment>telemetry.read</comment>
+  </data>
+  <data name="telemetry_refresh" xml:space="preserve">
+    <value>Read again</value>
+    <comment>telemetry.refresh</comment>
+  </data>
+  <data name="telemetry_retry" xml:space="preserve">
+    <value>Retry live acquisition</value>
+    <comment>telemetry.retry</comment>
+  </data>
+  <data name="telemetry_section_all" xml:space="preserve">
+    <value>All live values</value>
+    <comment>telemetry.section.all</comment>
+  </data>
+  <data name="telemetry_section_brz" xml:space="preserve">
+    <value>BRZ-specific telemetry</value>
+    <comment>telemetry.section.brz</comment>
+  </data>
+  <data name="telemetry_section_now" xml:space="preserve">
+    <value>Driving now</value>
+    <comment>telemetry.section.now</comment>
+  </data>
+  <data name="telemetry_status_polling" xml:space="preserve">
+    <value>Standard OBD polling continues in the background</value>
+    <comment>telemetry.status.polling</comment>
+  </data>
+  <data name="telemetry_status_reading" xml:space="preserve">
+    <value>Checking supported PIDs…</value>
+    <comment>telemetry.status.reading</comment>
+  </data>
+  <data name="telemetry_status_responding_count" xml:space="preserve">
+    <value>responding PIDs</value>
+    <comment>telemetry.status.responding_count</comment>
+  </data>
+  <data name="telemetry_status_stopping" xml:space="preserve">
+    <value>Finishing acquisition and closing the connection…</value>
+    <comment>telemetry.status.stopping</comment>
+  </data>
+  <data name="telemetry_status_waiting_for_connection" xml:space="preserve">
+    <value>Press Connect on Home to start acquisition.</value>
+    <comment>telemetry.status.waiting_for_connection</comment>
+  </data>
+  <data name="telemetry_subtitle" xml:space="preserve">
+    <value>Shows the latest value for every registered PID that responds.</value>
+    <comment>telemetry.subtitle</comment>
+  </data>
+  <data name="telemetry_title" xml:space="preserve">
+    <value>Live PID values</value>
+    <comment>telemetry.title</comment>
+  </data>
+  <data name="vehicle_specific_pid_badge____xe13c5098" xml:space="preserve">
+    <value>%@-specific PID</value>
+    <comment>vehicle_specific_pid.badge %@</comment>
+  </data>
+  <data name="k___xbda05058" xml:space="preserve">
+    <value>—</value>
+    <comment>—</comment>
+  </data>
+</root>

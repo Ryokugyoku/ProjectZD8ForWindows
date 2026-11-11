@@ -199,8 +199,9 @@ internal sealed class ConnectionSessionStorageContext
             PerformanceEvents.End(interval, AcquisitionPerformanceOutcome.Failed);
             throw;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            SqliteStoreLog.OperationFailed(SqliteStoreLog.Logger, exception, "ConnectionSessionAcquisition", operation.ToString());
             PerformanceEvents.End(interval, AcquisitionPerformanceOutcome.Failed);
             throw new ConnectionSessionAcquisitionRepositoryException(ConnectionSessionAcquisitionRepositoryError.Unavailable);
         }

@@ -51,8 +51,9 @@ internal sealed class SqliteConnectionSessionAcquisitionRepository :
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            SqliteStoreLog.OperationFailed(SqliteStoreLog.Logger, exception, "ConnectionSessionAcquisition", "SaveStartOnce.Canonicalize");
             throw Error(ConnectionSessionAcquisitionRepositoryError.Unavailable);
         }
         _context.Measured(AcquisitionPerformanceOperation.ManifestPersistence, new AcquisitionPerformanceContext(), () =>
@@ -777,8 +778,9 @@ internal sealed class SqliteConnectionSessionAcquisitionRepository :
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            SqliteStoreLog.OperationFailed(SqliteStoreLog.Logger, exception, "ConnectionSessionAcquisition", "Read");
             throw Error(ConnectionSessionAcquisitionRepositoryError.Unavailable);
         }
     }

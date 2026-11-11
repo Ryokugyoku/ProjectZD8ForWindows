@@ -1,5 +1,6 @@
 using System.Net;
 using ProjectZD8.Data.Network.CloudKit;
+using ProjectZD8.Diagnostics;
 
 namespace ProjectZD8.Data.Authentication;
 
@@ -72,9 +73,11 @@ public sealed class CloudKitWebAuthenticator
                 ?? throw new CloudKitException((HttpStatusCode)421, exception.ServerErrorCode, "redirectURL がありません。");
         }
 
+        AuthLog.CloudKitSignInRequired(AuthLog.Logger, Redact.Url(redirect));
         var callback = _broker.WaitForCallback(AuthorizationCallbackBroker.CloudKitRoute, _timeout);
         if (!await _launcher.Launch(redirect).ConfigureAwait(false))
         {
+            AuthLog.CloudKitBrowserLaunchFailed(AuthLog.Logger, Redact.Url(redirect));
             _broker.Cancel(AuthorizationCallbackBroker.CloudKitRoute);
             try
             {
@@ -92,6 +95,7 @@ public sealed class CloudKitWebAuthenticator
         }
         catch (TimeoutException exception)
         {
+            AuthLog.CloudKitSignInTimedOut(AuthLog.Logger, exception);
             throw new OperationCanceledException("CloudKit のサインインが時間内に終わりませんでした。", exception);
         }
 

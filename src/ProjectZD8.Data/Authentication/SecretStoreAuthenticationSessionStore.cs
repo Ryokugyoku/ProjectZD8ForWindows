@@ -41,8 +41,9 @@ public sealed class SecretStoreAuthenticationSessionStore : IAuthenticationSessi
         {
             value = _store.Read(_itemName);
         }
-        catch (SecretStoreException)
+        catch (SecretStoreException exception)
         {
+            AuthLog.CredentialStoreFailed(AuthLog.Logger, exception, "session", "read");
             throw new AuthenticationSessionStoreException(AuthenticationSessionStoreError.Unavailable);
         }
         if (value is null)
@@ -68,8 +69,9 @@ public sealed class SecretStoreAuthenticationSessionStore : IAuthenticationSessi
         {
             _store.Write(_itemName, userIdentifier);
         }
-        catch (SecretStoreException)
+        catch (SecretStoreException exception)
         {
+            AuthLog.CredentialStoreFailed(AuthLog.Logger, exception, "session", "write");
             throw new AuthenticationSessionStoreException(AuthenticationSessionStoreError.Unavailable);
         }
     }
@@ -85,8 +87,9 @@ public sealed class SecretStoreAuthenticationSessionStore : IAuthenticationSessi
         {
             _store.Delete(_itemName);
         }
-        catch (SecretStoreException)
+        catch (SecretStoreException exception)
         {
+            AuthLog.CredentialStoreFailed(AuthLog.Logger, exception, "session", "delete");
             throw new AuthenticationSessionStoreException(AuthenticationSessionStoreError.Unavailable);
         }
     }

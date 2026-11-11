@@ -49,8 +49,9 @@ public sealed class SecretStoreCloudKitWebAuthTokenStore : ICloudKitWebAuthToken
                 {
                     _cached = _store.Read(_itemName);
                 }
-                catch (SecretStoreException)
+                catch (SecretStoreException exception)
                 {
+                    AuthLog.CloudKitTokenStoreDegraded(AuthLog.Logger, exception, "read");
                     _cached = null;
                 }
                 _loaded = true;
@@ -70,8 +71,9 @@ public sealed class SecretStoreCloudKitWebAuthTokenStore : ICloudKitWebAuthToken
             {
                 _store.Write(_itemName, token);
             }
-            catch (SecretStoreException)
+            catch (SecretStoreException exception)
             {
+                AuthLog.CloudKitTokenStoreDegraded(AuthLog.Logger, exception, "write");
                 // 保存できなくても、この実行の間はメモリの値で続けます。
             }
         }
@@ -88,8 +90,9 @@ public sealed class SecretStoreCloudKitWebAuthTokenStore : ICloudKitWebAuthToken
             {
                 _store.Delete(_itemName);
             }
-            catch (SecretStoreException)
+            catch (SecretStoreException exception)
             {
+                AuthLog.CloudKitTokenStoreDegraded(AuthLog.Logger, exception, "delete");
                 // 消せなくても、この実行の間はサインアウトした状態で続けます。
             }
         }

@@ -186,8 +186,9 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
                 FailureKey = null,
             };
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            VehicleManagementLog.Failed(exception, "pid-settings.load");
             State = State with { FailureKey = "garage.pid_settings.error" };
         }
     }
@@ -214,8 +215,9 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
                 State = State with { PidSelectionItems = items };
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            VehicleManagementLog.Failed(exception, "pid-settings.update");
             State = State with { FailureKey = "garage.pid_settings.error" };
         }
     }
@@ -261,8 +263,9 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
             State = State with { Phase = VehicleManagementStatePhase.Idle, FailureKey = null };
             _ = UploadVehicles(uploadTargets, currentAccountIdentifier);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            VehicleManagementLog.Failed(exception, "vehicles.load");
             State = State with { Phase = VehicleManagementStatePhase.Failed, FailureKey = "garage.error.sync" };
         }
     }
@@ -280,8 +283,9 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
             {
                 await repository.SaveVehicle(vehicle, targetAccountIdentifier);
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                VehicleManagementLog.Degraded(exception, "vehicles.upload");
                 // Swift の try? と同じく失敗を無視します。
             }
         }
@@ -302,8 +306,9 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
         {
             summaries = loadVehicleActivitySummaries.Execute(targetAccountIdentifier);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            VehicleManagementLog.Degraded(exception, "activity-summaries.load");
             summaries = new Dictionary<VehicleID, VehicleActivitySummary>();
         }
 
@@ -324,8 +329,9 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
         {
             definitions = pidDefinitionRepository.Definitions();
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            VehicleManagementLog.Degraded(exception, "pid-definitions.load");
             return;
         }
 
@@ -343,8 +349,9 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
             {
                 capabilities = pidCapabilityRepository.Capabilities(vehicle.Id);
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                VehicleManagementLog.Degraded(exception, "pid-capabilities.load");
                 continue;
             }
 
@@ -465,6 +472,7 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
         }
         catch (VehicleIdentificationException error)
         {
+            VehicleManagementLog.Failed(error, "vehicle.identify");
             switch (error.Reason)
             {
                 case VehicleIdentificationError.StageFailed stageFailed:
@@ -493,8 +501,9 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
                     break;
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            VehicleManagementLog.Failed(exception, "vehicle.identify");
             ApplyFailure("garage.error.obd_unavailable");
         }
     }
@@ -605,8 +614,9 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
             var photoData = await photoImporter.ImportPhoto(url);
             State = State with { EditingVehicle = vehicle with { PhotoData = photoData }, FailureKey = null };
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            VehicleManagementLog.Failed(exception, "photo.import");
             State = State with { FailureKey = "garage.error.photo" };
         }
     }
@@ -658,15 +668,17 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
             LoadActivitySummaries(currentAccountIdentifier);
             State = State with { Phase = VehicleManagementStatePhase.Idle, FailureKey = null };
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            VehicleManagementLog.Failed(exception, "vehicle.save");
             IReadOnlyList<VehicleProfile> reloaded;
             try
             {
                 reloaded = await repository.LoadVehicles(currentAccountIdentifier);
             }
-            catch (Exception)
+            catch (Exception reloadError)
             {
+                VehicleManagementLog.Degraded(reloadError, "vehicles.reload-after-save-failure");
                 reloaded = State.Vehicles;
             }
 
@@ -715,10 +727,12 @@ public sealed class VehicleManagementModel : INotifyPropertyChanged
         catch (DeleteVehicleWithSessionsUseCaseException error)
             when (error.Reason == DeleteVehicleWithSessionsUseCaseError.ActiveSession)
         {
+            VehicleManagementLog.Canceled("vehicle.delete.active-session");
             ApplyFailure("garage.error.delete_active_session");
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            VehicleManagementLog.Failed(exception, "vehicle.delete");
             ApplyFailure("garage.error.delete");
         }
     }

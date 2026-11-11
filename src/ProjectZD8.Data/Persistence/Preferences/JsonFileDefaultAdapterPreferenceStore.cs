@@ -1,6 +1,7 @@
 using System.Text.Json;
 using ProjectZD8.Application.DeviceConnection.Ports;
 using ProjectZD8.Application.DeviceConnection.State;
+using ProjectZD8.Diagnostics;
 using ProjectZD8.Domain.ValueObjects;
 
 namespace ProjectZD8.Data.Persistence.Preferences;
@@ -63,6 +64,7 @@ public sealed class JsonFileDefaultAdapterPreferenceStore : IDefaultAdapterPrefe
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or JsonException or NotSupportedException)
         {
+            PreferencesLog.DefaultAdapterUnreadable(PreferencesLog.Logger, error, Redact.Path(filePath));
             return null;
         }
 

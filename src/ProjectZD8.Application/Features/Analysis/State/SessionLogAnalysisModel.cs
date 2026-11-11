@@ -233,9 +233,11 @@ public sealed class SessionLogAnalysisModel : INotifyPropertyChanged
         }
         catch (OperationCanceledException)
         {
+            SessionLogAnalysisLog.Canceled("session-log.analyze");
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            SessionLogAnalysisLog.Failed(exception, "session-log.analyze");
             if (State.SessionID != sessionID)
             {
                 return;

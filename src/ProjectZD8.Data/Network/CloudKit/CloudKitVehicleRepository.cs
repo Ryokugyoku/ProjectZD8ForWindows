@@ -85,6 +85,7 @@ public sealed class CloudKitVehicleRepository : IVehicleRepository, IAccountVehi
         }
         catch (Exception exception) when (IsSynchronizationFailure(exception))
         {
+            SyncLog.VehiclesDeferred(SyncLog.Logger, exception);
             return Sorted(local);
         }
     }
@@ -183,8 +184,9 @@ public sealed class CloudKitVehicleRepository : IVehicleRepository, IAccountVehi
             {
                 remote = CloudKitPayloadJsonCodec.DecodeVehicleCatalog(data);
             }
-            catch (JsonException)
+            catch (JsonException exception)
             {
+                SyncLog.VehicleCatalogInvalid(SyncLog.Logger, exception);
                 // iOS と同じく、読めないカタログは使わず、上書きもしません。
                 return Sorted(local);
             }
@@ -275,8 +277,9 @@ public sealed class CloudKitVehicleRepository : IVehicleRepository, IAccountVehi
                 }
             }
         }
-        catch (JsonException)
+        catch (JsonException exception)
         {
+            SyncLog.DeletedVehicleIdsInvalid(SyncLog.Logger, exception);
             result.Clear();
         }
         return result;

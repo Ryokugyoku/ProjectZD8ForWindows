@@ -185,6 +185,7 @@ internal sealed class SessionLogWriter : IDisposable
                             catch (Exception error)
                             {
                                 item.Log.Fault = error;
+                                LogStoreLog.WriteFailed(LogStoreLog.Logger, error, item.Log.SessionName, "write");
                             }
                         }
                         item.Log.PendingWrittenTicket = item.Ticket;
@@ -205,7 +206,11 @@ internal sealed class SessionLogWriter : IDisposable
                             }
                             catch (Exception error)
                             {
-                                item.Log.Fault ??= error;
+                                if (item.Log.Fault is null)
+                                {
+                                    LogStoreLog.WriteFailed(LogStoreLog.Logger, error, item.Log.SessionName, "close");
+                                    item.Log.Fault = error;
+                                }
                             }
                             item.Completion!();
                         });
@@ -235,7 +240,11 @@ internal sealed class SessionLogWriter : IDisposable
                 }
                 catch (Exception error)
                 {
-                    log.Fault ??= error;
+                    if (log.Fault is null)
+                    {
+                        LogStoreLog.WriteFailed(LogStoreLog.Logger, error, log.SessionName, durable ? "fsync" : "flush");
+                        log.Fault = error;
+                    }
                 }
                 if (durable)
                 {

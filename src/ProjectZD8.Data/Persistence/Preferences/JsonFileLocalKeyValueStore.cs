@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using ProjectZD8.Diagnostics;
 
 namespace ProjectZD8.Data.Persistence.Preferences;
 
@@ -135,6 +136,7 @@ public sealed class JsonFileLocalKeyValueStore : ILocalKeyValueStore
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
+            PreferencesLog.LocalStoreUnreadable(PreferencesLog.Logger, exception, Redact.Path(_filePath));
             _data.Clear();
             _strings.Clear();
         }

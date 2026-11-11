@@ -3,6 +3,8 @@ using ProjectZD8.Domain.Errors;
 using ProjectZD8.Domain.Repositories;
 using ProjectZD8.Domain.ValueObjects;
 
+using ProjectZD8.Application.LogHistory.State;
+
 namespace ProjectZD8.Application.LogHistory.UseCases;
 
 /// <summary>接続セッション同期で現在端末が担う役割です。</summary>
@@ -271,8 +273,9 @@ public sealed class SynchronizeConnectionSessionsUseCase
             {
                 rawLogRepository.MarkCloudUploadFailed(session.Id);
             }
-            catch
+            catch (Exception markError)
             {
+                ConnectionHistoryLog.Degraded(markError, "session.mark-upload-failed");
                 // Swift の try? と同じく、失敗状態の保存失敗は元のエラーを優先して無視します。
             }
             throw;

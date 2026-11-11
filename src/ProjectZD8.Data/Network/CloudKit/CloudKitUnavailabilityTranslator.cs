@@ -21,10 +21,12 @@ internal static class CloudKitUnavailabilityTranslator
         }
         catch (CloudKitUnavailableException)
         {
+            SyncLog.UnavailableTranslated(SyncLog.Logger, "unavailable");
             throw unavailable();
         }
         catch (CloudKitAuthenticationRequiredException)
         {
+            SyncLog.UnavailableTranslated(SyncLog.Logger, "authentication-required");
             throw unavailable();
         }
     }

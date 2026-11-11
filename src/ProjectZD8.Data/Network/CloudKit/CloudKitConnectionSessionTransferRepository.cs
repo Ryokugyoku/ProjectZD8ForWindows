@@ -130,8 +130,9 @@ public sealed class CloudKitConnectionSessionTransferRepository : IConnectionSes
                 {
                     metadata = CloudKitPayloadJsonCodec.DecodeMetadata(data);
                 }
-                catch (System.Text.Json.JsonException)
+                catch (System.Text.Json.JsonException exception)
                 {
+                    SyncLog.TransferPayloadInvalid(SyncLog.Logger, exception, "metadata");
                     throw IntegrityConflict();
                 }
                 if (!string.Equals(metadata.Session.AccountIdentifier, accountIdentifier, StringComparison.Ordinal)
@@ -433,8 +434,9 @@ public sealed class CloudKitConnectionSessionTransferRepository : IConnectionSes
         {
             package = CloudKitPayloadJsonCodec.DecodeTransferPackage(data);
         }
-        catch (System.Text.Json.JsonException)
+        catch (System.Text.Json.JsonException exception)
         {
+            SyncLog.TransferPayloadInvalid(SyncLog.Logger, exception, "package");
             throw IntegrityConflict();
         }
         if (!string.Equals(package.AccountIdentifier, accountIdentifier, StringComparison.Ordinal)

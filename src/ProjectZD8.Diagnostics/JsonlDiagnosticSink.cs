@@ -84,6 +84,9 @@ public sealed class JsonlDiagnosticSink : IDiagnosticSink, IDisposable
     /// <summary>最後に付けた通し番号です。</summary>
     private long _sequence;
 
+    /// <summary>最後に付けた Error 以上の通し番号です（0 ならまだない）。報告用の番号に使う。</summary>
+    private long _lastErrorSequence;
+
     /// <summary>捨てた Trace・Debug の件数（まだ書いていない分）です。</summary>
     private long _droppedLow;
 
@@ -159,6 +162,9 @@ public sealed class JsonlDiagnosticSink : IDiagnosticSink, IDisposable
     /// <summary>今の通常のログのファイルのパスです。</summary>
     public string CurrentFilePath => Path.Combine(_options.Directory, FileName(DiagnosticFileKind.App, _fileIndex));
 
+    /// <summary>直近の Error 以上の通し番号（<c>seq</c>）です。まだなければ 0。</summary>
+    public long LastErrorSequence => Interlocked.Read(ref _lastErrorSequence);
+
     /// <summary>クラッシュのログのファイルのパスです。</summary>
     public string CrashFilePath => Path.Combine(_options.Directory, FileName(DiagnosticFileKind.Crash, 0));
 
@@ -186,6 +192,7 @@ public sealed class JsonlDiagnosticSink : IDiagnosticSink, IDisposable
             }
 
             diagnosticEvent.Stamp(_options.Clock.GetUtcNow(), _options.RunId, ++_sequence);
+            NoteErrorLocked(diagnosticEvent);
             AcceptLocked(diagnosticEvent, write, buffer);
         }
     }
@@ -224,6 +231,7 @@ public sealed class JsonlDiagnosticSink : IDiagnosticSink, IDisposable
         lock (_gate)
         {
             crash.Stamp(_options.Clock.GetUtcNow(), _options.RunId, ++_sequence);
+            NoteErrorLocked(crash);
             context = _ring?.Snapshot() ?? [];
             if (!_stopping)
             {
@@ -249,6 +257,16 @@ public sealed class JsonlDiagnosticSink : IDiagnosticSink, IDisposable
         }
 
         Flush(CrashFlushTimeout);
+    }
+
+    /// <summary>Error 以上なら、通し番号を覚えます（報告用の番号に使う）。</summary>
+    /// <param name="diagnosticEvent">通し番号を付けたイベント。</param>
+    private void NoteErrorLocked(DiagnosticEvent diagnosticEvent)
+    {
+        if (diagnosticEvent.Level >= LogLevel.Error)
+        {
+            Interlocked.Exchange(ref _lastErrorSequence, diagnosticEvent.Sequence);
+        }
     }
 
     /// <summary>

@@ -10,6 +10,7 @@ using ProjectZD8.Domain.Policies;
 using ProjectZD8.Domain.ValueObjects;
 using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
+using ProjectZD8ForWindows.Platform.Windows.Logging;
 using Windows.UI;
 
 namespace ProjectZD8ForWindows.Platform.Windows.Features.VehicleManagement.Views;
@@ -75,7 +76,11 @@ public sealed partial class WindowsVehicleEditorView : UserControl
             Key = global::Windows.System.VirtualKey.S,
             Modifiers = global::Windows.System.VirtualKeyModifiers.Control,
         });
-        _saveButton.Click += (_, _) => _send(new VehicleManagementAction.VehicleSaved(_draft));
+        _saveButton.Click += (_, _) =>
+        {
+            UiLog.VehicleSaveRequested(UiLog.Logger);
+            _send(new VehicleManagementAction.VehicleSaved(_draft));
+        };
         _photoTitle = Typography.Text(string.Empty, "SubtitleTextBlockStyle", new SolidColorBrush(Color.FromArgb(255, 255, 255, 255)));
 
         var page = new StackPanel { Spacing = 24, Padding = new Thickness(30), MaxWidth = 1150 };

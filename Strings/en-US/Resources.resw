@@ -3686,6 +3686,90 @@ Own the drive.</value>
     <value>Finish signing in in your browser…</value>
     <comment>windows.cloud.signing_in</comment>
   </data>
+  <data name="windows_diagnostics_cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>windows.diagnostics.cancel</comment>
+  </data>
+  <data name="windows_diagnostics_clear_button" xml:space="preserve">
+    <value>Delete</value>
+    <comment>windows.diagnostics.clear.button</comment>
+  </data>
+  <data name="windows_diagnostics_clear_confirm_action" xml:space="preserve">
+    <value>Delete</value>
+    <comment>windows.diagnostics.clear.confirm.action</comment>
+  </data>
+  <data name="windows_diagnostics_clear_confirm_message" xml:space="preserve">
+    <value>All diagnostic logs except those of the current session will be deleted. Connection history, vehicles and service records are not affected. This can't be undone.</value>
+    <comment>windows.diagnostics.clear.confirm.message</comment>
+  </data>
+  <data name="windows_diagnostics_clear_confirm_title" xml:space="preserve">
+    <value>Delete diagnostic logs?</value>
+    <comment>windows.diagnostics.clear.confirm.title</comment>
+  </data>
+  <data name="windows_diagnostics_clear_description" xml:space="preserve">
+    <value>Diagnostic logs currently use %@.</value>
+    <comment>windows.diagnostics.clear.description</comment>
+  </data>
+  <data name="windows_diagnostics_clear_title" xml:space="preserve">
+    <value>Delete diagnostic logs</value>
+    <comment>windows.diagnostics.clear.title</comment>
+  </data>
+  <data name="windows_diagnostics_close" xml:space="preserve">
+    <value>Close</value>
+    <comment>windows.diagnostics.close</comment>
+  </data>
+  <data name="windows_diagnostics_previous_run_message" xml:space="preserve">
+    <value>The app didn't close properly last time. Would you like to export a problem report?</value>
+    <comment>windows.diagnostics.previous_run.message</comment>
+  </data>
+  <data name="windows_diagnostics_report_button" xml:space="preserve">
+    <value>Export</value>
+    <comment>windows.diagnostics.report.button</comment>
+  </data>
+  <data name="windows_diagnostics_report_description" xml:space="preserve">
+    <value>Bundles the last 7 days of diagnostic logs and basic environment info into a zip file. Photos, driving data and service records are not included, and nothing is sent automatically.</value>
+    <comment>windows.diagnostics.report.description</comment>
+  </data>
+  <data name="windows_diagnostics_report_failed_message" xml:space="preserve">
+    <value>The problem report couldn't be saved. Try a different location.</value>
+    <comment>windows.diagnostics.report.failed.message</comment>
+  </data>
+  <data name="windows_diagnostics_report_failed_title" xml:space="preserve">
+    <value>Couldn't export the report</value>
+    <comment>windows.diagnostics.report.failed.title</comment>
+  </data>
+  <data name="windows_diagnostics_report_file_type" xml:space="preserve">
+    <value>Problem report (zip)</value>
+    <comment>windows.diagnostics.report.file_type</comment>
+  </data>
+  <data name="windows_diagnostics_report_title" xml:space="preserve">
+    <value>Export a problem report</value>
+    <comment>windows.diagnostics.report.title</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_always" xml:space="preserve">
+    <value>This build always records detailed logs.</value>
+    <comment>windows.diagnostics.verbose.always</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_description" xml:space="preserve">
+    <value>Turn this on only when helping investigate a problem. It turns off automatically after 7 days.</value>
+    <comment>windows.diagnostics.verbose.description</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_on" xml:space="preserve">
+    <value>On. It will turn off automatically on %@.</value>
+    <comment>windows.diagnostics.verbose.on</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_title" xml:space="preserve">
+    <value>Detailed logging</value>
+    <comment>windows.diagnostics.verbose.title</comment>
+  </data>
+  <data name="windows_error_report_number" xml:space="preserve">
+    <value>Report no. %@</value>
+    <comment>windows.error.report_number</comment>
+  </data>
+  <data name="windows_error_report_number_copy" xml:space="preserve">
+    <value>Copy report number</value>
+    <comment>windows.error.report_number.copy</comment>
+  </data>
   <data name="windows_history_open_detail" xml:space="preserve">
     <value>Open details</value>
     <comment>windows.history.open_detail</comment>
@@ -3733,6 +3817,10 @@ Own the drive.</value>
   <data name="windows_settings_group_data" xml:space="preserve">
     <value>Data and sync</value>
     <comment>windows.settings.group.data</comment>
+  </data>
+  <data name="windows_settings_group_diagnostics" xml:space="preserve">
+    <value>Diagnostics</value>
+    <comment>windows.settings.group.diagnostics</comment>
   </data>
   <data name="windows_settings_group_general" xml:space="preserve">
     <value>General</value>

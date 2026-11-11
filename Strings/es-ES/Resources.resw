@@ -3686,6 +3686,90 @@ Domina la conducción.</value>
     <value>Termina de iniciar sesión en el navegador…</value>
     <comment>windows.cloud.signing_in</comment>
   </data>
+  <data name="windows_diagnostics_cancel" xml:space="preserve">
+    <value>Cancelar</value>
+    <comment>windows.diagnostics.cancel</comment>
+  </data>
+  <data name="windows_diagnostics_clear_button" xml:space="preserve">
+    <value>Eliminar</value>
+    <comment>windows.diagnostics.clear.button</comment>
+  </data>
+  <data name="windows_diagnostics_clear_confirm_action" xml:space="preserve">
+    <value>Eliminar</value>
+    <comment>windows.diagnostics.clear.confirm.action</comment>
+  </data>
+  <data name="windows_diagnostics_clear_confirm_message" xml:space="preserve">
+    <value>Se eliminarán todos los registros de diagnóstico excepto los de la sesión actual. El historial de conexiones, los vehículos y los registros de mantenimiento no se ven afectados. Esta acción no se puede deshacer.</value>
+    <comment>windows.diagnostics.clear.confirm.message</comment>
+  </data>
+  <data name="windows_diagnostics_clear_confirm_title" xml:space="preserve">
+    <value>¿Eliminar los registros de diagnóstico?</value>
+    <comment>windows.diagnostics.clear.confirm.title</comment>
+  </data>
+  <data name="windows_diagnostics_clear_description" xml:space="preserve">
+    <value>Los registros de diagnóstico ocupan %@.</value>
+    <comment>windows.diagnostics.clear.description</comment>
+  </data>
+  <data name="windows_diagnostics_clear_title" xml:space="preserve">
+    <value>Eliminar los registros de diagnóstico</value>
+    <comment>windows.diagnostics.clear.title</comment>
+  </data>
+  <data name="windows_diagnostics_close" xml:space="preserve">
+    <value>Cerrar</value>
+    <comment>windows.diagnostics.close</comment>
+  </data>
+  <data name="windows_diagnostics_previous_run_message" xml:space="preserve">
+    <value>La aplicación no se cerró correctamente la última vez. ¿Quieres exportar un informe de errores?</value>
+    <comment>windows.diagnostics.previous_run.message</comment>
+  </data>
+  <data name="windows_diagnostics_report_button" xml:space="preserve">
+    <value>Exportar</value>
+    <comment>windows.diagnostics.report.button</comment>
+  </data>
+  <data name="windows_diagnostics_report_description" xml:space="preserve">
+    <value>Reúne los registros de diagnóstico de los últimos 7 días y datos básicos del entorno en un archivo zip. No incluye fotos, datos de conducción ni registros de mantenimiento, y no se envía nada automáticamente.</value>
+    <comment>windows.diagnostics.report.description</comment>
+  </data>
+  <data name="windows_diagnostics_report_failed_message" xml:space="preserve">
+    <value>No se pudo guardar el informe de errores. Prueba con otra ubicación.</value>
+    <comment>windows.diagnostics.report.failed.message</comment>
+  </data>
+  <data name="windows_diagnostics_report_failed_title" xml:space="preserve">
+    <value>No se pudo exportar el informe</value>
+    <comment>windows.diagnostics.report.failed.title</comment>
+  </data>
+  <data name="windows_diagnostics_report_file_type" xml:space="preserve">
+    <value>Informe de errores (zip)</value>
+    <comment>windows.diagnostics.report.file_type</comment>
+  </data>
+  <data name="windows_diagnostics_report_title" xml:space="preserve">
+    <value>Exportar un informe de errores</value>
+    <comment>windows.diagnostics.report.title</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_always" xml:space="preserve">
+    <value>Esta versión siempre registra de forma detallada.</value>
+    <comment>windows.diagnostics.verbose.always</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_description" xml:space="preserve">
+    <value>Actívalo solo para ayudar a investigar un problema. Se desactiva automáticamente después de 7 días.</value>
+    <comment>windows.diagnostics.verbose.description</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_on" xml:space="preserve">
+    <value>Activado. Se desactivará automáticamente el %@.</value>
+    <comment>windows.diagnostics.verbose.on</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_title" xml:space="preserve">
+    <value>Registro detallado</value>
+    <comment>windows.diagnostics.verbose.title</comment>
+  </data>
+  <data name="windows_error_report_number" xml:space="preserve">
+    <value>N.º de informe %@</value>
+    <comment>windows.error.report_number</comment>
+  </data>
+  <data name="windows_error_report_number_copy" xml:space="preserve">
+    <value>Copiar el número de informe</value>
+    <comment>windows.error.report_number.copy</comment>
+  </data>
   <data name="windows_history_open_detail" xml:space="preserve">
     <value>Abrir detalles</value>
     <comment>windows.history.open_detail</comment>
@@ -3733,6 +3817,10 @@ Domina la conducción.</value>
   <data name="windows_settings_group_data" xml:space="preserve">
     <value>Datos y sincronización</value>
     <comment>windows.settings.group.data</comment>
+  </data>
+  <data name="windows_settings_group_diagnostics" xml:space="preserve">
+    <value>Diagnóstico</value>
+    <comment>windows.settings.group.diagnostics</comment>
   </data>
   <data name="windows_settings_group_general" xml:space="preserve">
     <value>General</value>

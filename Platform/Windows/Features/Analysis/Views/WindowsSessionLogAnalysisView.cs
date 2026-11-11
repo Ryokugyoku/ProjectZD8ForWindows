@@ -189,7 +189,7 @@ public sealed partial class WindowsSessionLogAnalysisView : UserControl
 
         if (state.Phase == SessionLogAnalysisStatePhase.Failed && state.Timeline.Count == 0)
         {
-            return new InfoBar { IsOpen = true, IsClosable = false, Severity = InfoBarSeverity.Error, Message = LocalizedText.Get("analysis.error.storage") };
+            return ErrorReport.Bar(InfoBarSeverity.Error, LocalizedText.Get("analysis.error.storage"));
         }
 
         if (state.Phase == SessionLogAnalysisStatePhase.Loaded && state.Timeline.Count == 0)

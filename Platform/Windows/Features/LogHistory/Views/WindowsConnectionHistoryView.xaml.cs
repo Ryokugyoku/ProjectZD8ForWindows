@@ -17,6 +17,7 @@ using ProjectZD8ForWindows.Platform.Windows.Features.Analysis.Views;
 using ProjectZD8ForWindows.Platform.Windows.Features.LogHistory.Presentation;
 using ProjectZD8ForWindows.Platform.Windows.Formatting;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
+using ProjectZD8ForWindows.Platform.Windows.Logging;
 
 namespace ProjectZD8ForWindows.Platform.Windows.Features.LogHistory.Views;
 
@@ -725,7 +726,11 @@ public sealed partial class WindowsConnectionHistoryView : UserControl, IBackNav
             .Item(FluentSymbol.Chart, LocalizedText.Get("analysis.open"), () => OpenAnalysis(session));
         if (CanUpload(state, session) && state.UploadingSessionID is null)
         {
-            menu.Item(FluentSymbol.Upload, LocalizedText.Get("history.upload.button"), () => _model.Send(new ConnectionHistoryAction.SessionUploadRequested(session.Id)));
+            menu.Item(FluentSymbol.Upload, LocalizedText.Get("history.upload.button"), () =>
+            {
+                UiLog.SessionUploadRequested(UiLog.Logger);
+                _model.Send(new ConnectionHistoryAction.SessionUploadRequested(session.Id));
+            });
         }
 
         if (CanReleaseRawCache(session))
@@ -871,9 +876,17 @@ public sealed partial class WindowsConnectionHistoryView : UserControl, IBackNav
                 "history.raw.remove.confirm",
                 "history.raw.remove.cancel",
                 destructive: true);
-        }, result => _model.Send(result == ContentDialogResult.Primary
-            ? new ConnectionHistoryAction.LocalRawRemovalConfirmed()
-            : new ConnectionHistoryAction.LocalRawRemovalCancelled()));
+        }, result =>
+        {
+            if (result == ContentDialogResult.Primary)
+            {
+                UiLog.RawRemovalConfirmed(UiLog.Logger);
+            }
+
+            _model.Send(result == ContentDialogResult.Primary
+                ? new ConnectionHistoryAction.LocalRawRemovalConfirmed()
+                : new ConnectionHistoryAction.LocalRawRemovalCancelled());
+        });
 
         _deletionDialog.Sync(state.SessionDeletionPrompt is not null, state.SessionDeletionPrompt, root, () =>
         {
@@ -884,9 +897,17 @@ public sealed partial class WindowsConnectionHistoryView : UserControl, IBackNav
                 "history.delete.confirm",
                 "history.delete.cancel",
                 destructive: true);
-        }, result => _model.Send(result == ContentDialogResult.Primary
-            ? new ConnectionHistoryAction.SessionDeletionConfirmed()
-            : new ConnectionHistoryAction.SessionDeletionCancelled()));
+        }, result =>
+        {
+            if (result == ContentDialogResult.Primary)
+            {
+                UiLog.SessionDeleteConfirmed(UiLog.Logger);
+            }
+
+            _model.Send(result == ContentDialogResult.Primary
+                ? new ConnectionHistoryAction.SessionDeletionConfirmed()
+                : new ConnectionHistoryAction.SessionDeletionCancelled());
+        });
 
         _deletionFailureDialog.Sync(state.SessionDeletionFailureKey is not null, state.SessionDeletionFailureKey, root,
             () => Alert("history.delete.error.title", LocalizedText.Get("history.delete.error"), null, "history.delete.error.dismiss"),

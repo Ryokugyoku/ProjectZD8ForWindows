@@ -5,6 +5,7 @@ using ProjectZD8.Application.Authentication.Actions;
 using ProjectZD8.Application.Authentication.State;
 using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
+using ProjectZD8ForWindows.Platform.Windows.Logging;
 
 namespace ProjectZD8ForWindows.Platform.Windows.Features.Authentication.Views;
 
@@ -93,6 +94,7 @@ public sealed class WindowsAccountDeletionFlow
         dialog.PrimaryButtonClick += (_, args) =>
         {
             args.Cancel = true;
+            UiLog.AccountDeleteConfirmed(UiLog.Logger);
             _send(AuthenticationAction.AccountDeletionConfirmed);
         };
         dialog.Closing += (_, args) =>
@@ -136,13 +138,7 @@ public sealed class WindowsAccountDeletionFlow
 
         if (failure is not null)
         {
-            body.Children.Add(new InfoBar
-            {
-                IsOpen = true,
-                IsClosable = false,
-                Severity = InfoBarSeverity.Error,
-                Message = LocalizedText.Get("account.delete.error"),
-            });
+            body.Children.Add(ErrorReport.Bar(InfoBarSeverity.Error, LocalizedText.Get("account.delete.error")));
         }
 
         if (phase == AccountDeletionPhase.Deleting)

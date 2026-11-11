@@ -47,6 +47,18 @@ internal static partial class CompositionLog
         string cloudKitEnvironment);
 
     /// <summary>
+    /// 設定画面の「詳細ログ」を入れてから期間（7 日）が過ぎたので、起動時に自動で切ったことを書きます。
+    /// </summary>
+    /// <param name="logger">ロガー。</param>
+    /// <param name="days">自動で切れるまでの日数。</param>
+    [LoggerMessage(
+        EventId = 1103,
+        EventName = "app.verbose.expired",
+        Level = LogLevel.Information,
+        Message = "詳細ログを入れてから {Days} 日たったので、自動で切りました")]
+    public static partial void VerboseLoggingExpired(ILogger logger, int days);
+
+    /// <summary>
     /// SQLite の保存先を開けず、使えない保存先へ切り替えたことを書きます（利用者には保存できないと見える）。
     /// </summary>
     /// <param name="logger">ロガー。</param>

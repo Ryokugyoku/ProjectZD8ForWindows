@@ -94,6 +94,17 @@ public sealed class DiagnosticSession : IDisposable
     /// <summary>実行 ID（16 進 8 桁）です。報告用の番号（<c>7F3A-1842</c>）の先頭 4 桁に使います。</summary>
     public string RunId => _sink.RunId;
 
+    /// <summary>起動時に集めたアプリと環境の情報です（不具合レポートの <c>summary.json</c> に使う）。</summary>
+    public DiagnosticAppInfo AppInfo => _options.App;
+
+    /// <summary>
+    /// 利用者に見せる報告用の番号（<c>7F3A-1842</c>）です。実行 ID の先頭 4 桁と、直近の Error の <c>seq</c> を並べます。
+    /// この実行でまだ Error がなければ null。
+    /// </summary>
+    public string? ReportNumber => _sink.LastErrorSequence is > 0 and var sequence
+        ? DiagnosticReportNumber.Format(RunId, sequence)
+        : null;
+
     /// <summary>チャンネルです。</summary>
     public DiagnosticsChannel Channel => _options.Channel;
 

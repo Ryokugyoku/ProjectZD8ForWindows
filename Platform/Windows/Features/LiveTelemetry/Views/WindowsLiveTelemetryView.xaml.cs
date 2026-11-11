@@ -224,6 +224,11 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
         {
             bar.Content = new ProgressBar { IsIndeterminate = true, Margin = new Thickness(0, 0, 0, 8) };
         }
+        else if (state.Phase == LiveTelemetryStatePhase.Failed)
+        {
+            // 失敗のときだけ、報告用の番号を付ける。
+            ErrorReport.AttachTo(bar);
+        }
 
         return bar;
     }

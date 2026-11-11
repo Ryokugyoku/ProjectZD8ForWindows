@@ -89,18 +89,32 @@
             </Border>
 
             <!-- 既定のアダプターが近くに来たときに接続を尋ねる（iOS 版のローカル通知の代わり）。 -->
-            <InfoBar
-                x:Name="AdapterArrivalBar"
-                Grid.Row="1"
-                Severity="Informational"
-                IsClosable="True"
-                IsOpen="False"
-                Margin="24,12,24,0"
-                CloseButtonClick="OnAdapterArrivalDismissed">
-                <InfoBar.ActionButton>
-                    <Button x:Name="AdapterArrivalConnectButton" Style="{StaticResource AccentButtonStyle}" Click="OnAdapterArrivalAccepted" />
-                </InfoBar.ActionButton>
-            </InfoBar>
+            <StackPanel Grid.Row="1">
+                <InfoBar
+                    x:Name="AdapterArrivalBar"
+                    Severity="Informational"
+                    IsClosable="True"
+                    IsOpen="False"
+                    Margin="24,12,24,0"
+                    CloseButtonClick="OnAdapterArrivalDismissed">
+                    <InfoBar.ActionButton>
+                        <Button x:Name="AdapterArrivalConnectButton" Style="{StaticResource AccentButtonStyle}" Click="OnAdapterArrivalAccepted" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+
+                <!-- 前回の実行が正常に終了しなかったとき、不具合レポートの書き出しを尋ねる（閉じたらこの実行では出さない）。 -->
+                <InfoBar
+                    x:Name="PreviousRunBar"
+                    Severity="Warning"
+                    IsClosable="True"
+                    IsOpen="False"
+                    Margin="24,12,24,0"
+                    CloseButtonClick="OnPreviousRunDismissed">
+                    <InfoBar.ActionButton>
+                        <Button x:Name="PreviousRunExportButton" Style="{StaticResource AccentButtonStyle}" Click="OnPreviousRunExportClicked" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+            </StackPanel>
             <Border x:Name="DestinationHost" Grid.Row="2" />
         </Grid>
     </NavigationView>

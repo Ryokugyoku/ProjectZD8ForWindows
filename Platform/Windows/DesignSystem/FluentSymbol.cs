@@ -152,6 +152,9 @@ public static class FluentSymbol
     /// <summary>一時停止。</summary>
     public const string Pause = "";
 
+    /// <summary>コピー。</summary>
+    public const string Copy = "";
+
     /// <summary>ドロップ（軽整備）。</summary>
     public const string Drop = "";
 }

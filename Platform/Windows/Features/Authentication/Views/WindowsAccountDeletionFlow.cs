@@ -133,7 +133,7 @@ public sealed class WindowsAccountDeletionFlow
             text.VerticalAlignment = VerticalAlignment.Center;
             Grid.SetColumn(text, 1);
             row.Children.Add(text);
-            body.Children.Add(new Border { Style = DesignTokens.Style("QuietSurfaceStyle"), Padding = new Thickness(12), Child = row });
+            body.Children.Add(new Border { Style = DesignTokens.Style("QuietSurfaceStyle"), Padding = new Thickness(Space.M), Child = row });
         }
 
         if (failure is not null)

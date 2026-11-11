@@ -29,10 +29,14 @@ internal static class WindowsDiagnosticsBootstrap
         {
             var assembly = typeof(WindowsDiagnosticsBootstrap).Assembly;
             var packageVersion = PackageVersion();
-            return DiagnosticSession.Start(new DiagnosticSessionOptions
+
+            // 設定画面の「詳細ログ」は、入れてから 7 日たっていたら、ここ（起動時）で自動で切る。
+            var verbose = new VerboseLoggingLease(dataDirectory).ApplyAtStartup();
+            var session = DiagnosticSession.Start(new DiagnosticSessionOptions
             {
                 DataDirectory = dataDirectory,
                 Channel = DiagnosticsChannelRawValue.FromAssembly(assembly),
+                VerboseLogging = verbose == VerboseLoggingStartup.On,
                 EnvironmentLevel = Environment.GetEnvironmentVariable(DiagnosticLevelResolver.EnvironmentVariable),
                 SettingsFilePath = settingsPath,
                 App = new DiagnosticAppInfo(
@@ -43,6 +47,12 @@ internal static class WindowsDiagnosticsBootstrap
                     IsLocalMode: isLocalMode,
                     IsPackaged: packageVersion is not null),
             });
+            if (verbose == VerboseLoggingStartup.Expired)
+            {
+                CompositionLog.VerboseLoggingExpired(CompositionLog.App, (int)VerboseLoggingLease.Duration.TotalDays);
+            }
+
+            return session;
         }
         catch (Exception exception) when (exception is System.IO.IOException or UnauthorizedAccessException)
         {

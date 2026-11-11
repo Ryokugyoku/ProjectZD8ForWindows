@@ -3686,6 +3686,90 @@
     <value>ブラウザーでサインインを済ませてください…</value>
     <comment>windows.cloud.signing_in</comment>
   </data>
+  <data name="windows_diagnostics_cancel" xml:space="preserve">
+    <value>キャンセル</value>
+    <comment>windows.diagnostics.cancel</comment>
+  </data>
+  <data name="windows_diagnostics_clear_button" xml:space="preserve">
+    <value>消す</value>
+    <comment>windows.diagnostics.clear.button</comment>
+  </data>
+  <data name="windows_diagnostics_clear_confirm_action" xml:space="preserve">
+    <value>消す</value>
+    <comment>windows.diagnostics.clear.confirm.action</comment>
+  </data>
+  <data name="windows_diagnostics_clear_confirm_message" xml:space="preserve">
+    <value>今の起動のログを除いて、診断ログをすべて消します。接続履歴・車両・整備記録には影響しません。この操作は取り消せません。</value>
+    <comment>windows.diagnostics.clear.confirm.message</comment>
+  </data>
+  <data name="windows_diagnostics_clear_confirm_title" xml:space="preserve">
+    <value>診断ログを消しますか？</value>
+    <comment>windows.diagnostics.clear.confirm.title</comment>
+  </data>
+  <data name="windows_diagnostics_clear_description" xml:space="preserve">
+    <value>診断ログの合計サイズ：%@</value>
+    <comment>windows.diagnostics.clear.description</comment>
+  </data>
+  <data name="windows_diagnostics_clear_title" xml:space="preserve">
+    <value>診断ログを消す</value>
+    <comment>windows.diagnostics.clear.title</comment>
+  </data>
+  <data name="windows_diagnostics_close" xml:space="preserve">
+    <value>閉じる</value>
+    <comment>windows.diagnostics.close</comment>
+  </data>
+  <data name="windows_diagnostics_previous_run_message" xml:space="preserve">
+    <value>前回は正常に終了しませんでした。不具合レポートを書き出しますか</value>
+    <comment>windows.diagnostics.previous_run.message</comment>
+  </data>
+  <data name="windows_diagnostics_report_button" xml:space="preserve">
+    <value>書き出す</value>
+    <comment>windows.diagnostics.report.button</comment>
+  </data>
+  <data name="windows_diagnostics_report_description" xml:space="preserve">
+    <value>直近 7 日の診断ログと環境の情報を zip にまとめます。写真・走行データ・整備記録は含まれず、自動では送信されません。</value>
+    <comment>windows.diagnostics.report.description</comment>
+  </data>
+  <data name="windows_diagnostics_report_failed_message" xml:space="preserve">
+    <value>不具合レポートを保存できませんでした。保存先を変えてもう一度お試しください。</value>
+    <comment>windows.diagnostics.report.failed.message</comment>
+  </data>
+  <data name="windows_diagnostics_report_failed_title" xml:space="preserve">
+    <value>書き出せませんでした</value>
+    <comment>windows.diagnostics.report.failed.title</comment>
+  </data>
+  <data name="windows_diagnostics_report_file_type" xml:space="preserve">
+    <value>不具合レポート (zip)</value>
+    <comment>windows.diagnostics.report.file_type</comment>
+  </data>
+  <data name="windows_diagnostics_report_title" xml:space="preserve">
+    <value>不具合レポートを書き出す</value>
+    <comment>windows.diagnostics.report.title</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_always" xml:space="preserve">
+    <value>この版では最初から詳細に記録しています。</value>
+    <comment>windows.diagnostics.verbose.always</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_description" xml:space="preserve">
+    <value>不具合の調査に協力するときだけ入れてください。入れて 7 日たつと自動で切れます。</value>
+    <comment>windows.diagnostics.verbose.description</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_on" xml:space="preserve">
+    <value>入っています。%@ に自動で切れます。</value>
+    <comment>windows.diagnostics.verbose.on</comment>
+  </data>
+  <data name="windows_diagnostics_verbose_title" xml:space="preserve">
+    <value>詳細ログ</value>
+    <comment>windows.diagnostics.verbose.title</comment>
+  </data>
+  <data name="windows_error_report_number" xml:space="preserve">
+    <value>報告番号 %@</value>
+    <comment>windows.error.report_number</comment>
+  </data>
+  <data name="windows_error_report_number_copy" xml:space="preserve">
+    <value>報告番号をコピー</value>
+    <comment>windows.error.report_number.copy</comment>
+  </data>
   <data name="windows_history_open_detail" xml:space="preserve">
     <value>詳細を開く</value>
     <comment>windows.history.open_detail</comment>
@@ -3733,6 +3817,10 @@
   <data name="windows_settings_group_data" xml:space="preserve">
     <value>データと同期</value>
     <comment>windows.settings.group.data</comment>
+  </data>
+  <data name="windows_settings_group_diagnostics" xml:space="preserve">
+    <value>診断</value>
+    <comment>windows.settings.group.diagnostics</comment>
   </data>
   <data name="windows_settings_group_general" xml:space="preserve">
     <value>全般</value>

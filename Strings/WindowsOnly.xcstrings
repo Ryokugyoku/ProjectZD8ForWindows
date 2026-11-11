@@ -227,6 +227,182 @@
         "es" : { "stringUnit" : { "state" : "translated", "value" : "Se eliminará «%@». Esta acción no se puede deshacer." } },
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "「%@」を削除します。この操作は取り消せません。" } }
       }
+    },
+    "windows.settings.group.diagnostics" : {
+      "comment" : "Windows 版だけ。設定画面の見出し：診断（詳細ログ・不具合レポート・診断ログの削除）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Diagnostics" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Diagnóstico" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "診断" } }
+      }
+    },
+    "windows.diagnostics.verbose.title" : {
+      "comment" : "Windows 版だけ。設定の「詳細ログ」スイッチの題。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Detailed logging" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Registro detallado" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "詳細ログ" } }
+      }
+    },
+    "windows.diagnostics.verbose.description" : {
+      "comment" : "Windows 版だけ。「詳細ログ」が切れているときの説明（7 日で自動で切れる）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Turn this on only when helping investigate a problem. It turns off automatically after 7 days." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Actívalo solo para ayudar a investigar un problema. Se desactiva automáticamente después de 7 días." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "不具合の調査に協力するときだけ入れてください。入れて 7 日たつと自動で切れます。" } }
+      }
+    },
+    "windows.diagnostics.verbose.on" : {
+      "comment" : "Windows 版だけ。「詳細ログ」が入っているときの説明。%@ は自動で切れる日時。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "On. It will turn off automatically on %@." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Activado. Se desactivará automáticamente el %@." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "入っています。%@ に自動で切れます。" } }
+      }
+    },
+    "windows.diagnostics.verbose.always" : {
+      "comment" : "Windows 版だけ。Dev / Beta の版で、最初から詳細に記録していること（スイッチは押せない）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This build always records detailed logs." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta versión siempre registra de forma detallada." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "この版では最初から詳細に記録しています。" } }
+      }
+    },
+    "windows.diagnostics.report.title" : {
+      "comment" : "Windows 版だけ。不具合レポートを書き出す行の題。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Export a problem report" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Exportar un informe de errores" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "不具合レポートを書き出す" } }
+      }
+    },
+    "windows.diagnostics.report.description" : {
+      "comment" : "Windows 版だけ。不具合レポートの説明。自動では送信されないこと、含まれないものを伝える。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bundles the last 7 days of diagnostic logs and basic environment info into a zip file. Photos, driving data and service records are not included, and nothing is sent automatically." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Reúne los registros de diagnóstico de los últimos 7 días y datos básicos del entorno en un archivo zip. No incluye fotos, datos de conducción ni registros de mantenimiento, y no se envía nada automáticamente." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "直近 7 日の診断ログと環境の情報を zip にまとめます。写真・走行データ・整備記録は含まれず、自動では送信されません。" } }
+      }
+    },
+    "windows.diagnostics.report.button" : {
+      "comment" : "Windows 版だけ。不具合レポートを書き出すボタン（設定画面と、前回の異常終了の知らせ）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Export" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Exportar" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "書き出す" } }
+      }
+    },
+    "windows.diagnostics.report.file_type" : {
+      "comment" : "Windows 版だけ。保存ダイアログのファイルの種類の名前。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Problem report (zip)" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Informe de errores (zip)" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "不具合レポート (zip)" } }
+      }
+    },
+    "windows.diagnostics.report.failed.title" : {
+      "comment" : "Windows 版だけ。不具合レポートを書き出せなかったときのダイアログの題。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't export the report" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "No se pudo exportar el informe" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "書き出せませんでした" } }
+      }
+    },
+    "windows.diagnostics.report.failed.message" : {
+      "comment" : "Windows 版だけ。不具合レポートを書き出せなかったときのダイアログの本文。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The problem report couldn't be saved. Try a different location." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "No se pudo guardar el informe de errores. Prueba con otra ubicación." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "不具合レポートを保存できませんでした。保存先を変えてもう一度お試しください。" } }
+      }
+    },
+    "windows.diagnostics.clear.title" : {
+      "comment" : "Windows 版だけ。診断ログを消す行の題。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete diagnostic logs" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar los registros de diagnóstico" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "診断ログを消す" } }
+      }
+    },
+    "windows.diagnostics.clear.description" : {
+      "comment" : "Windows 版だけ。診断ログを消す行の説明。%@ は今の診断ログの合計サイズ。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Diagnostic logs currently use %@." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Los registros de diagnóstico ocupan %@." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "診断ログの合計サイズ：%@" } }
+      }
+    },
+    "windows.diagnostics.clear.button" : {
+      "comment" : "Windows 版だけ。診断ログを消すボタン。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "消す" } }
+      }
+    },
+    "windows.diagnostics.clear.confirm.title" : {
+      "comment" : "Windows 版だけ。診断ログを消す前の確認ダイアログの題。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete diagnostic logs?" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Eliminar los registros de diagnóstico?" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "診断ログを消しますか？" } }
+      }
+    },
+    "windows.diagnostics.clear.confirm.message" : {
+      "comment" : "Windows 版だけ。診断ログを消す前の確認ダイアログの本文。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "All diagnostic logs except those of the current session will be deleted. Connection history, vehicles and service records are not affected. This can't be undone." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Se eliminarán todos los registros de diagnóstico excepto los de la sesión actual. El historial de conexiones, los vehículos y los registros de mantenimiento no se ven afectados. Esta acción no se puede deshacer." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "今の起動のログを除いて、診断ログをすべて消します。接続履歴・車両・整備記録には影響しません。この操作は取り消せません。" } }
+      }
+    },
+    "windows.diagnostics.clear.confirm.action" : {
+      "comment" : "Windows 版だけ。診断ログを消す確認ダイアログの実行ボタン。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Eliminar" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "消す" } }
+      }
+    },
+    "windows.diagnostics.cancel" : {
+      "comment" : "Windows 版だけ。診断のダイアログのキャンセルボタン。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cancelar" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "キャンセル" } }
+      }
+    },
+    "windows.diagnostics.close" : {
+      "comment" : "Windows 版だけ。診断のダイアログの閉じるボタン。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cerrar" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "閉じる" } }
+      }
+    },
+    "windows.diagnostics.previous_run.message" : {
+      "comment" : "Windows 版だけ。前回の実行が正常に終了しなかったときの、シェルの InfoBar。不具合レポートの書き出しを尋ねる。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The app didn't close properly last time. Would you like to export a problem report?" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "La aplicación no se cerró correctamente la última vez. ¿Quieres exportar un informe de errores?" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "前回は正常に終了しませんでした。不具合レポートを書き出しますか" } }
+      }
+    },
+    "windows.error.report_number" : {
+      "comment" : "Windows 版だけ。エラー表示に出す報告用の番号。%@ は 7F3A-1842 の形の番号。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Report no. %@" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "N.º de informe %@" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "報告番号 %@" } }
+      }
+    },
+    "windows.error.report_number.copy" : {
+      "comment" : "Windows 版だけ。報告用の番号をコピーするボタンのツールチップ。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Copy report number" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Copiar el número de informe" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "報告番号をコピー" } }
+      }
     }
   },
   "version" : "1.0"

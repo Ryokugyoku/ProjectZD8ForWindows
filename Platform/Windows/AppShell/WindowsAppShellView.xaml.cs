@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Input;
 using ProjectZD8.Application.LiveTelemetry.Actions;
 using ProjectZD8.Application.LiveTelemetry.State;
 using ProjectZD8.Application.VehicleManagement.State;
+using ProjectZD8.Domain.ValueObjects;
 using ProjectZD8ForWindows.AppRoot.Flow;
 using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using ProjectZD8ForWindows.Platform.Windows.Features.DeviceConnection.Presentation;
@@ -16,7 +17,9 @@ using ProjectZD8ForWindows.Platform.Windows.Features.LogHistory.Views;
 using ProjectZD8ForWindows.Platform.Windows.Features.Maintenance.Views;
 using ProjectZD8ForWindows.Platform.Windows.Features.Settings.Views;
 using ProjectZD8ForWindows.Platform.Windows.Features.VehicleManagement.Views;
+using ProjectZD8ForWindows.Platform.Windows.Features.Settings.Presentation;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
+using ProjectZD8ForWindows.Platform.Windows.Logging;
 using Windows.System;
 
 namespace ProjectZD8ForWindows.Platform.Windows.AppShell;
@@ -45,12 +48,19 @@ public sealed partial class WindowsAppShellView : UserControl
     /// <summary>今の画面のうち、戻る操作を受け付ける画面です。</summary>
     private IBackNavigable? _backTarget;
 
+    /// <summary>診断（詳細ログ・不具合レポート・前回の異常終了の知らせ）の表示モデルです。</summary>
+    private readonly WindowsDiagnosticsModel _diagnostics;
+
+    /// <summary>前回の異常終了の知らせを出したことを、ログに書いたかです。</summary>
+    private bool _loggedPreviousRunNotice;
+
     /// <summary>アプリの流れと最初の行き先を指定して作ります。</summary>
     /// <param name="flow">アプリの流れ。</param>
     /// <param name="initialDestination">最初に開く行き先。</param>
     public WindowsAppShellView(WindowsApplicationFlow flow, WindowsSidebarDestination initialDestination)
     {
         _flow = flow;
+        _diagnostics = new WindowsDiagnosticsModel(flow.Root.Diagnostics, DiagnosticsEnvironment);
         InitializeComponent();
         BrandTagline.Text = LocalizedText.Get("sidebar.brand.tagline");
         OpenLiveText.Text = LocalizedText.Get("windows.shell.open_live");
@@ -103,7 +113,9 @@ public sealed partial class WindowsAppShellView : UserControl
         _flow.Root.AdapterArrivalPrompt.PropertyChanged += OnAdapterArrivalPromptChanged;
         _flow.Root.LiveTelemetry.PropertyChanged += OnConnectionChanged;
         _flow.SettingsModel.PropertyChanged += OnConnectionChanged;
+        _diagnostics.PropertyChanged += OnDiagnosticsChanged;
         RenderAdapterArrivalPrompt();
+        RenderPreviousRunNotice();
         UpdateHistoryBadge();
         UpdateConnectionBar();
     }
@@ -119,7 +131,73 @@ public sealed partial class WindowsAppShellView : UserControl
         _flow.Root.AdapterArrivalPrompt.PropertyChanged -= OnAdapterArrivalPromptChanged;
         _flow.Root.LiveTelemetry.PropertyChanged -= OnConnectionChanged;
         _flow.SettingsModel.PropertyChanged -= OnConnectionChanged;
+        _diagnostics.PropertyChanged -= OnDiagnosticsChanged;
         AttachBackTarget(null);
+    }
+
+    /// <summary>不具合レポートに添える、既定アダプターの種類と接続セッションの数を集めます。</summary>
+    /// <returns>状態の情報。</returns>
+    private WindowsDiagnosticsEnvironment DiagnosticsEnvironment()
+    {
+        var adapter = _flow.SettingsModel.State.SelectedAdapters.TryGetValue(AdapterConnectionRole.Primary, out var primary)
+            ? primary.ConnectionTransport.ToString()
+            : null;
+        return new WindowsDiagnosticsEnvironment(adapter, _flow.Root.ConnectionHistory.State.Sessions.Count);
+    }
+
+    /// <summary>診断の表示モデルが変わったときの処理です。</summary>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">変更の内容。</param>
+    private void OnDiagnosticsChanged(object? sender, PropertyChangedEventArgs e) => RenderPreviousRunNotice();
+
+    /// <summary>前回の異常終了の知らせを描きます。</summary>
+    /// <remarks>責務: 前回の実行が正常に終了しなかったときだけ、書き出しを尋ねる InfoBar を開きます（閉じたらこの実行では出さない）。</remarks>
+    private void RenderPreviousRunNotice()
+    {
+        if (!_diagnostics.ShowsPreviousRunNotice)
+        {
+            PreviousRunBar.IsOpen = false;
+            return;
+        }
+
+        PreviousRunBar.Message = LocalizedText.Get("windows.diagnostics.previous_run.message");
+        PreviousRunExportButton.Content = LocalizedText.Get("windows.diagnostics.report.button");
+        PreviousRunBar.IsOpen = true;
+        if (!_loggedPreviousRunNotice)
+        {
+            _loggedPreviousRunNotice = true;
+            UiLog.CrashNoticeShown(UiLog.Logger);
+        }
+    }
+
+    /// <summary>前回の異常終了の知らせの「不具合レポートを書き出す」を押したときの処理です。</summary>
+    /// <remarks>責務: 設定画面と同じ流れで書き出し、書き出せたらこの実行では知らせを出さなくします。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">イベントの情報。</param>
+    private async void OnPreviousRunExportClicked(object sender, RoutedEventArgs e)
+    {
+        PreviousRunExportButton.IsEnabled = false;
+        try
+        {
+            if (await WindowsDiagnosticsReportFlow.ExportAsync(_diagnostics, XamlRoot))
+            {
+                _diagnostics.HandlePreviousRunNotice();
+            }
+        }
+        finally
+        {
+            PreviousRunExportButton.IsEnabled = true;
+        }
+    }
+
+    /// <summary>前回の異常終了の知らせを閉じたときの処理です。</summary>
+    /// <remarks>責務: この実行では、もう知らせを出さなくします。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="args">イベントの情報。</param>
+    private void OnPreviousRunDismissed(InfoBar sender, object args)
+    {
+        UiLog.CrashNoticeDismissed(UiLog.Logger);
+        _diagnostics.HandlePreviousRunNotice();
     }
 
     /// <summary>到来したアダプターについて尋ねる表示モデルが変わったときの処理です。</summary>
@@ -223,14 +301,17 @@ public sealed partial class WindowsAppShellView : UserControl
         switch (action)
         {
             case WindowsHomeAction.AdapterSetupRequested:
+                UiLog.AdapterSetupRequested(UiLog.Logger);
                 Select(WindowsSidebarDestination.Settings);
                 _flow.SettingsModel.Send(new WindowsSettingsAction.AdapterAttentionRequested());
                 break;
             case WindowsHomeAction.VehicleConnectionRequested request:
+                UiLog.ConnectRequested(UiLog.Logger, request.Endpoint.Transport.ToString());
                 _awaitsVehicleConnectionOutcome = true;
                 _flow.Root.StartVehicleConnection.Execute(request.Endpoint);
                 break;
             case WindowsHomeAction.VehicleDisconnectionRequested:
+                UiLog.DisconnectRequested(UiLog.Logger);
                 _flow.Root.LiveTelemetry.Send(new LiveTelemetryAction.StopRequested());
                 break;
         }
@@ -342,6 +423,7 @@ public sealed partial class WindowsAppShellView : UserControl
     private void ShowDestination(WindowsSidebarDestination destination)
     {
         SelectedDestination = destination;
+        UiLog.Navigated(UiLog.Logger, destination.ToString());
         var root = _flow.Root;
         UIElement view = destination switch
         {
@@ -350,7 +432,7 @@ public sealed partial class WindowsAppShellView : UserControl
             WindowsSidebarDestination.History => new WindowsConnectionHistoryView(root.ConnectionHistory, root.SessionLogAnalysis),
             WindowsSidebarDestination.Maintenance => new WindowsMaintenanceView(root.Maintenance),
             WindowsSidebarDestination.Garage => new WindowsGarageView(root.VehicleManagement),
-            _ => new WindowsSettingsView(_flow.SettingsModel, root.AccountSettings, root.Authentication, root.CloudSync),
+            _ => new WindowsSettingsView(_flow.SettingsModel, root.AccountSettings, root.Authentication, root.CloudSync, _diagnostics),
         };
         DestinationHost.Child = view;
         AttachBackTarget(view as IBackNavigable);

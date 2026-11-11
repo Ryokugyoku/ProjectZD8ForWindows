@@ -14,6 +14,7 @@ using ProjectZD8ForWindows.Platform.Windows.Features.Authentication.Views;
 using ProjectZD8ForWindows.Platform.Windows.Features.DeviceConnection.Presentation;
 using ProjectZD8ForWindows.Platform.Windows.Features.DeviceConnection.Views;
 using ProjectZD8ForWindows.Platform.Windows.Features.Settings.Presentation;
+using ProjectZD8ForWindows.Platform.Windows.Formatting;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
 
 namespace ProjectZD8ForWindows.Platform.Windows.Features.Settings.Views;
@@ -45,6 +46,18 @@ public sealed partial class WindowsSettingsView : UserControl
     /// <summary>Windows 版だけの iCloud サインインの表示モデルです。</summary>
     private readonly WindowsCloudSyncModel _cloudSync;
 
+    /// <summary>診断（詳細ログ・不具合レポート・診断ログの削除）の表示モデルです。</summary>
+    private readonly WindowsDiagnosticsModel _diagnostics;
+
+    /// <summary>診断ログを消す前の確認ダイアログです。</summary>
+    private readonly StateBoundDialog _clearLogsDialog = new();
+
+    /// <summary>診断ログを消してよいか尋ねている最中かどうかです。</summary>
+    private bool _isConfirmingClearLogs;
+
+    /// <summary>診断の行のまとまりです（スイッチを押したあとなどに、ここだけ作り直す）。</summary>
+    private StackPanel? _diagnosticsGroup;
+
     /// <summary>操作中の作り直しを待たせる仕組みです。</summary>
     private readonly RenderGate _gate;
 
@@ -65,16 +78,19 @@ public sealed partial class WindowsSettingsView : UserControl
     /// <param name="accountSettings">アカウント設定のモデル。</param>
     /// <param name="authentication">認証のモデル。</param>
     /// <param name="cloudSync">iCloud サインインの表示モデル。</param>
+    /// <param name="diagnostics">診断（詳細ログ・不具合レポート・診断ログの削除）の表示モデル。</param>
     public WindowsSettingsView(
         WindowsSettingsPresentationModel settings,
         AccountSettingsModel accountSettings,
         AuthenticationSessionModel authentication,
-        WindowsCloudSyncModel cloudSync)
+        WindowsCloudSyncModel cloudSync,
+        WindowsDiagnosticsModel diagnostics)
     {
         _settings = settings;
         _accountSettings = accountSettings;
         _authentication = authentication;
         _cloudSync = cloudSync;
+        _diagnostics = diagnostics;
         _adapterSelection = new WindowsAdapterSelectionDialog(settings.Send);
         _accountDeletion = new WindowsAccountDeletionFlow(authentication.Send);
         InitializeComponent();
@@ -131,6 +147,16 @@ public sealed partial class WindowsSettingsView : UserControl
         _adapterSelection.Render(state, XamlRoot);
         var authentication = _authentication.State;
         _accountDeletion.Render(authentication.AccountDeletionPhase, authentication.AccountDeletionFailure, XamlRoot);
+        _clearLogsDialog.Sync(_isConfirmingClearLogs, "clear-logs", XamlRoot, MakeClearLogsDialog, result =>
+        {
+            _isConfirmingClearLogs = false;
+            if (result == ContentDialogResult.Primary)
+            {
+                _diagnostics.ClearLogs();
+            }
+
+            RefreshDiagnostics();
+        });
         PresentAdapterAttentionIfNeeded(state);
     }
 
@@ -163,10 +189,137 @@ public sealed partial class WindowsSettingsView : UserControl
         Page.Children.Add(UploadRow(account));
         Page.Children.Add(CloudSyncRow());
 
+        _diagnosticsGroup = null;
+        if (_diagnostics.IsAvailable)
+        {
+            Page.Children.Add(SettingsRow.Header(LocalizedText.Get("windows.settings.group.diagnostics")));
+            _diagnosticsGroup = new StackPanel { Spacing = 4 };
+            FillDiagnostics(_diagnosticsGroup);
+            Page.Children.Add(_diagnosticsGroup);
+        }
+
         Page.Children.Add(SettingsRow.Header(LocalizedText.Get("windows.settings.group.account")));
         Page.Children.Add(AccountDeletionRow());
         _isRendering = false;
     }
+
+    /// <summary>診断の行だけを作り直します。</summary>
+    /// <remarks>責務: スイッチやボタンを押した結果（期限・合計サイズ）を、押している最中でなければすぐ、そうでなければ操作が終わってから反映します。</remarks>
+    private void RefreshDiagnostics()
+    {
+        if (_diagnosticsGroup is not { } group || _gate.TryDefer(RefreshDiagnostics))
+        {
+            return;
+        }
+
+        _isRendering = true;
+        group.Children.Clear();
+        FillDiagnostics(group);
+        _isRendering = false;
+    }
+
+    /// <summary>診断の行（詳細ログ・不具合レポート・診断ログを消す）を並べます。</summary>
+    /// <param name="group">行を入れるまとまり。</param>
+    private void FillDiagnostics(StackPanel group)
+    {
+        group.Children.Add(VerboseLoggingRow());
+        group.Children.Add(ExportReportRow());
+        group.Children.Add(ClearLogsRow());
+    }
+
+    /// <summary>「詳細ログ」の行を作ります。</summary>
+    /// <remarks>責務: スイッチで詳細ログを切り替えます。入れると 7 日で自動で切れます。Dev / Beta では最初から詳細なので、その旨を出してスイッチは無効にします。</remarks>
+    /// <returns>行。</returns>
+    private Border VerboseLoggingRow()
+    {
+        var byChannel = _diagnostics.IsVerboseByChannel;
+        var toggle = new ToggleSwitch
+        {
+            IsOn = _diagnostics.VerboseLogging,
+            IsEnabled = !byChannel,
+            MinWidth = 0,
+        };
+        toggle.Toggled += (_, _) =>
+        {
+            if (_isRendering || byChannel)
+            {
+                return;
+            }
+
+            _diagnostics.SetVerboseLogging(toggle.IsOn);
+            RefreshDiagnostics();
+        };
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(toggle, "windows-settings-verbose-logging");
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(toggle, LocalizedText.Get("windows.diagnostics.verbose.title"));
+        var description = byChannel
+            ? LocalizedText.Get("windows.diagnostics.verbose.always")
+            : _diagnostics.VerboseExpiresAt is { } expiresAt
+                ? LocalizedText.Format("windows.diagnostics.verbose.on", DateText.DateAndMinute(expiresAt))
+                : LocalizedText.Get("windows.diagnostics.verbose.description");
+        return SettingsRow.Create(
+            FluentSymbol.Diagnostics,
+            LocalizedText.Get("windows.diagnostics.verbose.title"),
+            description,
+            toggle);
+    }
+
+    /// <summary>「不具合レポートを書き出す」の行を作ります。</summary>
+    /// <remarks>責務: 保存先を選んでもらって zip を作り、エクスプローラーで開きます。書き出している間はボタンを押せなくします。</remarks>
+    /// <returns>行。</returns>
+    private Border ExportReportRow()
+    {
+        var button = new Button { Content = LocalizedText.Get("windows.diagnostics.report.button") };
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-settings-export-report");
+        button.Click += async (_, _) =>
+        {
+            button.IsEnabled = false;
+            try
+            {
+                await WindowsDiagnosticsReportFlow.ExportAsync(_diagnostics, XamlRoot);
+            }
+            finally
+            {
+                button.IsEnabled = true;
+            }
+        };
+        return SettingsRow.Create(
+            FluentSymbol.Document,
+            LocalizedText.Get("windows.diagnostics.report.title"),
+            LocalizedText.Get("windows.diagnostics.report.description"),
+            button);
+    }
+
+    /// <summary>「診断ログを消す」の行を作ります。</summary>
+    /// <remarks>責務: 診断ログの合計サイズを説明に出し、確認のあとで今の実行のファイル以外を消します。</remarks>
+    /// <returns>行。</returns>
+    private Border ClearLogsRow()
+    {
+        var button = new Button { Content = LocalizedText.Get("windows.diagnostics.clear.button") };
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-settings-clear-logs");
+        button.Click += (_, _) =>
+        {
+            _isConfirmingClearLogs = true;
+            Render();
+        };
+        return SettingsRow.Create(
+            FluentSymbol.Delete,
+            LocalizedText.Get("windows.diagnostics.clear.title"),
+            LocalizedText.Format("windows.diagnostics.clear.description", ByteCountText.Format(_diagnostics.TotalLogBytes())),
+            button,
+            Tone.Neutral);
+    }
+
+    /// <summary>診断ログを消す前の確認ダイアログを作ります。</summary>
+    /// <returns>ダイアログ。</returns>
+    private static ContentDialog MakeClearLogsDialog() => new()
+    {
+        Title = LocalizedText.Get("windows.diagnostics.clear.confirm.title"),
+        Content = Typography.Text(LocalizedText.Get("windows.diagnostics.clear.confirm.message"), "BodyTextBlockStyle"),
+        PrimaryButtonText = LocalizedText.Get("windows.diagnostics.clear.confirm.action"),
+        PrimaryButtonStyle = DesignTokens.Style("DangerButtonStyle"),
+        CloseButtonText = LocalizedText.Get("windows.diagnostics.cancel"),
+        DefaultButton = ContentDialogButton.Close,
+    };
 
     /// <summary>言語の行を作ります。</summary>
     /// <param name="account">アカウント設定。</param>

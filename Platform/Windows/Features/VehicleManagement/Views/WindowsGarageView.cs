@@ -10,6 +10,7 @@ using ProjectZD8.Domain.Entities;
 using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using ProjectZD8ForWindows.Platform.Windows.Formatting;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
+using ProjectZD8ForWindows.Platform.Windows.Logging;
 using Windows.UI;
 
 namespace ProjectZD8ForWindows.Platform.Windows.Features.VehicleManagement.Views;
@@ -127,6 +128,7 @@ public sealed partial class WindowsGarageView : UserControl
             _deletionCandidate = null;
             if (result == ContentDialogResult.Primary && candidate is not null)
             {
+                UiLog.VehicleDeleteConfirmed(UiLog.Logger);
                 _model.Send(new VehicleManagementAction.VehicleDeleted(candidate.Id));
             }
         });
@@ -243,7 +245,7 @@ public sealed partial class WindowsGarageView : UserControl
                 message += $"\n{LocalizedText.Get("garage.identification.failure_stage")} {stage.DiagnosticCode()}";
             }
 
-            return new InfoBar { IsOpen = true, IsClosable = false, Severity = InfoBarSeverity.Warning, Message = message };
+            return ErrorReport.Bar(InfoBarSeverity.Warning, message);
         }
 
         if (state.ConnectionVehicle is not null && state.Phase == VehicleManagementStatePhase.ReadyToConnect)

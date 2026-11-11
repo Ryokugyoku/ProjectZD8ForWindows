@@ -11,6 +11,7 @@ using ProjectZD8.Domain.ValueObjects;
 using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using ProjectZD8ForWindows.Platform.Windows.Formatting;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
+using ProjectZD8ForWindows.Platform.Windows.Logging;
 
 namespace ProjectZD8ForWindows.Platform.Windows.Features.Maintenance.Views;
 
@@ -53,7 +54,11 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
             Style = DesignTokens.Style("AccentButtonStyle"),
             MinWidth = 96,
         };
-        _saveButton.Click += (_, _) => _model.Send(new MaintenanceAction.SaveRequested());
+        _saveButton.Click += (_, _) =>
+        {
+            UiLog.MaintenanceSaveRequested(UiLog.Logger);
+            _model.Send(new MaintenanceAction.SaveRequested());
+        };
         // Ctrl+S で保存（ボタンのツールチップに近道が出る）。
         _saveButton.KeyboardAccelerators.Add(new Microsoft.UI.Xaml.Input.KeyboardAccelerator
         {
@@ -103,7 +108,7 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
         _failureHost.Children.Clear();
         if (state.FailureKey is { } failureKey)
         {
-            _failureHost.Children.Add(new InfoBar { IsOpen = true, IsClosable = false, Severity = InfoBarSeverity.Warning, Message = LocalizedText.Get(failureKey) });
+            _failureHost.Children.Add(ErrorReport.Bar(InfoBarSeverity.Warning, LocalizedText.Get(failureKey)));
         }
     }
 

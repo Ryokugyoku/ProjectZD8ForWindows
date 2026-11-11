@@ -10,6 +10,7 @@ using ProjectZD8.Domain.ValueObjects;
 using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using ProjectZD8ForWindows.Platform.Windows.Formatting;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
+using ProjectZD8ForWindows.Platform.Windows.Logging;
 
 namespace ProjectZD8ForWindows.Platform.Windows.Features.Maintenance.Views;
 
@@ -122,6 +123,7 @@ public sealed partial class WindowsMaintenanceView : UserControl
             _deletionCandidate = null;
             if (confirmed && candidate is not null)
             {
+                UiLog.MaintenanceDeleteConfirmed(UiLog.Logger);
                 _model.Send(new MaintenanceAction.DeleteRequested(candidate.Id));
             }
         });
@@ -135,6 +137,7 @@ public sealed partial class WindowsMaintenanceView : UserControl
             ?? _model.State.VisibleRecords.FirstOrDefault(record => record.Id == id);
         if (_deletionCandidate is null)
         {
+            UiLog.MaintenanceDeleteConfirmed(UiLog.Logger);
             _model.Send(new MaintenanceAction.DeleteRequested(id));
             return;
         }

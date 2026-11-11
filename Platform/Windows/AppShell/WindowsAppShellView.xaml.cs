@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Numerics;
 using System.Linq;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -68,6 +71,17 @@ public sealed partial class WindowsAppShellView : UserControl
     /// <summary>今の幅クラスです。</summary>
     private WidthClass _widthClass = ResponsiveLayout.Current;
 
+    /// <summary>下のタブ帯のタブです（行き先ごとに 1 回だけ作って使い回す）。</summary>
+    private readonly Dictionary<WindowsSidebarDestination, BottomTab> _tabs = [];
+
+    /// <summary>下のタブ帯の 1 つ分の要素です。</summary>
+    /// <param name="Button">押せる面。</param>
+    /// <param name="Indicator">選択中の印（シアンの線）。</param>
+    /// <param name="Glyph">記号。</param>
+    /// <param name="Label">短い題。</param>
+    /// <param name="Badge">オレンジの数のバッジ。</param>
+    private sealed record BottomTab(Button Button, Border Indicator, FontIcon Glyph, TextBlock Label, InfoBadge Badge);
+
     /// <summary>アプリの流れと最初の行き先を指定して作ります。</summary>
     /// <param name="flow">アプリの流れ。</param>
     /// <param name="initialDestination">最初に開く行き先。</param>
@@ -96,6 +110,8 @@ public sealed partial class WindowsAppShellView : UserControl
         TitleBar.SizeChanged += (_, _) => UpdateTitleBarRegions();
         ConnectionConsole.SizeChanged += (_, _) => UpdateTitleBarRegions();
         BackButton.SizeChanged += (_, _) => UpdateTitleBarRegions();
+        BuildBottomTabs();
+        ActualThemeChanged += (_, _) => RefreshTabTheme();
         ResponsiveLayout.Bind(this, ApplyWidthClass);
         foreach (var destination in WindowsSidebarDestinationPresentation.AllCases)
         {
@@ -424,7 +440,7 @@ public sealed partial class WindowsAppShellView : UserControl
     /// 幅クラスに合わせて、ナビの形とタイトルバーの中身を切り替えます。
     /// </summary>
     /// <remarks>
-    /// 責務: Wide/Expanded は題つきのペイン、Medium は記号だけのレール、Compact はハンバーガーで重ねて開く形にします。
+    /// 責務: Wide/Expanded は題つきのペイン、Medium は記号だけのレール、Compact は画面の下のタブ帯にします（重ねて開くペインは使わない）。
     /// 狭いほど、タイトルバーのブランドの文字・接続の状態の文字・ボタンの文字を省きます（ツールチップには残す）。
     /// </remarks>
     /// <param name="widthClass">幅クラス。</param>
@@ -440,6 +456,11 @@ public sealed partial class WindowsAppShellView : UserControl
         };
         Navigation.IsPaneOpen = widthClass >= WidthClass.Expanded;
         var compact = widthClass == WidthClass.Compact;
+
+        // Compact のナビは下のタブ帯。タイトルバーの ≡ は出さず、重ねて開くペインは使わない。
+        Retained.SetVisible(BottomBar, compact);
+        Retained.SetVisible(PaneToggleButton, !compact);
+        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, UpdateTitleBarRegions);
         Retained.SetVisible(BrandTexts, !compact);
         Retained.SetVisible(BrandTagline, widthClass >= WidthClass.Expanded);
         Retained.SetVisible(ConnectionStatus, !compact);
@@ -555,6 +576,7 @@ public sealed partial class WindowsAppShellView : UserControl
             _ => new WindowsSettingsView(_flow.SettingsModel, root.AccountSettings, root.Authentication, root.CloudSync, _diagnostics),
         };
         DestinationHost.Child = view;
+        UpdateTabSelection(destination);
         AttachBackTarget(view as IBackNavigable);
         if (IsLoaded)
         {
@@ -689,6 +711,142 @@ public sealed partial class WindowsAppShellView : UserControl
         if (count > 0)
         {
             ToolTipService.SetToolTip(item.InfoBadge, LocalizedText.Get("history.warning.interrupted"));
+        }
+
+        var tabBadge = _tabs[WindowsSidebarDestination.History].Badge;
+        tabBadge.Value = count;
+        Retained.SetVisible(tabBadge, count > 0);
+    }
+
+    /// <summary>下のタブ帯を作ります（行き先ごとに 1 回だけ）。</summary>
+    /// <remarks>責務: 記号と短い題のタブを等間隔に並べ、押したら行き先へ移るようにします。題が切れるほど狭いときは記号だけにし、題はツールチップに残します。</remarks>
+    private void BuildBottomTabs()
+    {
+        var destinations = WindowsSidebarDestinationPresentation.AllCases;
+        for (var index = 0; index < destinations.Count; index++)
+        {
+            var destination = destinations[index];
+            var title = LocalizedText.Get(destination.TitleKey());
+            BottomTabs.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 0 });
+
+            var indicator = new Border
+            {
+                Width = 28,
+                Height = 3,
+                CornerRadius = new CornerRadius(0, 0, Radius.S, Radius.S),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Top,
+                Background = DesignTokens.Foreground(Tone.Accent),
+                Opacity = 0,
+                IsHitTestVisible = false,
+            };
+            var glyph = new FontIcon { Glyph = destination.Glyph(), FontSize = 18, HorizontalAlignment = HorizontalAlignment.Center };
+            var badge = new InfoBadge
+            {
+                Background = DesignTokens.Foreground(Tone.Caution),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top,
+                Margin = new Thickness(0, -4, -10, 0),
+                Visibility = Visibility.Collapsed,
+            };
+            var iconHost = new Grid { HorizontalAlignment = HorizontalAlignment.Center, Children = { glyph, badge } };
+            var label = new TextBlock
+            {
+                Text = title,
+                FontSize = 11,
+                TextAlignment = TextAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                TextWrapping = TextWrapping.NoWrap,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            };
+            var content = new Grid { RowSpacing = 2, VerticalAlignment = VerticalAlignment.Center, Padding = new Thickness(Space.XS, 0, Space.XS, 0) };
+            content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            content.Children.Add(iconHost);
+            Grid.SetRow(label, 1);
+            content.Children.Add(label);
+
+            var button = new Button
+            {
+                Style = (Style)Microsoft.UI.Xaml.Application.Current.Resources["ChromeButtonStyle"],
+                Width = double.NaN,
+                Height = double.NaN,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                CornerRadius = new CornerRadius(0),
+                Content = new Grid { Children = { content, indicator } },
+                Tag = destination,
+            };
+            var shortcut = "Ctrl+" + (index + 1);
+            ToolTipService.SetToolTip(button, $"{title} ({shortcut})");
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, title);
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-tab-" + destination.ToString().ToLowerInvariant());
+            button.Click += (_, _) =>
+            {
+                if (SelectedDestination != destination)
+                {
+                    Select(destination);
+                }
+            };
+            Grid.SetColumn(button, index);
+            BottomTabs.Children.Add(button);
+
+            var visual = ElementCompositionPreview.GetElementVisual(indicator);
+            visual.CenterPoint = new Vector3(14, 1.5f, 0);
+            visual.Scale = new Vector3(0.2f, 1, 1);
+            _tabs[destination] = new BottomTab(button, indicator, glyph, label, badge);
+        }
+
+        UpdateTabSelection(SelectedDestination);
+    }
+
+    /// <summary>テーマ（明・暗）が変わったときに、下のタブ帯の色を引き直します。</summary>
+    /// <remarks>責務: ブラシは作った時点のテーマで引くので、テーマが変わったら印・バッジ・選択の色を引き直します。</remarks>
+    private void RefreshTabTheme()
+    {
+        foreach (var tab in _tabs.Values)
+        {
+            tab.Indicator.Background = DesignTokens.Foreground(Tone.Accent);
+            tab.Badge.Background = DesignTokens.Foreground(Tone.Caution);
+        }
+
+        UpdateTabSelection(SelectedDestination);
+    }
+
+    /// <summary>下のタブ帯の選択中の印を、行き先に合わせます。</summary>
+    /// <remarks>責務: 選択中のタブだけシアンの印と色にし、印は GPU の Composition で少し伸びて現れます（動きが無効なら即時）。</remarks>
+    /// <param name="destination">選択中の行き先。</param>
+    private void UpdateTabSelection(WindowsSidebarDestination destination)
+    {
+        foreach (var (key, tab) in _tabs)
+        {
+            var selected = key == destination;
+            var foreground = selected ? DesignTokens.Foreground(Tone.Accent) : DesignTokens.Foreground(Tone.Neutral);
+            tab.Glyph.Foreground = foreground;
+            Retained.SetForeground(tab.Label, foreground);
+            tab.Label.FontWeight = selected ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal;
+
+            var visual = ElementCompositionPreview.GetElementVisual(tab.Indicator);
+            var scale = selected ? Vector3.One : new Vector3(0.2f, 1, 1);
+            var opacity = selected ? 1f : 0f;
+            if (Motion.IsEnabled && IsLoaded && tab.Button.IsLoaded)
+            {
+                var compositor = visual.Compositor;
+                var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
+                scaleAnimation.InsertKeyFrame(1f, scale);
+                scaleAnimation.Duration = Motion.Normal;
+                var opacityAnimation = compositor.CreateScalarKeyFrameAnimation();
+                opacityAnimation.InsertKeyFrame(1f, opacity);
+                opacityAnimation.Duration = Motion.Fast;
+                visual.StartAnimation("Scale", scaleAnimation);
+                visual.StartAnimation("Opacity", opacityAnimation);
+            }
+            else
+            {
+                visual.Scale = scale;
+                visual.Opacity = opacity;
+            }
         }
     }
 }

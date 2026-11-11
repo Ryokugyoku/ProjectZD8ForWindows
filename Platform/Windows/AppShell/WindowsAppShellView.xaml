@@ -7,13 +7,14 @@
     <!--
       サインイン後のシェル（docs/UI_GUIDELINES.md の「シェル」）。
       - 1 行目はタイトルバーまで伸ばしたカスタムのタイトルバー：戻る・ナビの開閉・ブランド・接続コンソール（全画面共通の接続・切断・ライブ表示）。
-      - 2 行目は NavigationView。表示の形は幅クラスで決める（Wide/Expanded：題つきのペイン、Medium：記号だけのレール、Compact：ハンバーガーで重ねて開く）。
+      - 2 行目は NavigationView。表示の形は幅クラスで決める（Wide/Expanded：題つきのペイン、Medium：記号だけのレール、Compact：ナビは画面の下のタブ帯）。
       - 画面の中の階層（履歴の一覧 → 詳細 → 分析）は、タイトルバーの戻る・Alt+←・マウスの戻るボタンで 1 段戻れる。
     -->
     <Grid x:Name="ShellRoot">
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- タイトルバー（ドラッグできる領域。ボタンとコンソールだけは押せるように外す） -->
@@ -145,5 +146,17 @@
                 <Border x:Name="DestinationHost" Grid.Row="1" />
             </Grid>
         </NavigationView>
+
+        <!-- Compact だけ出す、画面の下のタブ帯（行き先を等間隔に並べ、1 回押すだけで移る。タブは WindowsAppShellView.xaml.cs で 1 回だけ作る） -->
+        <Border
+            x:Name="BottomBar"
+            Grid.Row="2"
+            Height="48"
+            Visibility="Collapsed"
+            BorderThickness="0,1,0,0"
+            Background="{ThemeResource RevTorqueCardBrush}"
+            BorderBrush="{ThemeResource RevTorqueDividerBrush}">
+            <Grid x:Name="BottomTabs" />
+        </Border>
     </Grid>
 </UserControl>

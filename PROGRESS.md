@@ -1,7 +1,7 @@
 # ProjectZD8ForWindows 進捗
 
 最終更新: 2026-11-11
-README 確認済みのコミット: 55daff9（＋未コミットの docs/USER_GUIDE.html を反映済み）
+README 確認済みのコミット: c87a639（診断ログの 5 つのマージまで。構成表・データの保存・ビルドの節に診断ログを反映済み）
 
 ## 概要
 - iOS/macOS アプリ「RevTorque Insight」（GitHub: Ryokugyoku/ProjectZD8、Swift/SwiftUI）を Windows（WinUI 3 / .NET 10）向けに作り直す。iOS 版と CloudKit で同期する。
@@ -10,7 +10,7 @@ README 確認済みのコミット: 55daff9（＋未コミットの docs/USER_GU
 - iOS 版と同じ機能のアプリとして一通りできた。ローカルモード（アカウントなし）とデモ用アダプターで、全画面を実際に操作して確かめた（下の「確かめたこと・確かめていないこと」）。
 - **Sign in with Apple と iCloud 同期は「近日対応（Coming Soon）」**（2026-11-10、開発者の指示）。機能フラグ `AppleSignIn:Enabled`（既定 false）で止めている。ログイン画面の「Apple アカウントで続ける」と設定画面の「iCloud にサインイン」は押せないボタンに「近日対応」の印。使える入口は「この PC で続ける」（ローカルモード）だけ。Services ID が出たら、docs/CLOUD_SETUP.md の「0. 有効にする手順（チェックリスト）」のとおりフラグを true にするだけで動く（コードとテストは残してある）。
 - 層：Domain（`src/ProjectZD8.Domain`）、Application（`src/ProjectZD8.Application`）、Data（`src/ProjectZD8.Data` と、Windows の API を使う `src/ProjectZD8.Data.Windows`）、画面と組み立て（ルートのアプリ。`App/`、`Platform/Windows/`）。
-- テスト：Domain 56 件、Application 155 件、Data 311 件、計 522 件すべて合格。全プロジェクトのビルド（`ProjectZD8ForWindows.slnx`、x64）は警告 0・エラー 0。
+- テスト：Domain 56 件、Application 166 件、Data 330 件、Diagnostics 71 件、計 623 件すべて合格。全プロジェクトのビルド（`ProjectZD8ForWindows.slnx`、x64）は警告 0・エラー 0。
 - 保存：マスタ系は SQLite（`<データ>\projectzd8.sqlite`）、生ログと取得の証跡は自作の追記専用ログストア（`<データ>\logs\<セッション>\`）。iOS 版は全部を GRDB（SQLite）に入れているので、ここが違う（README にも書いた）。データのフォルダはパッケージの LocalState。
 - 生ログストアの性能（Release、24 コア、1 セッションに 100 万件、`tools/ProjectZD8.LogStoreBenchmark`）：書込み 124 万件/秒、Append の遅延 p50 0.6µs・p99 2.0µs・p99.9 20.7µs（最大 14.1ms）。sequence の範囲読取（1,000 件）p50 0.66ms・p99 1.06ms、時間窓（10 秒分）p50 0.65ms・p99 1.09ms、全件読取 377ms。ディスク 26.5MiB（27.8 バイト/件）。開き直し（索引あり）1.2ms、異常終了後の開き直し（全走査）204ms。
 - OBD：USB シリアル（COM、115200bps）、Bluetooth Classic（RFCOMM / SPP）、BLE（GATT の UART）、デモ用アダプター。機器の検出、既定アダプターの記憶、BLE の既定アダプターの到来を監視してシェルの InfoBar で接続を尋ねる処理（iOS と同じユースケース）。
@@ -23,9 +23,12 @@ README 確認済みのコミット: 55daff9（＋未コミットの docs/USER_GU
 - 確かめていない：実機の OBD アダプター（USB シリアル・RFCOMM・BLE の接続と送受信、探索、到来の監視）、実際の CloudKit と Apple のサインイン（テストは偽の HTTP 応答だけ）、本物の車、電源断での fsync の効き目、ARM64 と x86 のビルド、狭いウインドウ（640×420）、写真の取り込み、停止確認・Raw の解放・セッション削除の各ダイアログ、Release ビルド（トリミングあり）での起動。
 
 ## 直近の作業
-- 2026-11-11: 診断ログの土台ができた（別セッション・Opus、ブランチ `claude/diagnostics-foundation-88ca30` のコミット b66318d。**main にはまだ入れていない**、push もしていない）。`src/ProjectZD8.Diagnostics` と `tests/ProjectZD8.Diagnostics.Tests`（53 件）。リードがブランチで全テストを走らせ、575 件（既存 522 ＋ 53）合格を確かめた。Debug 版で app.start / app.exit と、強制終了後の app.previous-run.crashed が書かれることはセッションが確認。確かめていない：Beta・Stable チャンネルでのビルド、実アプリでの未処理例外（どちらも単体テストだけ）。呼び出し側の待ち時間は有効な 1 行で平均約 1µs・p99 3.4µs、無効なレベルは割り当て 0。方針の文書と違う点：リングバッファから吐いた行に `"ring":true` が付く、app.start / app.exit / app.previous-run.crashed / diag.dropped はレベルに関係なく必ず書く、キューは 3/4 で Trace・Debug を捨て満杯で Info 以上も捨てる。
+- 2026-11-11: 診断ログの 4 ブランチを、開発者の承認を得て main にマージした（409c806、560347b、c46de1d、c87a639。push はしていない）。マージ後の main で警告 0・テスト 623 件合格。docs/USER_GUIDE.html に設定の「診断」行、データとプライバシーの診断ログの説明、FAQ「不具合を報告するには」を足した（claude.ai の Artifact 版は古いまま）。docs/LOGGING_STRATEGY.md の状態を「実装済み」にし、方針と変わった点を書いた。
+- 2026-11-11: 診断ログの残り 4 つの作業が各ブランチで終わった（**main にはまだ入れていない**、push なし）：②OBD と取得＝claude/diagnostics-obd-e015e8（f205b45、Opus）、③保存・認証・同期・モデル＝claude/diagnostics-store-sync-c8039f（0d9044b、Sonnet）、④設定画面・報告番号・異常終了の通知＝claude/diagnostics-ui-62f3a3（6de1940、Sonnet）、⑤release.yml・Analyze-Diagnostics.ps1・README・PRIVACY.md・STORE_RELEASE＝claude/diagnostics-release-docs-efe87f（5996aad、Haiku）。リードが一時の作業ツリーで 4 つを試しにマージして確かめた：衝突 0、ビルド警告 0、テスト 623 件合格（Domain 56、Application 166、Data 330、Diagnostics 71）、EventId の重複なし、`-c Release -p:DiagnosticsChannel=Beta` のビルド成功。確かめていない：画面（設定の「診断」3 行、報告番号、異常終了の InfoBar）の目視、実機アダプター、Data.Windows の Transport・探索のログ（テストなし）、Beta / Stable で起動したときのログの量、PowerShell 7 でのスクリプト、GitHub Actions の実行。
+- 2026-11-11: 市場価値と競合の分析をした（開発者の質問。会話で回答、ファイルは作っていない）。iOS 側の査定（ProjectZD8/PRODUCT_VALUE_AND_APP_STORE_PRICING_ASSESSMENT.md、2026-07-20）に Windows 版を足して見直した。再構築コストは iOS＋Windows で約 2,000万〜4,000万円、ソフトウェア資産としては 400万〜900万円、売上ゼロの今の売却相場ではもっと低い（数十万〜数百万円）。いちばん大きい弱みは DTC（故障コード）の読取・消去と CSV 書き出しがないこと、実機・実車での確認がないこと。強みは iPhone と PC/Mac をつなぐ記録基盤、壊れにくい生ログストア、Windows 11 らしい画面、端末内だけの保存。
+- 2026-11-11: 診断ログの土台ができた（別セッション・Opus、コミット b66318d。開発者の承認を得て main にマージ済み＝6e8834c、push はしていない。マージ後の main でも 575 件合格）。`src/ProjectZD8.Diagnostics` と `tests/ProjectZD8.Diagnostics.Tests`（53 件）。リードがブランチで全テストを走らせ、575 件（既存 522 ＋ 53）合格を確かめた。Debug 版で app.start / app.exit と、強制終了後の app.previous-run.crashed が書かれることはセッションが確認。確かめていない：Beta・Stable チャンネルでのビルド、実アプリでの未処理例外（どちらも単体テストだけ）。呼び出し側の待ち時間は有効な 1 行で平均約 1µs・p99 3.4µs、無効なレベルは割り当て 0。方針の文書と違う点：リングバッファから吐いた行に `"ring":true` が付く、app.start / app.exit / app.previous-run.crashed / diag.dropped はレベルに関係なく必ず書く、キューは 3/4 で Trace・Debug を捨て満杯で Info 以上も捨てる。
 - 2026-11-11: **注意**：上の確認で登録した開発版パッケージ（Ryokugyoku.RevTorqueInsight、作業ツリーの bin を指す）が残っている。Store 版と競合するので、Store 版を入れる前に外す（`Get-AppxPackage Ryokugyoku.RevTorqueInsight | Remove-AppxPackage`）。
-- 2026-11-11: 診断ログの戦略を立てた（開発者の依頼）。docs/LOGGING_STRATEGY.md。現状は Debug.WriteLine 9 か所と %TEMP% の unhandled.log だけで、Release では何も残らない。方針：JSON Lines のファイル（LocalState\diagnostics\、RDB なし）、Beta は Debug 以上を全部、Stable は Warning 以上＋直近 2,000 件のリングバッファを Error・クラッシュ時に吐き出す、自動送信なし・設定画面から不具合レポート（zip）を書き出す。実装は 5 つの作業に分け、新しいセッションで難しさ別のモデル（Opus / Sonnet / Haiku）に任せる。実装はまだ（土台のセッションを始めた段階）。
+- 2026-11-11: 診断ログの戦略を立てた（開発者の依頼）。docs/LOGGING_STRATEGY.md。現状は Debug.WriteLine 9 か所と %TEMP% の unhandled.log だけで、Release では何も残らない。方針：JSON Lines のファイル（LocalState\diagnostics\、RDB なし）、Beta は Debug 以上を全部、Stable は Warning 以上＋直近 2,000 件のリングバッファを Error・クラッシュ時に吐き出す、自動送信なし・設定画面から不具合レポート（zip）を書き出す。実装は 5 つの作業に分け、新しいセッションで難しさ別のモデル（Opus / Sonnet / Haiku）に任せる。土台は実装済み（上の項目）。
 - 2026-11-11: Store の審査結果を確認した。1.0.0.0 は合格し、プライベート対象ユーザー向けに公開済み（「In Microsoft Store」）。iCloud ボタンは指摘されなかった。
 - 2026-11-11: お客様向けのご利用ガイド docs/USER_GUIDE.html を作った（開発者の依頼）。準備・はじめかた・アダプターのつなぎ方・各画面・ショートカット・データとプライバシー・FAQ。画像は docs/store/screenshots/ を相対パスで参照。claude.ai の Artifact（非公開、https://claude.ai/artifact/XnjyGvo4QDDjsDPSqzf5Xg）にも公開した。お客様に見せるには共有設定が要る。
 - 2026-11-11: Microsoft Store に 1.0.0.0 を提出した（審査中）。Partner Center でプロパティ・年齢区分（3+）・パッケージ（x64、Desktop のみ）・3 言語の掲載情報・認定メモ・runFullTrust の理由・無料・プライベート対象ユーザー（既知のユーザー グループ「RevTorque Insight Beta Testers」、開発者の個人の Microsoft アカウント 1 件）を設定した。IARC の同意、パッケージとスクリーンショットのアップロード、アプリ開発者契約 8.11 への同意は開発者が行った。手元のビルドで .msixupload の中身が古い Identity のまま再利用され弾かれたので、出力を消して作り直した（docs/STORE_RELEASE.md に注意を追記）。
@@ -41,7 +44,7 @@ README 確認済みのコミット: 55daff9（＋未コミットの docs/USER_GU
 - 2026-11-10: iOS 版の CloudKit と認証の実装を調べ、Windows から同期する方式を設計した（下の「同期の設計メモ」）。
 
 ## 次にやること
-- 診断ログの実装（docs/LOGGING_STRATEGY.md の 9）：①土台（Opus）→ main に入れてから ②OBD と取得の計装（Opus）③保存・認証・同期・モデルの計装（Sonnet）④設定画面・報告用番号・InfoBar（Sonnet）⑤release.yml・分析スクリプト・文書（Haiku）。各作業は別セッション・別ブランチ。入れ終わったら README（構成・データの保存）、PRIVACY.md、USER_GUIDE を直す。
+- 診断ログを実際に動かして確かめる（実装は main に入った。push はまだ）：①Beta チャンネル（`-c Release -p:DiagnosticsChannel=Beta`）と Stable でビルドして起動し、デモ用アダプターで接続・取得・切断して、diagnostics の JSONL の量と中身、Stable でリングバッファが Error 時に吐かれることを見る。②設定の「診断」3 行、エラー表示の報告番号とコピー、前回の異常終了の InfoBar を目で確かめる（3 言語・暗い外観）。③不具合レポートの zip を書き出し、scripts/Analyze-Diagnostics.ps1 で読む。④実アプリで未処理例外を起こして crash-*.jsonl を確かめる。⑤リポジトリの Variables に RELEASE_CHANNEL=beta を入れる（空でも Beta になる）。⑥PC に残っている開発版パッケージ（Ryokugyoku.RevTorqueInsight、診断ログの土台の確認で登録）を外す。⑦PRIVACY.md に診断ログの節が入ったので、Store の掲載先のプライバシーポリシーが同じファイルを指しているか確かめる。
 - 1.0.0.0 は審査に通り、Store に公開済み（Partner Center の状態「In Microsoft Store」、確認は 2026-11-11 以降）。テスターのアカウント（Store にサインインしている個人の Microsoft アカウント）で https://apps.microsoft.com/detail/restricted/9N7FN5KKVR1M から入れて、起動・デモ接続・データの保存を確かめる（まだ確かめていない）。2026-11-11 20 時ごろ：テスター用リンクも Store アプリの製品ページ（ms-windows-store://pdp/?productid=9N7FN5KKVR1M）も「お探しのものはここにはありません」、Store アプリ内の検索にも出ない。確かめたこと：Store アプリはグループと同じ個人の Microsoft アカウントでサインイン済み、公開中の設定はプライベート＋グループ選択済み、Windows 11 Pro x64・地域日本、wsreset でキャッシュを消しても同じ。公式の反映時間の記載はなく、フォーラムでは数日待てとの例あり → Store 側の反映待ちと判断。2026-11-13 ごろまで待っても出なければ Partner Center のサポートに問い合わせる。撮影用に登録した開発版（同じパッケージ名・署名なし）は 2026-11-11 に削除済み。今後、手元で同じパッケージ名の開発版を登録すると Store 版と競合するので注意（Store 版を入れている間は、開発版を登録する前に Store 版を外す）。
 - 自動提出の設定：Partner Center で Entra のアプリ（マネージャー）を作り、GitHub の Secrets（PARTNER_CENTER_*）と Variables（STORE_PRODUCT_ID=9N7FN5KKVR1M）を登録する（docs/STORE_RELEASE.md の 3）。そのあとはタグ v1.2.3 の push で提出される。次のバージョンは 1.0.1 以上にする。
 - パッケージ ID を Store の値（Ryokugyoku.RevTorqueInsight）に変えたので、手元の開発用のインストール（d2fa5ca6-… の仮の ID）とはデータのフォルダが別になる。古い方は不要になったら「アプリ」から削除する。
@@ -85,6 +88,9 @@ README 確認済みのコミット: 55daff9（＋未コミットの docs/USER_GU
 - CloudKit Console で、スキーマを本番環境（Production）に反映する必要がある（開発者の作業）。
 
 ## 検討事項・未決定
+- 診断ログの実装で出た点（2026-11-11）→ 開発者に確認・あとで直す：①`RELEASE_CHANNEL` は提出の種類に関係なく効くので、一般公開後に stable を入れるとフライトも stable になる（戦略文書 5 の「フライト＝beta」と違う。フライトを使い始めるときに release.yml を直す）。②詳細ログの 7 日切りは起動時だけ判定する。③エラー表示の報告番号は画面を作り直したときに読むので、状態が変わらないまま次の Error が出ると古い番号のまま。④起動の組み立てのうち診断ログを始める前（設定ファイルの読み込み）の失敗は記録されない。⑤Application のモデルの失敗は専用の分類がなく `ui.*.operation.failed`。⑥テスト用の記録シンクが Data.Tests・Application.Tests・Diagnostics.Tests に 3 つ重複している（土台で公開して 1 つにできる）。⑦接続前の識別と PID 対応の調査には `sid` が付かない。
+- 製品の方向（2026-11-11 の市場分析から）→ 開発者に確認：①DTC の読取・消去と CSV 書き出しを次に入れるか（競合のほぼ全部にあり、ないと有料化しにくい）。②有料化するなら PolyForm Noncommercial のまま公開リポジトリで続けるか（コードが見える・商用利用を自分で行う場合の扱い）。③Windows 版の狙う利用者（ノート PC でログを取る走行会・チューニング勢か、一般の運転者か）。
+- 少額サブスクの案（2026-11-11 の会話）→ 開発者に確認：基本無料＋Pro 年額 1,200〜1,800円（月額を出すなら 200円）。課金はベータ明けかつ DTC・CSV・同期が入ってから。注意点：①iOS（App Store）と Windows（Microsoft Store）の購入を共通にするには、購入状態を確かめる自前のサーバーかアカウントの仕組みが要る（今の「サーバーなし・端末内だけ」の方針と食い違う）→ 当面はストアごとに別の購入にする案。②CloudKit の容量は利用者の iCloud なので開発者の原価はほぼゼロ。そのぶん「続けて払う理由」（対応車種・PID の追加、書き出し形式、異常検知の更新など）を毎年出し続ける必要がある。③1 年目の手取りの目安は年 8万〜77万円ほど（年 3,000〜20,000 ダウンロード、課金率 2〜3%、年額 1,500円、手数料 15% の仮定。継続率 60% なら 2 年目以降に積み上がる）。
 - 診断ログ（docs/LOGGING_STRATEGY.md の 10）→ 開発者に確認：①（決定済み → 決定事項）②Beta と Stable の分け方は、ビルド時の DiagnosticsChannel を release.yml の Variables `RELEASE_CHANNEL` で渡す案でよいか（今は beta、一般公開後はフライト＝beta・通常＝stable）。③レポートの zip の渡し方（メールか GitHub Issue か）。④iOS 版とイベント名を揃えるか。
 - 診断ログで NuGet を 1 つ足す案（Microsoft.Extensions.Logging.Abstractions）。「NuGet を増やさない」これまでの方針と違うが、ソース生成の LoggerMessage が使えるので採った。ロガーは静的な入口（DiagnosticLog.For<T>()）で取り、コンストラクターには足さない（DI なしの組み立てとテストを変えないため）。
 - ご利用ガイド（docs/USER_GUIDE.html）をお客様にどう届けるか未定：Artifact の共有リンク、GitHub Pages、Store の「Web サイト」欄に載せる、など → 開発者に確認。ガイドの FAQ（USB ドライバー、スリープ抑止）とガレージ・設定の説明は実機・画面で確かめていない。機能を変えたらガイドも直す。

@@ -36,6 +36,44 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
     /// <summary>保存のボタンです。</summary>
     private readonly Button _saveButton;
 
+    /// <summary>上の操作の帯です（余白を幅クラスで差し替える）。</summary>
+    private readonly Grid _toolbar = new();
+
+    /// <summary>本文です（余白を幅クラスで差し替える）。</summary>
+    private readonly StackPanel _body = new() { Spacing = Space.XL, MaxWidth = 900, HorizontalAlignment = HorizontalAlignment.Left };
+
+    /// <summary>保存のボタンの文字です（Compact では記号だけにする）。</summary>
+    private readonly TextBlock _saveText = Typography.Strong(LocalizedText.Get("maintenance.save"), TextStyles.BodyStrong);
+
+    /// <summary>取り消しのボタンの中身です（Compact では記号だけにする）。</summary>
+    private GlyphLabel? _cancelLabel;
+
+    /// <summary>幅クラスに合わせて余白とボタンの文字を切り替えます。</summary>
+    /// <remarks>責務: 帯と本文の余白を幅クラスのトークンにし、Compact では取り消し・保存を記号だけにします。</remarks>
+    /// <param name="widthClass">幅クラス。</param>
+    private void ApplyLayout(WidthClass widthClass)
+    {
+        var gutter = Space.PageGutter(widthClass) * 0.75;
+        _toolbar.Padding = new Thickness(gutter, Space.M, gutter, Space.M);
+        _body.Padding = new Thickness(gutter, Space.S, gutter, gutter);
+        var compact = widthClass == WidthClass.Compact;
+        Retained.SetVisible(_saveText, !compact);
+        if (_cancelLabel is not null && _cancelLabel.Children.Count > 1)
+        {
+            Retained.SetVisible((FrameworkElement)_cancelLabel.Children[1], !compact);
+        }
+    }
+
+    /// <summary>保存のボタンの中身（記号と文字）を作ります。</summary>
+    /// <returns>中身。</returns>
+    private StackPanel SaveContent()
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.S };
+        row.Children.Add(new FontIcon { Glyph = FluentSymbol.Accept, FontSize = 14 });
+        row.Children.Add(_saveText);
+        return row;
+    }
+
     /// <summary>記録の削除を確かめる処理です。</summary>
     private readonly Action<MaintenanceRecordID> _requestDeletion;
 
@@ -50,9 +88,9 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
         _structureKey = StructureKey(draft);
         _saveButton = new Button
         {
-            Content = new GlyphLabel(FluentSymbol.Accept, LocalizedText.Get("maintenance.save")),
+            Content = SaveContent(),
             Style = DesignTokens.Style("AccentButtonStyle"),
-            MinWidth = 96,
+            MinWidth = Metrics.ControlHeight * 2,
         };
         _saveButton.Click += (_, _) =>
         {
@@ -71,7 +109,7 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         root.Children.Add(Toolbar(draft));
-        var body = new StackPanel { Spacing = 22, Padding = new Thickness(28), MaxWidth = 900, HorizontalAlignment = HorizontalAlignment.Left };
+        var body = _body;
         body.Children.Add(OverviewSection(draft));
         body.Children.Add(WorkItemsSection(draft));
         body.Children.Add(PhotosSection(draft));
@@ -85,6 +123,7 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
         Grid.SetRow(scroller, 1);
         root.Children.Add(scroller);
         Content = root;
+        ResponsiveLayout.Bind(this, ApplyLayout);
     }
 
     /// <summary>
@@ -118,16 +157,17 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
     /// <returns>帯。</returns>
     private Grid Toolbar(MaintenanceEditorDraft draft)
     {
-        var bar = new Grid { ColumnSpacing = 10, Padding = new Thickness(24, 12, 24, 12) };
+        var bar = _toolbar;
+        bar.ColumnSpacing = Space.M;
         bar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         bar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         bar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        bar.Children.Add(IconTile.Create(WindowsMaintenanceView.KindGlyph(draft.Kind), WindowsMaintenanceView.KindTone(draft.Kind), 34));
-        var title = Typography.Text(LocalizedText.Get(draft.Kind.LocalizationKey()), "SubtitleTextBlockStyle");
+        bar.Children.Add(IconTile.Create(WindowsMaintenanceView.KindGlyph(draft.Kind), WindowsMaintenanceView.KindTone(draft.Kind), Metrics.IconTileSmall));
+        var title = Typography.Text(LocalizedText.Get(draft.Kind.LocalizationKey()), TextStyles.CardTitle);
         title.VerticalAlignment = VerticalAlignment.Center;
         Grid.SetColumn(title, 1);
         bar.Children.Add(title);
-        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.S };
         if (draft.RecordID is { } recordID)
         {
             var delete = new Button { Content = new FontIcon { Glyph = FluentSymbol.Delete, FontSize = 14, Foreground = DesignTokens.Foreground(Tone.Danger) } };
@@ -137,7 +177,10 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
             actions.Children.Add(delete);
         }
 
-        var cancel = new Button { Content = LocalizedText.Get("maintenance.cancel") };
+        var cancel = new Button { Content = new GlyphLabel(FluentSymbol.Cancel, LocalizedText.Get("maintenance.cancel")) };
+        _cancelLabel = (GlyphLabel)cancel.Content;
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(cancel, LocalizedText.Get("maintenance.cancel"));
+        ToolTipService.SetToolTip(cancel, LocalizedText.Get("maintenance.cancel"));
         cancel.Click += (_, _) => _model.Send(new MaintenanceAction.EditingCancelled());
         actions.Children.Add(cancel);
         actions.Children.Add(_saveButton);
@@ -152,7 +195,7 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
     /// <returns>区画。</returns>
     private Border OverviewSection(MaintenanceEditorDraft draft)
     {
-        var grid = new AdaptiveGrid { MinItemWidth = 260, Spacing = 14 };
+        var grid = new AdaptiveGrid { MinItemWidth = 240, Spacing = Space.M };
         grid.Children.Add(TextInput("maintenance.field.title", draft.Title, value => Change(current => current with { Title = value })));
         var date = new CalendarDatePicker { Date = draft.PerformedAt, Width = 200 };
         var time = new TimePicker { Time = draft.PerformedAt.ToLocalTime().TimeOfDay, MinWidth = 0 };
@@ -167,14 +210,14 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
 
         date.DateChanged += (_, _) => SendDate();
         time.TimeChanged += (_, _) => SendDate();
-        var performedAt = new StackPanel { Spacing = 8 };
-        performedAt.Children.Add(Typography.Text(LocalizedText.Get("maintenance.field.performed_at"), "BodyTextBlockStyle"));
-        var dateTime = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        var performedAt = new StackPanel { Spacing = Space.S };
+        performedAt.Children.Add(Typography.Text(LocalizedText.Get("maintenance.field.performed_at"), TextStyles.Body));
+        var dateTime = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.S };
         dateTime.Children.Add(date);
         dateTime.Children.Add(time);
         performedAt.Children.Add(dateTime);
         grid.Children.Add(NumberInput("maintenance.field.odometer", draft.OdometerKilometers, value => Change(current => current with { OdometerKilometers = value })));
-        var stack = new StackPanel { Spacing = 14 };
+        var stack = new StackPanel { Spacing = Space.M };
         stack.Children.Add(grid);
         stack.Children.Add(performedAt);
         stack.Children.Add(TextInput("maintenance.field.notes", draft.Notes, value => Change(current => current with { Notes = value }), multiline: true));
@@ -187,7 +230,7 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
     /// <returns>区画。</returns>
     private Border WorkItemsSection(MaintenanceEditorDraft draft)
     {
-        var stack = new StackPanel { Spacing = 14 };
+        var stack = new StackPanel { Spacing = Space.M };
         foreach (var item in draft.WorkItems)
         {
             stack.Children.Add(WorkItem(item));
@@ -209,7 +252,7 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
         void ChangeItem(Func<MaintenanceWorkItem, MaintenanceWorkItem> transform) =>
             Change(current => current with { WorkItems = current.WorkItems.Select(work => work.Id == id ? transform(work) : work).ToList() });
 
-        var grid = new AdaptiveGrid { MinItemWidth = 200, Spacing = 10 };
+        var grid = new AdaptiveGrid { MinItemWidth = 240, Spacing = Space.M };
         grid.Children.Add(Picker("maintenance.field.component", MaintenanceComponentRawValue.AllCases, item.Component, value => value.LocalizationKey(), value => ChangeItem(work => work with { Component = value })));
         grid.Children.Add(Picker("maintenance.field.operation", MaintenanceOperationRawValue.AllCases, item.Operation, value => value.LocalizationKey(), value => ChangeItem(work => work with { Operation = value })));
         grid.Children.Add(TextInput("maintenance.field.part_name", item.PartName, value => ChangeItem(work => work with { PartName = value })));
@@ -218,7 +261,7 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
         grid.Children.Add(TextInput("maintenance.field.specification", item.Specification, value => ChangeItem(work => work with { Specification = value })));
         grid.Children.Add(NumberInput("maintenance.field.quantity", item.Quantity, value => ChangeItem(work => work with { Quantity = value })));
         grid.Children.Add(TextInput("maintenance.field.unit", item.Unit, value => ChangeItem(work => work with { Unit = value })));
-        var stack = new StackPanel { Spacing = 10 };
+        var stack = new StackPanel { Spacing = Space.M };
         var head = new Grid();
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -237,16 +280,16 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
     /// <returns>区画。</returns>
     private Border PhotosSection(MaintenanceEditorDraft draft)
     {
-        var stack = new StackPanel { Spacing = 12 };
-        var grid = new AdaptiveGrid { MinItemWidth = 140, Spacing = 12 };
+        var stack = new StackPanel { Spacing = Space.M };
+        var grid = AdaptiveGrid.Tiles();
         foreach (var photo in draft.Photos)
         {
-            var cell = new Grid { Height = 105, CornerRadius = new CornerRadius(12) };
+            var cell = new Grid { Height = 120, CornerRadius = new CornerRadius(Radius.L) };
             cell.Children.Add(BytesImage.Create(photo.Data, 320));
             var remove = RemoveButton(() => _model.Send(new MaintenanceAction.PhotoRemoved(photo.Id)));
             remove.HorizontalAlignment = HorizontalAlignment.Right;
             remove.VerticalAlignment = VerticalAlignment.Top;
-            remove.Margin = new Thickness(6);
+            remove.Margin = new Thickness(Space.S);
             cell.Children.Add(remove);
             grid.Children.Add(cell);
         }
@@ -270,8 +313,8 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
     /// <returns>区画。</returns>
     private Border FastenersSection(MaintenanceEditorDraft draft)
     {
-        var stack = new StackPanel { Spacing = 14 };
-        stack.Children.Add(Typography.Text(LocalizedText.Get("maintenance.fastener.guidance"), "SecondaryCaptionTextStyle"));
+        var stack = new StackPanel { Spacing = Space.M };
+        stack.Children.Add(Typography.Text(LocalizedText.Get("maintenance.fastener.guidance"), TextStyles.SecondaryCaption));
         foreach (var group in draft.FastenerGroups)
         {
             stack.Children.Add(FastenerGroup(group, draft.Photos.Count > 0));
@@ -294,12 +337,12 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
         void ChangeGroup(Func<MaintenanceFastenerGroup, MaintenanceFastenerGroup> transform) =>
             Change(current => current with { FastenerGroups = current.FastenerGroups.Select(item => item.Id == id ? transform(item) : item).ToList() });
 
-        var grid = new AdaptiveGrid { MinItemWidth = 180, Spacing = 10 };
+        var grid = new AdaptiveGrid { MinItemWidth = 240, Spacing = Space.M };
         grid.Children.Add(TextInput("maintenance.field.fastener_group", group.Name, value => ChangeGroup(item => item with { Name = value })));
         grid.Children.Add(TextInput("maintenance.field.location", group.Location, value => ChangeGroup(item => item with { Location = value })));
         grid.Children.Add(NumberInput("maintenance.field.expected_count", group.ExpectedCount, value => ChangeGroup(item => item with { ExpectedCount = value is { } count ? (int)count : null })));
         grid.Children.Add(NumberInput("maintenance.field.removed_count", group.RemovedCount, value => ChangeGroup(item => item with { RemovedCount = (int)(value ?? 0) })));
-        var stack = new StackPanel { Spacing = 10 };
+        var stack = new StackPanel { Spacing = Space.M };
         var head = new Grid();
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -317,7 +360,7 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
         var add = new Button { Content = new GlyphLabel(FluentSymbol.Add, LocalizedText.Get("maintenance.add.fastener")) };
         add.Click += (_, _) => _model.Send(new MaintenanceAction.FastenerAdded(id));
         stack.Children.Add(add);
-        return new Border { Background = DesignTokens.SubtleBackground(Tone.Caution), CornerRadius = new CornerRadius(12), Padding = new Thickness(14), Child = stack };
+        return new Border { Background = DesignTokens.SubtleBackground(Tone.Caution), CornerRadius = new CornerRadius(Radius.L), Padding = new Thickness(Space.M + Space.XS), Child = stack };
     }
 
     /// <summary>締結 1 件の記録の入力を作ります。</summary>
@@ -333,12 +376,12 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
         void ChangeEvidence(Func<FastenerInstallationEvidence, FastenerInstallationEvidence> transform) =>
             changeGroup(group => group with { Installations = group.Installations.Select(item => item.Id == id ? transform(item) : item).ToList() });
 
-        var grid = new AdaptiveGrid { MinItemWidth = 160, Spacing = 10 };
+        var grid = new AdaptiveGrid { MinItemWidth = 240, Spacing = Space.M };
         grid.Children.Add(TextInput("maintenance.field.fastener_position", evidence.Position, value => ChangeEvidence(item => item with { Position = value })));
         grid.Children.Add(NumberInput("maintenance.field.torque", evidence.TorqueNewtonMeters, value => ChangeEvidence(item => item with { TorqueNewtonMeters = value })));
         grid.Children.Add(TextInput("maintenance.field.tool", evidence.Tool, value => ChangeEvidence(item => item with { Tool = value })));
         grid.Children.Add(TextInput("maintenance.field.technician", evidence.TightenedBy, value => ChangeEvidence(item => item with { TightenedBy = value })));
-        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.M };
         var confirm = new Button { Content = LocalizedText.Get("maintenance.fastener.confirm") };
         confirm.Click += (_, _) => _model.Send(new MaintenanceAction.FastenerConfirmed(groupID, id));
         actions.Children.Add(confirm);
@@ -351,18 +394,18 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
 
         if (evidence.TightenedAt is { } tightenedAt)
         {
-            actions.Children.Add(new GlyphLabel(FluentSymbol.Completed, DateText.DateAndMinute(tightenedAt), "CaptionTextBlockStyle", DesignTokens.Foreground(Tone.Success)));
+            actions.Children.Add(new GlyphLabel(FluentSymbol.Completed, DateText.DateAndMinute(tightenedAt), TextStyles.Caption, DesignTokens.Foreground(Tone.Success)));
         }
 
         if (evidence.PhotoIDs.Count > 0)
         {
-            actions.Children.Add(new GlyphLabel(FluentSymbol.Photo, evidence.PhotoIDs.Count.ToString(CultureInfo.CurrentCulture), "SecondaryCaptionTextStyle"));
+            actions.Children.Add(new GlyphLabel(FluentSymbol.Photo, evidence.PhotoIDs.Count.ToString(CultureInfo.CurrentCulture), TextStyles.SecondaryCaption));
         }
 
-        var stack = new StackPanel { Spacing = 8 };
+        var stack = new StackPanel { Spacing = Space.S };
         stack.Children.Add(grid);
         stack.Children.Add(actions);
-        return new Border { Style = DesignTokens.Style("QuietSurfaceStyle"), Padding = new Thickness(10), Child = stack };
+        return new Border { Style = DesignTokens.Style("QuietSurfaceStyle"), Padding = new Thickness(Space.M), Child = stack };
     }
 
     /// <summary>下書きの変更を送ります。</summary>
@@ -383,10 +426,10 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
     /// <returns>カード。</returns>
     private static Border Section(string titleKey, UIElement content)
     {
-        var stack = new StackPanel { Spacing = 14 };
-        stack.Children.Add(Typography.Text(LocalizedText.Get(titleKey), "CardTitleTextStyle"));
+        var stack = new StackPanel { Spacing = Space.M };
+        stack.Children.Add(Typography.Text(LocalizedText.Get(titleKey), TextStyles.CardTitle));
         stack.Children.Add(content);
-        return SurfaceCard.Create(stack, padding: 18);
+        return SurfaceCard.Create(stack, padding: Space.L);
     }
 
     /// <summary>文字の入力欄を作ります。</summary>
@@ -405,7 +448,7 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
             Text = value,
             AcceptsReturn = multiline,
             TextWrapping = multiline ? TextWrapping.Wrap : TextWrapping.NoWrap,
-            MinHeight = multiline ? 80 : 0,
+            MinHeight = multiline ? Metrics.RowMinHeight * 1.5 : 0,
         };
         box.TextChanged += (_, _) => changed(box.Text);
         return box;
@@ -463,7 +506,7 @@ public sealed partial class WindowsMaintenanceEditorView : UserControl
         var button = new Button
         {
             Content = new FontIcon { Glyph = FluentSymbol.Delete, FontSize = 13, Foreground = DesignTokens.Foreground(Tone.Danger) },
-            Padding = new Thickness(8),
+            Padding = new Thickness(Space.S),
         };
         button.Click += (_, _) => remove();
         return button;

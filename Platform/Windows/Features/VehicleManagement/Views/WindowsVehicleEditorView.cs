@@ -11,7 +11,6 @@ using ProjectZD8.Domain.ValueObjects;
 using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
 using ProjectZD8ForWindows.Platform.Windows.Logging;
-using Windows.UI;
 
 namespace ProjectZD8ForWindows.Platform.Windows.Features.VehicleManagement.Views;
 
@@ -33,7 +32,7 @@ public sealed partial class WindowsVehicleEditorView : UserControl
     private VehicleProfile _vehicle;
 
     /// <summary>写真の枠です。</summary>
-    private readonly Grid _photoFrame = new() { Height = 360, CornerRadius = new CornerRadius(20) };
+    private readonly Grid _photoFrame = new() { CornerRadius = new CornerRadius(Radius.L), Background = DesignTokens.Brush("RevTorqueQuietFillBrush") };
 
     /// <summary>画面の一時的な状態：入力中の下書きです。</summary>
     private VehicleProfile _draft;
@@ -41,8 +40,14 @@ public sealed partial class WindowsVehicleEditorView : UserControl
     /// <summary>保存のボタンです。</summary>
     private readonly Button _saveButton;
 
-    /// <summary>写真の上の名前の文字です。</summary>
+    /// <summary>保存のボタンの補足です（狭いときは省く）。</summary>
+    private readonly TextBlock _saveHint;
+
+    /// <summary>写真の下の名前の文字です。</summary>
     private readonly TextBlock _photoTitle;
+
+    /// <summary>写真の下の識別子の文字です。</summary>
+    private readonly TextBlock _photoIdentifier;
 
     /// <summary>燃料の選択です（動力の種類で選択肢が変わる）。</summary>
     private readonly ComboBox _energyPicker = new() { HorizontalAlignment = HorizontalAlignment.Stretch };
@@ -61,12 +66,13 @@ public sealed partial class WindowsVehicleEditorView : UserControl
         {
             EnergySources = VehicleEnergySourcePolicy.SourcesForEditing(vehicle.EnergySources, vehicle.Powertrain),
         };
-        _saveButton = new Button { Style = DesignTokens.Style("AccentButtonStyle"), MinHeight = 44 };
-        var saveContent = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+        _saveButton = new Button { Style = DesignTokens.Style("AccentButtonStyle"), MinHeight = Metrics.PrimaryControlHeight };
+        var saveContent = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.M };
         saveContent.Children.Add(new FontIcon { Glyph = FluentSymbol.Accept, FontSize = 14 });
         var saveTexts = new StackPanel();
-        saveTexts.Children.Add(Typography.Strong(LocalizedText.Get("garage.save"), "BodyStrongTextBlockStyle"));
-        saveTexts.Children.Add(Typography.Text(LocalizedText.Get("garage.editor.save_hint"), "CaptionTextBlockStyle"));
+        saveTexts.Children.Add(Typography.Strong(LocalizedText.Get("garage.save"), TextStyles.BodyStrong));
+        _saveHint = Typography.Text(LocalizedText.Get("garage.editor.save_hint"), TextStyles.Caption);
+        saveTexts.Children.Add(_saveHint);
         saveContent.Children.Add(saveTexts);
         _saveButton.Content = saveContent;
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(_saveButton, LocalizedText.Get("garage.save"));
@@ -81,12 +87,21 @@ public sealed partial class WindowsVehicleEditorView : UserControl
             UiLog.VehicleSaveRequested(UiLog.Logger);
             _send(new VehicleManagementAction.VehicleSaved(_draft));
         };
-        _photoTitle = Typography.Text(string.Empty, "SubtitleTextBlockStyle", new SolidColorBrush(Color.FromArgb(255, 255, 255, 255)));
+        _photoTitle = Typography.Text(string.Empty, TextStyles.CardTitle, wraps: false);
+        _photoTitle.TextTrimming = TextTrimming.CharacterEllipsis;
+        _photoIdentifier = Typography.Text(_draft.DisplayIdentifier, TextStyles.Monospace, wraps: false);
+        _photoIdentifier.TextTrimming = TextTrimming.CharacterEllipsis;
 
-        var page = new StackPanel { Spacing = 24, Padding = new Thickness(30), MaxWidth = 1150 };
-        page.Children.Add(Header());
-        page.Children.Add(ResponsiveEditor());
-        Content = new ScrollViewer { Content = page, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        var scaffold = new PageScaffold(1100);
+        scaffold.Body.Children.Add(Header());
+        scaffold.Body.Children.Add(ResponsiveEditor());
+        Content = scaffold;
+        ResponsiveLayout.Bind(this, widthClass =>
+        {
+            var compact = widthClass == WidthClass.Compact;
+            Retained.SetVisible(_saveHint, !compact);
+            _photoFrame.Height = compact ? 200 : 260;
+        });
         UpdateDerived();
     }
 
@@ -94,22 +109,22 @@ public sealed partial class WindowsVehicleEditorView : UserControl
     public VehicleProfile Vehicle => _vehicle;
 
     /// <summary>見出しの行を作ります。</summary>
-    /// <remarks>責務: 戻る（取り消し）ボタン、題、保存のボタンを並べます。</remarks>
+    /// <remarks>責務: 戻る（取り消し）ボタン、題、保存のボタンを並べます（保存は右端、Ctrl+S でも押せる）。</remarks>
     /// <returns>行。</returns>
     private Grid Header()
     {
-        var grid = new Grid { ColumnSpacing = 14 };
+        var grid = new Grid { ColumnSpacing = Space.M + Space.XS };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var back = new Button { Content = new FontIcon { Glyph = FluentSymbol.Back, FontSize = 14 }, Width = 42, Height = 42, CornerRadius = new CornerRadius(21) };
+        var back = new Button { Content = new FontIcon { Glyph = FluentSymbol.Back, FontSize = 14 }, Width = Metrics.IconTileMedium, Height = Metrics.IconTileMedium, CornerRadius = new CornerRadius(Radius.Pill) };
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(back, LocalizedText.Get("garage.cancel"));
         ToolTipService.SetToolTip(back, LocalizedText.Get("garage.cancel"));
         back.Click += (_, _) => _send(new VehicleManagementAction.EditCancelled());
         grid.Children.Add(back);
-        var titles = new StackPanel { Spacing = 3, VerticalAlignment = VerticalAlignment.Center };
-        titles.Children.Add(Typography.Text(LocalizedText.Get("garage.editor.studio"), "EyebrowTextStyle"));
-        titles.Children.Add(Typography.Text(LocalizedText.Get("garage.editor.title"), "PageTitleTextStyle"));
+        var titles = new StackPanel { Spacing = Space.XXS, VerticalAlignment = VerticalAlignment.Center };
+        titles.Children.Add(Typography.Text(LocalizedText.Get("garage.editor.studio"), TextStyles.Eyebrow));
+        titles.Children.Add(Typography.Text(LocalizedText.Get("garage.editor.title"), TextStyles.PageTitle));
         Grid.SetColumn(titles, 1);
         grid.Children.Add(titles);
         Grid.SetColumn(_saveButton, 2);
@@ -117,46 +132,26 @@ public sealed partial class WindowsVehicleEditorView : UserControl
         return grid;
     }
 
-    /// <summary>写真と入力の部分を、幅に合わせて横並びか縦積みにします。</summary>
-    /// <remarks>責務: 写真の列（固定幅）と入力のカードの列を、狭いときは縦に積みます。</remarks>
+    /// <summary>写真と入力の部分を、幅クラスに合わせて左右か縦積みにします。</summary>
+    /// <remarks>責務: 副＝写真（320）を左、主＝入力のカードを右に置き、Medium 以下は写真を上に積みます。</remarks>
     /// <returns>表示の要素。</returns>
-    private Grid ResponsiveEditor()
+    private AdaptiveSplit ResponsiveEditor() => new()
     {
-        var grid = new Grid { ColumnSpacing = 22, RowSpacing = 20 };
-        var photo = PhotoPanel();
-        var panels = EditorPanels();
-        grid.Children.Add(photo);
-        grid.Children.Add(panels);
-        grid.SizeChanged += (_, args) =>
-        {
-            var wide = args.NewSize.Width >= 760;
-            grid.ColumnDefinitions.Clear();
-            grid.RowDefinitions.Clear();
-            if (wide)
-            {
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(330) });
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                Grid.SetColumn(panels, 1);
-                Grid.SetRow(panels, 0);
-            }
-            else
-            {
-                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                Grid.SetColumn(panels, 0);
-                Grid.SetRow(panels, 1);
-            }
-        };
-        return grid;
-    }
+        Primary = EditorPanels(),
+        Secondary = PhotoPanel(),
+        SecondaryFirst = true,
+        SecondaryWidth = 320,
+        CollapseBelow = WidthClass.Expanded,
+        CollapseMode = SplitCollapseMode.Stack,
+    };
 
     /// <summary>写真の列を作ります。</summary>
-    /// <remarks>責務: 車両の写真（なければグラデーションと車の記号）と名前・識別子、写真を選ぶボタンを作ります。</remarks>
+    /// <remarks>責務: 車両の写真（なければ背景と車の記号）と名前・識別子、写真を選ぶボタンを作ります。</remarks>
     /// <returns>表示の要素。</returns>
     private StackPanel PhotoPanel()
     {
         RenderPhotoFrame();
-        var choose = new Button { Content = new GlyphLabel(FluentSymbol.Camera, LocalizedText.Get("garage.photo.choose")), HorizontalAlignment = HorizontalAlignment.Stretch, MinHeight = 40 };
+        var choose = new Button { Content = new GlyphLabel(FluentSymbol.Camera, LocalizedText.Get("garage.photo.choose")), HorizontalAlignment = HorizontalAlignment.Stretch, MinHeight = Metrics.ControlHeight };
         choose.Click += async (_, _) =>
         {
             if (await ImageFilePicker.PickAsync(XamlRoot) is { } url)
@@ -164,8 +159,12 @@ public sealed partial class WindowsVehicleEditorView : UserControl
                 _send(new VehicleManagementAction.PhotoSelected(url));
             }
         };
-        var stack = new StackPanel { Spacing = 15 };
+        var caption = new StackPanel { Spacing = Space.XXS };
+        caption.Children.Add(_photoTitle);
+        caption.Children.Add(_photoIdentifier);
+        var stack = new StackPanel { Spacing = Space.M };
         stack.Children.Add(_photoFrame);
+        stack.Children.Add(caption);
         stack.Children.Add(choose);
         return stack;
     }
@@ -183,35 +182,21 @@ public sealed partial class WindowsVehicleEditorView : UserControl
     }
 
     /// <summary>写真の枠を描きます。</summary>
-    /// <remarks>責務: 下書きの写真（なければグラデーションと車の記号）と、名前・識別子の帯を枠に入れます。</remarks>
+    /// <remarks>責務: 下書きの写真（なければ背景と車の記号）を枠に入れます。名前・識別子は枠の下の文字（作り直さない）。</remarks>
     private void RenderPhotoFrame()
     {
         var frame = _photoFrame;
         frame.Children.Clear();
-        frame.Background = null;
         if (_draft.PhotoData is { } data)
         {
+            frame.Background = DesignTokens.Brush("RevTorqueQuietFillBrush");
             frame.Children.Add(BytesImage.Create(data, 800));
         }
         else
         {
-            var gradient = new LinearGradientBrush { StartPoint = new global::Windows.Foundation.Point(0, 0), EndPoint = new global::Windows.Foundation.Point(1, 1) };
-            gradient.GradientStops.Add(new GradientStop { Color = Color.FromArgb(235, 75, 73, 201), Offset = 0 });
-            gradient.GradientStops.Add(new GradientStop { Color = Color.FromArgb(158, 10, 99, 214), Offset = 0.5 });
-            gradient.GradientStops.Add(new GradientStop { Color = Color.FromArgb(235, 0, 0, 0), Offset = 1 });
-            frame.Background = gradient;
-            frame.Children.Add(new FontIcon { Glyph = FluentSymbol.Car, FontSize = 64, Foreground = new SolidColorBrush(Color.FromArgb(220, 255, 255, 255)) });
+            frame.Background = DesignTokens.Brush("RevTorqueHeroBrush");
+            frame.Children.Add(new FontIcon { Glyph = FluentSymbol.Car, FontSize = Metrics.IconTileHero, Foreground = DesignTokens.Foreground(Tone.Accent) });
         }
-
-        var shade = new LinearGradientBrush { StartPoint = new global::Windows.Foundation.Point(0, 0.5), EndPoint = new global::Windows.Foundation.Point(0, 1) };
-        shade.GradientStops.Add(new GradientStop { Color = Color.FromArgb(0, 0, 0, 0), Offset = 0 });
-        shade.GradientStops.Add(new GradientStop { Color = Color.FromArgb(209, 0, 0, 0), Offset = 1 });
-        frame.Children.Add(new Border { Background = shade });
-        var caption = new StackPanel { Spacing = 4, VerticalAlignment = VerticalAlignment.Bottom, Padding = new Thickness(18) };
-        (_photoTitle.Parent as Panel)?.Children.Remove(_photoTitle);
-        caption.Children.Add(_photoTitle);
-        caption.Children.Add(Typography.Text(_draft.DisplayIdentifier, "MonospaceCaptionTextStyle", new SolidColorBrush(Color.FromArgb(178, 255, 255, 255)), wraps: false));
-        frame.Children.Add(caption);
     }
 
     /// <summary>入力のカードの列を作ります。</summary>
@@ -219,8 +204,8 @@ public sealed partial class WindowsVehicleEditorView : UserControl
     /// <returns>表示の要素。</returns>
     private StackPanel EditorPanels()
     {
-        var stack = new StackPanel { Spacing = 16 };
-        var identity = new AdaptiveGrid { MinItemWidth = 210, Spacing = 13 };
+        var stack = new StackPanel { Spacing = Space.L };
+        var identity = new AdaptiveGrid { MinItemWidth = 240, Spacing = Space.M };
         identity.Children.Add(TextInput("garage.field.name", _draft.Name, value => _draft = _draft with { Name = value }));
         identity.Children.Add(TextInput("garage.field.manufacturer", _draft.Manufacturer, value => _draft = _draft with { Manufacturer = value }));
         identity.Children.Add(TextInput("garage.field.engine_model", _draft.EngineModel, value => _draft = _draft with { EngineModel = value }));
@@ -229,12 +214,12 @@ public sealed partial class WindowsVehicleEditorView : UserControl
             Header = LocalizedText.Get(_draft.Vin.Length == 0 ? "garage.field.obd_identifier" : "garage.field.vin"),
             Text = _draft.DisplayIdentifier,
             IsReadOnly = true,
-            FontFamily = new FontFamily("Cascadia Mono, Consolas"),
+            FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Cascadia Mono, Consolas"),
         };
         identity.Children.Add(identifier);
         stack.Children.Add(EditorCard("garage.section.identity", FluentSymbol.Person, identity));
 
-        var energy = new AdaptiveGrid { MinItemWidth = 210, Spacing = 13 };
+        var energy = new AdaptiveGrid { MinItemWidth = 240, Spacing = Space.M };
         var powertrain = new ComboBox { Header = LocalizedText.Get("garage.field.powertrain"), HorizontalAlignment = HorizontalAlignment.Stretch };
         foreach (var kind in Enum.GetValues<VehiclePowertrainKind>())
         {
@@ -267,15 +252,15 @@ public sealed partial class WindowsVehicleEditorView : UserControl
         UpdateEnergyPicker();
         stack.Children.Add(EditorCard("garage.section.energy", FluentSymbol.Lightning, energy));
 
-        var other = new StackPanel { Spacing = 13 };
-        var numbers = new AdaptiveGrid { MinItemWidth = 210, Spacing = 13 };
+        var other = new StackPanel { Spacing = Space.M };
+        var numbers = new AdaptiveGrid { MinItemWidth = 240, Spacing = Space.M };
         numbers.Children.Add(NumberInput("garage.field.model_year", _draft.ModelYear, value => _draft = _draft with { ModelYear = value is { } year ? (int)year : null }));
         numbers.Children.Add(NumberInput("garage.field.tank", _draft.TankCapacityLiters, value => _draft = _draft with { TankCapacityLiters = value }));
         other.Children.Add(numbers);
         var note = TextInput("garage.field.note", _draft.Note, value => _draft = _draft with { Note = value });
         note.AcceptsReturn = true;
         note.TextWrapping = TextWrapping.Wrap;
-        note.MinHeight = 90;
+        note.MinHeight = Metrics.RowMinHeight * 1.5;
         other.Children.Add(note);
         stack.Children.Add(EditorCard("garage.section.other", FluentSymbol.Gauge, other));
         return stack;
@@ -316,10 +301,10 @@ public sealed partial class WindowsVehicleEditorView : UserControl
     /// <returns>カード。</returns>
     private static Border EditorCard(string titleKey, string glyph, UIElement content)
     {
-        var stack = new StackPanel { Spacing = 14 };
-        stack.Children.Add(new GlyphLabel(glyph, LocalizedText.Get(titleKey), "BodyStrongTextBlockStyle"));
+        var stack = new StackPanel { Spacing = Space.M };
+        stack.Children.Add(new GlyphLabel(glyph, LocalizedText.Get(titleKey), TextStyles.BodyStrong));
         stack.Children.Add(content);
-        return SurfaceCard.Create(stack, padding: 17);
+        return SurfaceCard.Create(stack, padding: Space.L);
     }
 
     /// <summary>文字の入力欄を作ります。</summary>

@@ -1,6 +1,6 @@
 # RevTorque Insight for Windows プライバシーポリシー / Privacy Policy
 
-最終更新日 / Last updated: 2026-11-10
+最終更新日 / Last updated: 2026-11-11
 
 [日本語](#日本語) | [English](#english)
 
@@ -18,13 +18,15 @@ RevTorque Insight for Windows（以下「本アプリ」）は、Ryokugyoku（�
 - **走行ログ**：OBD2 アダプターから読み取った車両の信号（エンジン回転数、速度、温度など）と、その取得の記録
 - **整備記録**：利用者が入力した整備の内容・日付・費用・走行距離など
 - **設定**：表示言語、外観、既定の OBD2 アダプター（機器の名前と接続先の識別子）、データ収集の設定
+- **診断ログ**：アプリの動きと不具合の記録（操作の種類、接続や同期の経過、エラーの種類と内容など）。VIN は末尾 4 桁だけを書き、アカウントの識別子と Bluetooth 機器のアドレスは一部だけを書きます。トークンや秘密の値は書きません。
 
 本アプリは、氏名・メールアドレス・電話番号・位置情報・連絡先などの個人情報を求めません。
 
 ### 2. 保存場所と送信
 
 - 上記の情報は、お使いの PC の本アプリ専用のフォルダー（パッケージの LocalState）だけに保存されます。
-- **現在の版では、本アプリはこれらの情報を開発者やその他の第三者のサーバーに送信しません。** 広告、利用状況の分析（アナリティクス）、クラッシュ情報の自動送信も行いません。
+- **現在の版では、本アプリはこれらの情報を自動では開発者やその他の第三者のサーバーに送信しません。** 広告、利用状況の分析（アナリティクス）、クラッシュ情報の自動送信も行いません。
+- 診断ログも自動では送信しません。利用者が設定画面の「不具合レポートを書き出す」で作ったファイル（zip）を、利用者自身が開発者に渡したときだけ、開発者がその内容を受け取ります。
 - OBD2 アダプターとの通信は、USB・Bluetooth で PC と機器の間だけで行います。
 - Microsoft Store を通じて配布されるため、Microsoft がアプリの入手・更新・クラッシュに関する情報を収集する場合があります。その扱いは [Microsoft のプライバシーに関する声明](https://privacy.microsoft.com/privacystatement) に従います。
 
@@ -35,6 +37,7 @@ RevTorque Insight for Windows（以下「本アプリ」）は、Ryokugyoku（�
 ### 4. 情報の削除
 
 - 本アプリの設定画面の「アカウントを削除」で、本アプリが保存した走行ログなどを削除できます（整備記録は残ります）。
+- 本アプリの設定画面の「診断ログを消す」で、診断ログを削除できます。
 - 本アプリをアンインストールすると、本アプリ専用のフォルダーに保存された情報（整備記録を含む）はすべて削除されます。
 
 ### 5. 子どものプライバシー
@@ -67,13 +70,15 @@ When you use it, the App stores the following information on your PC:
 - **Drive logs**: vehicle signals read from the OBD2 adapter (engine speed, vehicle speed, temperatures, etc.) and records of how they were acquired
 - **Maintenance records**: the maintenance details, dates, costs, odometer readings and other data you enter
 - **Settings**: display language, appearance, the default OBD2 adapter (device name and connection identifier), and data collection preferences
+- **Diagnostic logs**: a record of how the App runs and of problems (the kinds of actions taken, connection and sync progress, error types and details, etc.). For the VIN only the last 4 characters are written; account identifiers and Bluetooth device addresses are partly masked. Tokens and secrets are never written.
 
 The App does not ask for personal information such as your name, email address, phone number, location or contacts.
 
 ### 2. Storage and transmission
 
 - The information above is stored only in the App's own folder on your PC (the package LocalState).
-- **In the current version, the App does not send this information to the Developer or to any other third-party server.** The App does not show ads, does not use usage analytics, and does not send crash reports on its own.
+- **In the current version, the App does not automatically send this information to the Developer or to any other third-party server.** The App does not show ads, does not use usage analytics, and does not send crash reports on its own.
+- Diagnostic logs are not sent automatically either. Only when you choose "Export problem report" in the App's settings and give the resulting zip file to the Developer yourself does the Developer receive its contents.
 - Communication with the OBD2 adapter happens only between your PC and the device, over USB or Bluetooth.
 - Because the App is distributed through the Microsoft Store, Microsoft may collect information about app acquisition, updates and crashes, as described in the [Microsoft Privacy Statement](https://privacy.microsoft.com/privacystatement).
 
@@ -84,6 +89,7 @@ A feature that syncs data with the iOS version using Sign in with Apple and iClo
 ### 4. Deleting your information
 
 - "Delete account" in the App's settings deletes the drive logs and other data stored by the App (maintenance records are kept).
+- "Delete diagnostic logs" in the App's settings deletes the diagnostic logs.
 - Uninstalling the App deletes all information stored in the App's own folder, including maintenance records.
 
 ### 5. Children's privacy

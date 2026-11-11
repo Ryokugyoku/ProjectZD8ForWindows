@@ -46,8 +46,9 @@ public sealed class DemoIncludedAdapterDiscovery : IAdapterDiscoveryPort
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            OBDDiscoveryLog.SourceFailed(OBDDiscoveryLog.Logger, error, "live", mode.ToString());
             return matchingCandidates;
         }
     }

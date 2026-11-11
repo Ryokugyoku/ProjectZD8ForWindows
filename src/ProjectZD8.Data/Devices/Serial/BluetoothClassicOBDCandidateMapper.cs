@@ -64,6 +64,40 @@ public sealed class BluetoothClassicOBDCandidateMapper
             .OrderBy(adapter => adapter.SystemIdentifier, StringComparer.Ordinal)
             .ToArray();
 
+    /// <summary>候補にした理由、または外した理由を返します（診断ログ用）。</summary>
+    /// <remarks>責務: <see cref="MakeAdapter"/> と同じ順で判定し、結果を短い固定の文字列にします。</remarks>
+    /// <param name="address">機器のアドレス文字列。</param>
+    /// <param name="name">OSが返した機器名称。</param>
+    /// <param name="isPaired">ペアリング済みかどうか。</param>
+    /// <param name="hasSerialPortService">RFCOMM の Serial Port サービスを公開しているかどうか。</param>
+    /// <returns><c>mx-plus</c> / <c>known-name</c>（候補）、<c>no-address</c> / <c>not-paired</c> / <c>no-serial-port-service</c> / <c>unknown-name</c>（外した）。</returns>
+    internal string DiagnosticReason(string address, string? name, bool isPaired, bool hasSerialPortService)
+    {
+        var normalizedAddress = Normalized(address);
+        var normalizedName = Normalized(name) ?? normalizedAddress;
+        if (normalizedAddress is null || normalizedName is null)
+        {
+            return "no-address";
+        }
+
+        if (!isPaired)
+        {
+            return "not-paired";
+        }
+
+        if (!hasSerialPortService)
+        {
+            return "no-serial-port-service";
+        }
+
+        if (mxPlusPolicy.Accepts(normalizedName, isPaired))
+        {
+            return "mx-plus";
+        }
+
+        return IsKnownClassicOBDName(normalizedName) ? "known-name" : "unknown-name";
+    }
+
     /// <summary>MX+以外で Classic のOBD候補として扱う名称かを返します。</summary>
     /// <remarks>責務: 既知製品の接頭辞と汎用ELM327互換機の名称を照合します。</remarks>
     /// <param name="name">前後の空白を除いた名称。</param>

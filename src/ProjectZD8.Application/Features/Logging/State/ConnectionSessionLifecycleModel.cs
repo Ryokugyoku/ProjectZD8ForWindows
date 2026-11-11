@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using ProjectZD8.Application.Logging.Actions;
+using ProjectZD8.Diagnostics;
 using ProjectZD8.Domain.Entities;
 using ProjectZD8.Domain.Errors;
 using ProjectZD8.Domain.Repositories;
@@ -167,6 +168,7 @@ public sealed class ConnectionSessionLifecycleModel : INotifyPropertyChanged
             }
             if (endedSessions.Count > 0)
             {
+                AcquisitionLog.SessionRecovered(AcquisitionLog.Logger, endedSessions.Count);
                 _historyDidChange();
             }
             if (_automaticUploadEnabled)
@@ -177,8 +179,9 @@ public sealed class ConnectionSessionLifecycleModel : INotifyPropertyChanged
                 }
             }
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            AcquisitionLog.SessionRecoveryFailed(AcquisitionLog.Logger, error);
             return;
         }
     }
@@ -191,7 +194,8 @@ public sealed class ConnectionSessionLifecycleModel : INotifyPropertyChanged
         {
             return;
         }
-        if (ActiveSession is not null)
+        var superseded = ActiveSession is not null;
+        if (superseded)
         {
             EndSession(ConnectionSessionEndReason.Superseded);
         }
@@ -205,10 +209,20 @@ public sealed class ConnectionSessionLifecycleModel : INotifyPropertyChanged
             _repository.Save(session);
             ActiveSession = session;
             _selectedDistanceSource = null;
+            using (DiagnosticLog.BeginConnectionSession(AcquisitionLog.SessionId(session.Id)))
+            {
+                AcquisitionLog.SessionStarted(AcquisitionLog.Logger, superseded);
+            }
+
             _historyDidChange();
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            using (DiagnosticLog.BeginConnectionSession(AcquisitionLog.SessionId(session.Id)))
+            {
+                AcquisitionLog.SessionSaveFailed(AcquisitionLog.Logger, error, "start");
+            }
+
             ActiveSession = null;
         }
     }
@@ -229,8 +243,9 @@ public sealed class ConnectionSessionLifecycleModel : INotifyPropertyChanged
             ActiveSession = session;
             _historyDidChange();
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            LogUpdateFailed(error, current, "bind-vehicle");
             return;
         }
     }
@@ -280,8 +295,9 @@ public sealed class ConnectionSessionLifecycleModel : INotifyPropertyChanged
             _selectedDistanceSource = observation.Source;
             _historyDidChange();
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            LogUpdateFailed(error, current, "distance");
             return;
         }
     }
@@ -311,15 +327,38 @@ public sealed class ConnectionSessionLifecycleModel : INotifyPropertyChanged
             }
             ActiveSession = null;
             _selectedDistanceSource = null;
+            using (DiagnosticLog.BeginConnectionSession(AcquisitionLog.SessionId(currentSession.Id)))
+            {
+                AcquisitionLog.SessionEnded(AcquisitionLog.Logger, reason.ToString(), currentSession.Vehicle is not null);
+            }
+
             _historyDidChange();
             if (_automaticUploadEnabled)
             {
                 _endedSessionUploadRequested(session);
             }
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            using (DiagnosticLog.BeginConnectionSession(AcquisitionLog.SessionId(currentSession.Id)))
+            {
+                AcquisitionLog.SessionSaveFailed(AcquisitionLog.Logger, error, "end");
+            }
+
             ActiveSession = currentSession;
+        }
+    }
+
+    /// <summary>接続セッションの更新を保存できなかったことを、セッション ID つきで書きます。</summary>
+    /// <remarks>責務: 握りつぶしている保存の失敗を、元の例外つきで診断ログへ残します（動きは変えません）。</remarks>
+    /// <param name="error">元の例外。</param>
+    /// <param name="session">更新しようとしたセッション。</param>
+    /// <param name="operation">操作の名前。</param>
+    private static void LogUpdateFailed(Exception error, ConnectionSession session, string operation)
+    {
+        using (DiagnosticLog.BeginConnectionSession(AcquisitionLog.SessionId(session.Id)))
+        {
+            AcquisitionLog.SessionUpdateFailed(AcquisitionLog.Logger, error, operation);
         }
     }
 

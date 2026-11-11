@@ -1,6 +1,10 @@
+using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using ProjectZD8.Application.DeviceConnection.Ports;
 using ProjectZD8.Data.Devices;
+using ProjectZD8.Data.Devices.OBD;
 using ProjectZD8.Data.Windows.Devices.Bluetooth;
+using ProjectZD8.Diagnostics;
 using ProjectZD8.Domain.ValueObjects;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
@@ -79,6 +83,9 @@ public sealed class WindowsBluetoothLEAdapterDiscovery : IAdapterDiscoveryPort
         /// <summary>候補の判定規則です。</summary>
         private readonly OBDBluetoothCandidatePolicy policy;
 
+        /// <summary>スキャンを始めた時刻印です（診断ログの所要時間）。</summary>
+        private readonly long started = Stopwatch.GetTimestamp();
+
         /// <summary>使用中の受信器です。</summary>
         private BluetoothLEAdvertisementWatcher? watcher;
 
@@ -111,8 +118,9 @@ public sealed class WindowsBluetoothLEAdapterDiscovery : IAdapterDiscoveryPort
             {
                 created.Start();
             }
-            catch (Exception)
+            catch (Exception error)
             {
+                OBDDiscoveryLog.StepFailed(OBDDiscoveryLog.Logger, error, "ble-watcher-start");
                 Finish(new AdapterDiscoveryException(AdapterDiscoveryError.BluetoothStateUnavailable));
                 return await completion.Task;
             }
@@ -175,6 +183,7 @@ public sealed class WindowsBluetoothLEAdapterDiscovery : IAdapterDiscoveryPort
             };
             if (error is { } reason)
             {
+                OBDDiscoveryLog.BluetoothLEScanStopped(OBDDiscoveryLog.Logger, args.Error.ToString());
                 Finish(new AdapterDiscoveryException(reason));
             }
         }
@@ -193,9 +202,10 @@ public sealed class WindowsBluetoothLEAdapterDiscovery : IAdapterDiscoveryPort
                 {
                     active.Stop();
                 }
-                catch (Exception)
+                catch (Exception stopError)
                 {
                     // 既に止まっている受信器では失敗することがあります。
+                    OBDDiscoveryLog.StepFailed(OBDDiscoveryLog.Logger, stopError, "ble-watcher-stop");
                 }
             }
 
@@ -215,7 +225,7 @@ public sealed class WindowsBluetoothLEAdapterDiscovery : IAdapterDiscoveryPort
         {
             lock (gate)
             {
-                return order
+                var candidates = order
                     .Select(address => (Address: address, Observation: observations[address]))
                     .Select(entry => mapper.MakeAdapter(
                         BluetoothAddressText.Format(entry.Address),
@@ -224,9 +234,59 @@ public sealed class WindowsBluetoothLEAdapterDiscovery : IAdapterDiscoveryPort
                         DiscoveredAdapterConnectionState.Disconnected,
                         entry.Observation.HasManufacturerData,
                         entry.Observation.Services.ToArray()))
-                    .Where(policy.Accepts)
                     .ToArray();
+                var accepted = candidates.Where(policy.Accepts).ToArray();
+                LogScan(candidates, accepted.Length);
+                return accepted;
             }
+        }
+
+        /// <summary>スキャンで見えた機器ごとの判断と、件数の要約を書きます。</summary>
+        /// <remarks>
+        /// 責務: 既知の名前・既知の UART Service のどちらで候補にしたか、どちらもなくて外したかを Debug で残します。
+        /// アドレスは末尾 2 バイトだけにします。名前のない機器は件数だけに数えます（周りの機器が多いと行が増えるため）。
+        /// </remarks>
+        /// <param name="candidates">見えた機器を候補の形にしたもの。</param>
+        /// <param name="acceptedCount">候補にした件数。</param>
+        private void LogScan(IReadOnlyList<DiscoveredAdapter> candidates, int acceptedCount)
+        {
+            var logger = OBDDiscoveryLog.Logger;
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            foreach (var candidate in candidates)
+            {
+                var device = Redact.BluetoothAddress(candidate.SystemIdentifier);
+                if (policy.Accepts(candidate))
+                {
+                    OBDDiscoveryLog.CandidateAccepted(
+                        logger,
+                        OBDDiagnosticText.TransportBLE,
+                        candidate.DisplayName,
+                        device,
+                        candidate.BluetoothServiceIdentifiers.Count > 0
+                            ? $"services={string.Join(',', candidate.BluetoothServiceIdentifiers)}"
+                            : "known-name");
+                }
+                else if (!string.IsNullOrWhiteSpace(candidate.AdvertisementLocalName))
+                {
+                    OBDDiscoveryLog.CandidateRejected(
+                        logger,
+                        OBDDiagnosticText.TransportBLE,
+                        candidate.DisplayName,
+                        device,
+                        $"unknown-name-and-services（services={candidate.BluetoothServiceIdentifiers.Count}）");
+                }
+            }
+
+            OBDDiscoveryLog.SourceCompleted(
+                logger,
+                OBDDiagnosticText.TransportBLE,
+                candidates.Count,
+                acceptedCount,
+                OBDDiagnosticText.ElapsedMilliseconds(started));
         }
     }
 

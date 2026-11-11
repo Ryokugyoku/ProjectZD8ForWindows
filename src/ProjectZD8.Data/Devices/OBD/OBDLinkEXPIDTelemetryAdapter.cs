@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using ProjectZD8.Application.LiveTelemetry.Ports;
 using ProjectZD8.Application.VehicleManagement.Ports;
 using ProjectZD8.Domain.Entities;
@@ -22,6 +24,9 @@ public sealed class OBDLinkEXPIDTelemetryAdapter : IOBDPIDTelemetryPort
     private static readonly string[] RejectedSettingResponses =
         ["?", "ERROR", "UNABLE", "OUT OF MEMORY", "NO DATA", "STOPPED", "BUFFER FULL"];
 
+    /// <summary>診断ログに書く接続の目的です。</summary>
+    private const string Purpose = "telemetry";
+
     /// <summary>ELM/STNバイトストリームTransportを生成するFactoryです。</summary>
     private readonly Func<OBDConnectionEndpoint, IOBDCommandTransport> makeTransport;
 
@@ -36,6 +41,12 @@ public sealed class OBDLinkEXPIDTelemetryAdapter : IOBDPIDTelemetryPort
 
     /// <summary>現在ELMへ設定している11bit送信ヘッダーです。</summary>
     private ushort? activeTransmitHeader;
+
+    /// <summary>診断ログに書く、現在の接続の Transport の種類です。</summary>
+    private string diagnosticTransportName = "unknown";
+
+    /// <summary>前の接続を期限切れ・通信の失敗で閉じたときの理由です（開き直しを回復として書くため）。</summary>
+    private string? recoveringFrom;
 
     /// <summary>Transport Factoryを固定して生成します。</summary>
     /// <remarks>責務: 主要PID読取を物理Transport生成境界へ結び付けます。</remarks>
@@ -81,30 +92,34 @@ public sealed class OBDLinkEXPIDTelemetryAdapter : IOBDPIDTelemetryPort
                 }
                 catch (OBDPIDTelemetryException error) when (IsUnclassified(error))
                 {
+                    LogUnparsed(command, error);
                     observations.Add(new(command.Request, new OBDPIDRequestTransportOutcome.UnclassifiedResponse()));
                 }
             }
             catch (VehicleIdentificationException error) when (error.Reason is VehicleIdentificationError.ResponseTimedOut)
             {
+                LogRequestFailed(command, error, endpoint);
                 observations.Add(new(command.Request, new OBDPIDRequestTransportOutcome.TimedOut()));
-                await CloseActiveSession();
+                await CloseActiveSession(OBDDisconnectReason.ResponseTimeout);
                 break;
             }
             catch (VehicleIdentificationException error) when (error.Reason is VehicleIdentificationError.ConnectionFailed)
             {
+                LogRequestFailed(command, error, endpoint);
                 observations.Add(new(command.Request, new OBDPIDRequestTransportOutcome.TransportFailure()));
-                await CloseActiveSession();
+                await CloseActiveSession(OBDDisconnectReason.ConnectionFailed);
                 break;
             }
             catch (OperationCanceledException)
             {
                 observations.Add(new(command.Request, new OBDPIDRequestTransportOutcome.Cancelled()));
-                await CloseActiveSession();
+                await CloseActiveSession(OBDDisconnectReason.Cancelled);
                 break;
             }
-            catch
+            catch (Exception error)
             {
-                await CloseActiveSession();
+                LogRequestFailed(command, error, endpoint);
+                await CloseActiveSession(OBDDisconnectReason.Error);
                 throw;
             }
         }
@@ -141,7 +156,7 @@ public sealed class OBDLinkEXPIDTelemetryAdapter : IOBDPIDTelemetryPort
         }
         catch (Exception error)
         {
-            await CloseActiveSession();
+            await CloseActiveSession(DisconnectReason(error));
             throw MapSessionError(error);
         }
     }
@@ -190,9 +205,10 @@ public sealed class OBDLinkEXPIDTelemetryAdapter : IOBDPIDTelemetryPort
                 {
                     result[command.Request] = new ELM327PIDResponseParser().Parse(response, command.Request);
                 }
-                catch (OBDPIDTelemetryException)
+                catch (OBDPIDTelemetryException error)
                 {
                     // Swift の try? と同じく、正応答でない専用PIDは結果へ含めません。
+                    LogUnparsed(command, error);
                 }
             }
 
@@ -200,7 +216,7 @@ public sealed class OBDLinkEXPIDTelemetryAdapter : IOBDPIDTelemetryPort
         }
         catch (Exception error)
         {
-            await CloseActiveSession();
+            await CloseActiveSession(DisconnectReason(error));
             throw MapSessionError(error);
         }
     }
@@ -208,7 +224,7 @@ public sealed class OBDLinkEXPIDTelemetryAdapter : IOBDPIDTelemetryPort
     /// <summary>現在の継続取得セッションを終了します。</summary>
     /// <remarks>責務: 保持中のシリアルTransportを1回だけ閉じて接続状態を消去します。</remarks>
     /// <returns>終了処理の完了。</returns>
-    public Task EndSession() => CloseActiveSession();
+    public Task EndSession() => CloseActiveSession(OBDDisconnectReason.SessionEnded);
 
     /// <summary>Service/PID要求を固定許可リスト内のコマンドへ変換します。</summary>
     /// <remarks>責務: 1件でも Service 01 以外が含まれる要求群を送信前に拒否します。</remarks>
@@ -256,10 +272,13 @@ public sealed class OBDLinkEXPIDTelemetryAdapter : IOBDPIDTelemetryPort
 
         var command = ELM327TransmitHeaderCommand.Create(header)
             ?? throw new OBDPIDTelemetryException(OBDPIDTelemetryError.UnsupportedPID);
+        var started = Stopwatch.GetTimestamp();
         var response = await channel.Execute(command);
         if (!IsAccepted(response))
         {
-            throw new OBDPIDTelemetryException(OBDPIDTelemetryError.CommandRejected);
+            var rejected = new OBDPIDTelemetryException(OBDPIDTelemetryError.CommandRejected);
+            LogStageFailed(rejected, OBDConnectionStage.TransmitHeader, command, response, started);
+            throw rejected;
         }
 
         activeTransmitHeader = header;
@@ -288,30 +307,83 @@ public sealed class OBDLinkEXPIDTelemetryAdapter : IOBDPIDTelemetryPort
             return activeChannel;
         }
 
-        await CloseActiveSession();
-        var transport = makeTransport(endpoint);
-        await transport.Open();
+        await CloseActiveSession(OBDDisconnectReason.EndpointChanged);
+        var logger = OBDConnectionLog.Logger;
+        var transportName = OBDDiagnosticText.Transport(endpoint.Transport);
+        var connectionStarted = Stopwatch.GetTimestamp();
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            OBDConnectionLog.Started(logger, transportName, Purpose, OBDDiagnosticText.Device(endpoint), endpoint.DisplayName);
+        }
+
+        if (recoveringFrom is { } previousReason)
+        {
+            OBDConnectionLog.Reopened(logger, transportName, previousReason);
+        }
+
+        diagnosticTransportName = transportName;
+        IOBDCommandTransport transport;
+        var stageStarted = LogStageStarted(OBDConnectionStage.TransportCreation, null);
+        try
+        {
+            transport = makeTransport(endpoint);
+        }
+        catch (Exception error)
+        {
+            LogStageFailed(error, OBDConnectionStage.TransportCreation, null, null, stageStarted);
+            throw;
+        }
+
+        LogStageSucceeded(OBDConnectionStage.TransportCreation, null, stageStarted);
+        stageStarted = LogStageStarted(OBDConnectionStage.Open, null);
+        try
+        {
+            await transport.Open();
+        }
+        catch (Exception error)
+        {
+            LogStageFailed(error, OBDConnectionStage.Open, null, null, stageStarted);
+            throw;
+        }
+
+        LogStageSucceeded(OBDConnectionStage.Open, null, stageStarted);
         var channel = new SerializedELMCommandChannel(transport);
         try
         {
             foreach (var command in InitializationCommands)
             {
-                var response = await channel.Execute(command);
-                if (!IsAccepted(response))
+                var stage = ReferenceEquals(command, ELM327Command.Reset) ? OBDConnectionStage.Reset : OBDConnectionStage.Configure;
+                stageStarted = LogStageStarted(stage, command);
+                string? response = null;
+                try
                 {
-                    throw new OBDPIDTelemetryException(OBDPIDTelemetryError.CommandRejected);
+                    response = await channel.Execute(command);
+                    if (!IsAccepted(response))
+                    {
+                        throw new OBDPIDTelemetryException(OBDPIDTelemetryError.CommandRejected);
+                    }
                 }
+                catch (Exception error)
+                {
+                    LogStageFailed(error, stage, command, response, stageStarted);
+                    throw;
+                }
+
+                LogStageSucceeded(stage, command, stageStarted);
             }
         }
         catch
         {
             await transport.Close();
+            OBDConnectionLog.Disconnected(logger, transportName, OBDDisconnectReason.InitializationFailed);
             throw;
         }
 
         activeTransport = transport;
         activeChannel = channel;
         activeEndpoint = endpoint;
+        recoveringFrom = null;
+        OBDConnectionLog.Succeeded(logger, transportName, Purpose, OBDDiagnosticText.ElapsedMilliseconds(connectionStarted));
         return channel;
     }
 
@@ -336,6 +408,7 @@ public sealed class OBDLinkEXPIDTelemetryAdapter : IOBDPIDTelemetryPort
             catch (OBDPIDTelemetryException error) when (IsUnclassified(error))
             {
                 // 拒否応答と形式不正は結果へ含めず次の要求へ進みます。
+                LogUnparsed(command, error);
             }
         }
 
@@ -343,18 +416,136 @@ public sealed class OBDLinkEXPIDTelemetryAdapter : IOBDPIDTelemetryPort
     }
 
     /// <summary>保持中のTransportを閉じて再利用状態を解除します。</summary>
-    /// <remarks>責務: 現在のPID接続資源を閉じた空状態へ遷移させます。</remarks>
+    /// <remarks>
+    /// 責務: 現在のPID接続資源を閉じた空状態へ遷移させます。
+    /// 開いていた接続を閉じたときは理由を <c>obd.connect.disconnected</c> に書き、期限切れ・通信の失敗で閉じたときは
+    /// 次に開き直すときに回復（<c>obd.connect.reopened</c>）として書けるよう理由を覚えます。
+    /// </remarks>
+    /// <param name="reason">閉じる理由（<see cref="OBDDisconnectReason"/>）。</param>
     /// <returns>終了処理の完了。</returns>
-    private async Task CloseActiveSession()
+    private async Task CloseActiveSession(string reason)
     {
         if (activeTransport is not null)
         {
             await activeTransport.Close();
+            OBDConnectionLog.Disconnected(OBDConnectionLog.Logger, diagnosticTransportName, reason);
+            recoveringFrom = reason is OBDDisconnectReason.ResponseTimeout or OBDDisconnectReason.ConnectionFailed or OBDDisconnectReason.Error
+                ? reason
+                : null;
         }
 
         activeTransport = null;
         activeChannel = null;
         activeEndpoint = null;
         activeTransmitHeader = null;
+    }
+
+    /// <summary>失敗から、接続を閉じる理由を決めます。</summary>
+    /// <remarks>責務: 期限切れ・通信の失敗・取消・そのほかを <see cref="OBDDisconnectReason"/> へ写します。</remarks>
+    /// <param name="error">失敗。</param>
+    /// <returns>閉じる理由。</returns>
+    private static string DisconnectReason(Exception error) => error switch
+    {
+        VehicleIdentificationException { Reason: VehicleIdentificationError.ResponseTimedOut } => OBDDisconnectReason.ResponseTimeout,
+        VehicleIdentificationException { Reason: VehicleIdentificationError.ConnectionFailed } => OBDDisconnectReason.ConnectionFailed,
+        OperationCanceledException => OBDDisconnectReason.Cancelled,
+        _ => OBDDisconnectReason.Error,
+    };
+
+    /// <summary>取得中の要求が失敗して接続を閉じることを、例外つきで書きます。</summary>
+    /// <remarks>責務: 期限切れ・通信の失敗などで要求が終わったことを Warning で残します（失敗した要求だけ。成功の経路では何もしません）。</remarks>
+    /// <param name="command">送っていたコマンド。</param>
+    /// <param name="error">失敗。</param>
+    /// <param name="endpoint">終端。</param>
+    private static void LogRequestFailed(IELM327CommandEncoding command, Exception error, OBDConnectionEndpoint endpoint)
+    {
+        var logger = OBDConnectionLog.Logger;
+        if (logger.IsEnabled(LogLevel.Warning))
+        {
+            OBDConnectionLog.RequestFailed(
+                logger,
+                error,
+                OBDDiagnosticText.Transport(endpoint.Transport),
+                OBDDiagnosticText.Command(command),
+                OBDDiagnosticText.Cause(error));
+        }
+    }
+
+    /// <summary>応答を値として読めず、結果に含めなかったことを書きます。</summary>
+    /// <remarks>責務: 想定内の解析失敗を Debug で残します（無効なレベルでは文字列を作りません）。</remarks>
+    /// <param name="command">送ったコマンド。</param>
+    /// <param name="error">解析の失敗。</param>
+    private static void LogUnparsed(IELM327CommandEncoding command, OBDPIDTelemetryException error)
+    {
+        var logger = OBDWireLog.Logger;
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            OBDWireLog.ResponseUnparsed(logger, OBDDiagnosticText.Command(command), OBDDiagnosticText.Cause(error));
+        }
+    }
+
+    /// <summary>接続の 1 段階の開始を書き、開始の時刻印を返します。</summary>
+    /// <remarks>責務: 段階の開始を Debug で書き、所要時間を測る起点を返します。</remarks>
+    /// <param name="stage">段階名。</param>
+    /// <param name="command">段階で送るコマンド。なければ <c>null</c>。</param>
+    /// <returns><see cref="Stopwatch.GetTimestamp"/> の値。</returns>
+    private long LogStageStarted(string stage, IELM327CommandEncoding? command)
+    {
+        var logger = OBDConnectionLog.Logger;
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            OBDConnectionLog.StageStarted(
+                logger,
+                diagnosticTransportName,
+                stage,
+                command is null ? string.Empty : OBDDiagnosticText.Command(command));
+        }
+
+        return Stopwatch.GetTimestamp();
+    }
+
+    /// <summary>接続の 1 段階が済んだことを書きます。</summary>
+    /// <remarks>責務: 段階の成功と所要時間を Debug で書きます。</remarks>
+    /// <param name="stage">段階名。</param>
+    /// <param name="command">段階で送ったコマンド。なければ <c>null</c>。</param>
+    /// <param name="started">段階の開始の時刻印。</param>
+    private void LogStageSucceeded(string stage, IELM327CommandEncoding? command, long started)
+    {
+        var logger = OBDConnectionLog.Logger;
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            OBDConnectionLog.StageSucceeded(
+                logger,
+                diagnosticTransportName,
+                stage,
+                command is null ? string.Empty : OBDDiagnosticText.Command(command),
+                OBDDiagnosticText.ElapsedMilliseconds(started));
+        }
+    }
+
+    /// <summary>接続の 1 段階の失敗を、元の例外つきで書きます。</summary>
+    /// <remarks>責務: 段階・コマンド・拒否された応答を Error で残します。</remarks>
+    /// <param name="error">元の例外。</param>
+    /// <param name="stage">失敗した段階。</param>
+    /// <param name="command">段階で送ったコマンド。なければ <c>null</c>。</param>
+    /// <param name="response">受け取っていた応答。なければ <c>null</c>。</param>
+    /// <param name="started">段階の開始の時刻印。</param>
+    private void LogStageFailed(Exception error, string stage, IELM327CommandEncoding? command, string? response, long started)
+    {
+        var logger = OBDConnectionLog.Logger;
+        if (!logger.IsEnabled(LogLevel.Error))
+        {
+            return;
+        }
+
+        OBDConnectionLog.Failed(
+            logger,
+            error,
+            diagnosticTransportName,
+            stage,
+            command is null ? string.Empty : OBDDiagnosticText.Command(command),
+            OBDDiagnosticText.Cause(error),
+            command is null ? string.Empty : OBDDiagnosticText.Response(command, response),
+            OBDDiagnosticText.ElapsedMilliseconds(started));
     }
 }

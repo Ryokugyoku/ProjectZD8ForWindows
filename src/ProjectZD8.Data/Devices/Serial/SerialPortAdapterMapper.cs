@@ -73,6 +73,31 @@ public sealed partial class SerialPortAdapterMapper
         return match.Success ? match.Groups[1].Value.ToUpperInvariant() : null;
     }
 
+    /// <summary>候補から外した理由を返します（診断ログ用）。</summary>
+    /// <remarks>責務: <see cref="MakeAdapter"/> と同じ順で判定し、外した理由を短い固定の文字列にします。</remarks>
+    /// <param name="portName">COMポート名。</param>
+    /// <param name="deviceIdentifier">デバイスインスタンスIDまたはインターフェイスのパス。</param>
+    /// <returns><c>not-com-port</c> / <c>bluetooth-virtual-port</c> / <c>not-usb</c>。候補になる場合は <c>usb-serial</c>。</returns>
+    internal static string DiagnosticReason(string? portName, string? deviceIdentifier)
+    {
+        var systemIdentifier = portName?.Trim();
+        if (string.IsNullOrEmpty(systemIdentifier)
+            || !systemIdentifier.StartsWith("COM", StringComparison.OrdinalIgnoreCase))
+        {
+            return "not-com-port";
+        }
+
+        var identifier = deviceIdentifier ?? string.Empty;
+        if (identifier.Contains("BTHENUM", StringComparison.OrdinalIgnoreCase))
+        {
+            return "bluetooth-virtual-port";
+        }
+
+        return VendorPattern().Match(identifier).Success || identifier.Contains("USB", StringComparison.OrdinalIgnoreCase)
+            ? "usb-serial"
+            : "not-usb";
+    }
+
     /// <summary>フレンドリ名の末尾の <c>(COMn)</c> を探す正規表現です。</summary>
     /// <returns>ポート名を1番目のグループに持つ正規表現。</returns>
     [GeneratedRegex(@"\((COM\d+)\)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

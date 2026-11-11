@@ -1,5 +1,6 @@
 using ProjectZD8.Application.VehicleManagement.Ports;
 using ProjectZD8.Data.Devices;
+using Microsoft.Extensions.Logging;
 using ProjectZD8.Data.Devices.OBD;
 using ProjectZD8.Domain.ValueObjects;
 using Windows.Devices.Bluetooth;
@@ -17,6 +18,9 @@ namespace ProjectZD8.Data.Windows.Devices.Bluetooth;
 /// </remarks>
 public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
 {
+    /// <summary>診断ログに書く Transport の種類です。</summary>
+    private const string Transport = OBDDiagnosticText.TransportBLE;
+
     /// <summary>接続処理の期限です。</summary>
     private static readonly TimeSpan OpenTimeout = TimeSpan.FromSeconds(12);
 
@@ -78,6 +82,7 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
         var opening = Connect();
         if (await Task.WhenAny(opening, Task.Delay(OpenTimeout)) != opening)
         {
+            OBDConnectionLog.TransportTimeout(OBDConnectionLog.Logger, Transport, "open", (long)OpenTimeout.TotalMilliseconds, 0);
             // 期限後に接続できても使わずに閉じます。
             _ = opening.ContinueWith(
                 task => task.Result.Dispose(),
@@ -126,6 +131,7 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
             var writing = active.Write.WriteValueWithResultAsync(writer.DetachBuffer(), active.WriteOption).AsTask();
             if (await Task.WhenAny(writing, Task.Delay(WriteTimeout)) != writing)
             {
+                OBDConnectionLog.TransportTimeout(OBDConnectionLog.Logger, Transport, "write", (long)WriteTimeout.TotalMilliseconds, 0);
                 throw new VehicleIdentificationException(new VehicleIdentificationError.ResponseTimedOut());
             }
 
@@ -134,13 +140,15 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
             {
                 result = await writing;
             }
-            catch (Exception)
+            catch (Exception error)
             {
+                OBDConnectionLog.TransportFailed(OBDConnectionLog.Logger, error, Transport, "write");
                 throw ConnectionFailed();
             }
 
             if (result.Status != GattCommunicationStatus.Success)
             {
+                OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "write", $"status={result.Status}、protocol-error={result.ProtocolError}");
                 throw ConnectionFailed();
             }
         }
@@ -162,6 +170,7 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
 
             if (!isConnected || pendingRead is not null)
             {
+                OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "read", isConnected ? "read-already-pending" : "not-connected");
                 throw ConnectionFailed();
             }
 
@@ -171,6 +180,7 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
 
         if (await Task.WhenAny(waiting.Task, Task.Delay(ReadTimeout)) != waiting.Task)
         {
+            OBDConnectionLog.TransportTimeout(OBDConnectionLog.Logger, Transport, "read", (long)ReadTimeout.TotalMilliseconds, BufferedCount);
             FinishRead(waiting, new VehicleIdentificationException(new VehicleIdentificationError.ResponseTimedOut()));
         }
 
@@ -216,13 +226,15 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
         {
             device = await BluetoothLEDevice.FromBluetoothAddressAsync(address);
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            OBDConnectionLog.TransportFailed(OBDConnectionLog.Logger, error, Transport, "device-lookup");
             throw ConnectionFailed();
         }
 
         if (device is null)
         {
+            OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "device-lookup", "not-found");
             throw ConnectionFailed();
         }
 
@@ -233,6 +245,11 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
             session = await GattSession.FromDeviceIdAsync(device.BluetoothDeviceId);
             session.MaintainConnection = true;
             var serviceResult = await device.GetGattServicesAsync(BluetoothCacheMode.Uncached);
+            OBDConnectionLog.TransportStep(
+                OBDConnectionLog.Logger,
+                Transport,
+                "gatt-services",
+                $"status={serviceResult.Status}、services={serviceResult.Services.Count}");
             if (serviceResult.Status == GattCommunicationStatus.Unreachable)
             {
                 throw ConnectionFailed();
@@ -261,12 +278,18 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
             var status = await notify.WriteClientCharacteristicConfigurationDescriptorAsync(descriptorValue);
             if (status != GattCommunicationStatus.Success)
             {
+                OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "cccd", $"status={status}、{descriptorValue}");
                 throw ConnectionFailed();
             }
 
             var writeOption = write.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Write)
                 ? GattWriteOption.WriteWithResponse
                 : GattWriteOption.WriteWithoutResponse;
+            OBDConnectionLog.TransportStep(
+                OBDConnectionLog.Logger,
+                Transport,
+                "connect",
+                $"max-pdu={session.MaxPduSize}、{writeOption}、{descriptorValue}");
             return new GattConnection(device, session, services, write, notify, writeOption);
         }
         catch (VehicleIdentificationException)
@@ -274,8 +297,9 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
             DisposeAll(device, session, services);
             throw;
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            OBDConnectionLog.TransportFailed(OBDConnectionLog.Logger, error, Transport, "connect");
             DisposeAll(device, session, services);
             throw ConnectionFailed();
         }
@@ -300,7 +324,9 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
                     supportsWriteWithoutResponse: characteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.WriteWithoutResponse)))
                 .ToArray(),
             StringComparer.Ordinal);
-        var profile = profileResolver.Resolve(capabilities)
+        var resolved = profileResolver.Resolve(capabilities);
+        LogGatt(capabilities, resolved is not null);
+        var profile = resolved
             ?? throw new VehicleIdentificationException(new VehicleIdentificationError.TransportUnsupported());
         var serviceCharacteristics = characteristicsByService
             .First(entry => string.Equals(entry.Key, profile.ServiceUUID, StringComparison.OrdinalIgnoreCase))
@@ -310,6 +336,46 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
         var notify = serviceCharacteristics.First(characteristic =>
             string.Equals(BluetoothUUIDText.Format(characteristic.Uuid), profile.NotifyCharacteristicUUID, StringComparison.OrdinalIgnoreCase));
         return (write, notify);
+    }
+
+    /// <summary>機器の GATT の構成の要約を書きます。</summary>
+    /// <remarks>
+    /// 責務: 未知の UART 構成のアダプターを調べられるよう、Service ごとの Characteristic の UUID と能力
+    /// （N=Notify/Indicate、W=応答あり書込、w=応答なし書込）を Debug で残します。無効なレベルでは文字列を作りません。
+    /// </remarks>
+    /// <param name="capabilities">Service UUID ごとの Characteristic の能力。</param>
+    /// <param name="resolved">既知の UART 構成に当たったか。</param>
+    private static void LogGatt(
+        IReadOnlyDictionary<string, IReadOnlyList<BluetoothCharacteristicCapability>> capabilities,
+        bool resolved)
+    {
+        var logger = OBDConnectionLog.Logger;
+        if (!logger.IsEnabled(LogLevel.Debug))
+        {
+            return;
+        }
+
+        var summary = string.Join(
+            "; ",
+            capabilities.Select(service => service.Key + " [" + string.Join(
+                ", ",
+                service.Value.Select(characteristic => characteristic.UUID + ":"
+                    + (characteristic.SupportsNotify ? "N" : string.Empty)
+                    + (characteristic.SupportsWriteWithResponse ? "W" : string.Empty)
+                    + (characteristic.SupportsWriteWithoutResponse ? "w" : string.Empty))) + "]"));
+        OBDConnectionLog.BluetoothLEGatt(logger, summary, resolved);
+    }
+
+    /// <summary>受信済みで未返却のバイト数です（診断ログ用）。</summary>
+    private int BufferedCount
+    {
+        get
+        {
+            lock (gate)
+            {
+                return readBuffer.Count;
+            }
+        }
     }
 
     /// <summary>通知で受信した分割バイトを応答バッファーへ追加します。</summary>
@@ -351,6 +417,7 @@ public sealed class WindowsBluetoothLEOBDTransport : IOBDCommandTransport
             return;
         }
 
+        OBDConnectionLog.TransportLost(OBDConnectionLog.Logger, Transport, "ble-disconnected");
         TaskCompletionSource<byte[]>? waiting;
         lock (gate)
         {

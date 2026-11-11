@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using ProjectZD8.Application.LiveTelemetry.Ports;
 using ProjectZD8.Application.Logging.Ports;
+using ProjectZD8.Diagnostics;
 using ProjectZD8.Domain.Entities;
 using ProjectZD8.Domain.Errors;
 using ProjectZD8.Domain.ValueObjects;
@@ -40,6 +42,9 @@ public sealed class ConnectionSessionAcquisitionController : ILiveTelemetryAcqui
     /// <summary>現在世代へ保存済みのRaw取得許可です。</summary>
     private ConnectionSessionRawAcquisitionPermission? _permission;
 
+    /// <summary>現在の取得許可の接続セッション ID（診断ログの <c>sid</c>）です。</summary>
+    private string? _diagnosticSessionId;
+
     /// <summary>Production取得証拠のuse case、session境界、version authorityを固定します。</summary>
     /// <remarks>責務: LiveTelemetry portを1組のLogging取得証拠use caseへ結び付けます。</remarks>
     /// <param name="createManifest">manifestと開始境界を原子的に保存するuse case。</param>
@@ -71,6 +76,21 @@ public sealed class ConnectionSessionAcquisitionController : ILiveTelemetryAcqui
         _permission = null;
     }
 
+    /// <summary>
+    /// 最後に取得を許可した接続セッションの ID（診断ログの <c>sid</c>）です。まだなければ null。
+    /// </summary>
+    /// <remarks>取得のループが、ループ全体に 1 回だけ <c>sid</c> を付けるために読みます（バッチごとに割り当てを増やさないため）。</remarks>
+    internal string? DiagnosticSessionId
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _diagnosticSessionId;
+            }
+        }
+    }
+
     /// <summary>manifestと開始境界を保存し、成功した世代だけを取得可能にします。</summary>
     /// <remarks>責務: 1世代の確定済み取得入力を保存済みRaw取得許可へ変換します。</remarks>
     /// <param name="input">定義、capability、policy順を含む取得開始入力。</param>
@@ -82,9 +102,13 @@ public sealed class ConnectionSessionAcquisitionController : ILiveTelemetryAcqui
             new AcquisitionPerformanceContext(generation: input.Generation));
         if (await _activeSessionID() is not { } sessionID)
         {
+            AcquisitionLog.EvidenceNoSession(AcquisitionLog.Logger, input.Generation);
             _performanceEvents.End(interval, AcquisitionPerformanceOutcome.Failed);
             throw new ConnectionSessionRepositoryException(ConnectionSessionRepositoryError.InvalidState);
         }
+        var diagnosticSessionId = AcquisitionLog.SessionId(sessionID);
+        using var sessionScope = DiagnosticLog.BeginConnectionSession(diagnosticSessionId);
+        var started = Stopwatch.GetTimestamp();
         _createManifest.Activate(input.Generation);
         _persistBatch.Activate(input.Generation);
         try
@@ -103,7 +127,13 @@ public sealed class ConnectionSessionAcquisitionController : ILiveTelemetryAcqui
             lock (_gate)
             {
                 _permission = permission;
+                _diagnosticSessionId = diagnosticSessionId;
             }
+            AcquisitionLog.EvidenceStarted(
+                AcquisitionLog.Logger,
+                input.Generation,
+                input.OrderedRequests.Count,
+                (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds);
             _performanceEvents.End(interval, AcquisitionPerformanceOutcome.Succeeded);
         }
         catch (Exception)
@@ -122,9 +152,11 @@ public sealed class ConnectionSessionAcquisitionController : ILiveTelemetryAcqui
     public async Task<IReadOnlyList<OBDPIDSample>> Acquire(LiveTelemetryAcquisitionBatchInput input)
     {
         ConnectionSessionRawAcquisitionPermission? permission;
+        string? diagnosticSessionId;
         lock (_gate)
         {
             permission = _permission;
+            diagnosticSessionId = _diagnosticSessionId;
         }
         if (permission is null || permission.Generation != input.Generation)
         {
@@ -136,6 +168,7 @@ public sealed class ConnectionSessionAcquisitionController : ILiveTelemetryAcqui
                     policyTick: input.PolicyTick,
                     scheduleDelayNanoseconds: input.ScheduleDelayNanoseconds));
             _performanceEvents.End(staleInterval, AcquisitionPerformanceOutcome.Failed);
+            AcquisitionLog.BatchDropped(AcquisitionLog.Logger, input.Generation, input.BatchOrdinal, "stale-generation");
             throw new PersistAcquisitionBatchException(PersistAcquisitionBatchError.InactiveGeneration);
         }
         var interval = _performanceEvents.Begin(
@@ -147,6 +180,10 @@ public sealed class ConnectionSessionAcquisitionController : ILiveTelemetryAcqui
                 scheduleDelayNanoseconds: input.ScheduleDelayNanoseconds));
         try
         {
+            // 取得のループが sid を付けていればそのまま使う（バッチごとに割り当てを増やさない）。
+            using var sessionScope = DiagnosticLog.CurrentSessionId is null
+                ? DiagnosticLog.BeginConnectionSession(diagnosticSessionId)
+                : null;
             var result = await _persistBatch.ExecuteWithSamples(
                 new PersistAcquisitionBatchInput(
                     permission: permission,
@@ -161,6 +198,7 @@ public sealed class ConnectionSessionAcquisitionController : ILiveTelemetryAcqui
         catch (PersistAcquisitionBatchException error) when (error.Reason == PersistAcquisitionBatchError.InactiveGeneration)
         {
             _performanceEvents.End(interval, AcquisitionPerformanceOutcome.Cancelled);
+            AcquisitionLog.BatchDropped(AcquisitionLog.Logger, input.Generation, input.BatchOrdinal, "inactive-generation");
             throw new PersistAcquisitionBatchException(PersistAcquisitionBatchError.InactiveGeneration);
         }
         catch (Exception)
@@ -188,6 +226,7 @@ public sealed class ConnectionSessionAcquisitionController : ILiveTelemetryAcqui
                 _permission = null;
             }
         }
+        AcquisitionLog.GenerationCancelled(AcquisitionLog.Logger, generation);
         _performanceEvents.End(interval, AcquisitionPerformanceOutcome.Succeeded);
         return Task.CompletedTask;
     }

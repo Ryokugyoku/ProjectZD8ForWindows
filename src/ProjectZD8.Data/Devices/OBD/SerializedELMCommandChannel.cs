@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using ProjectZD8.Application.VehicleManagement.Ports;
 
 namespace ProjectZD8.Data.Devices.OBD;
@@ -7,6 +9,7 @@ namespace ProjectZD8.Data.Devices.OBD;
 /// <remarks>
 /// Swift の <c>actor</c> に対応します。呼び出し側（UI スレッド）が1件ずつ await する前提で、
 /// 応答境界の状態だけを保持します。
+/// コマンド 1 往復ごとに <c>obd.wire</c> へ 1 行（Trace）を書きます。無効なレベルでは文字列を作りません。
 /// </remarks>
 public sealed class SerializedELMCommandChannel
 {
@@ -34,11 +37,18 @@ public sealed class SerializedELMCommandChannel
     /// <exception cref="VehicleIdentificationException">境界喪失、送受信失敗、不正文字列の場合の識別エラー。</exception>
     public async Task<string> Execute(IELM327CommandEncoding command)
     {
+        var logger = OBDWireLog.Logger;
         if (!isBoundaryEstablished)
         {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                OBDWireLog.BoundaryLost(logger, OBDDiagnosticText.Command(command));
+            }
+
             throw new VehicleIdentificationException(new VehicleIdentificationError.ConnectionFailed());
         }
 
+        var started = Stopwatch.GetTimestamp();
         try
         {
             await transport.Write(command.EncodedData);
@@ -53,11 +63,32 @@ public sealed class SerializedELMCommandChannel
                 throw new VehicleIdentificationException(new VehicleIdentificationError.MalformedResponse());
             }
 
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                OBDWireLog.Exchanged(
+                    logger,
+                    OBDDiagnosticText.Command(command),
+                    OBDDiagnosticText.Response(command, response),
+                    data.Length,
+                    OBDDiagnosticText.ElapsedMilliseconds(started));
+            }
+
             return response.Replace(">", string.Empty, StringComparison.Ordinal);
         }
-        catch
+        catch (Exception error)
         {
             isBoundaryEstablished = false;
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                OBDWireLog.Failed(
+                    logger,
+                    error,
+                    OBDDiagnosticText.Command(command),
+                    OBDDiagnosticText.Cause(error),
+                    OBDDiagnosticText.IsTimeout(error),
+                    OBDDiagnosticText.ElapsedMilliseconds(started));
+            }
+
             throw;
         }
     }

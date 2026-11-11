@@ -5,7 +5,9 @@ using ProjectZD8.Application.DeviceConnection.Ports;
 using ProjectZD8.Application.LiveTelemetry.Actions;
 using ProjectZD8.Application.LiveTelemetry.Ports;
 using ProjectZD8.Application.LiveTelemetry.UseCases;
+using ProjectZD8.Application.Logging;
 using ProjectZD8.Application.Logging.UseCases;
+using ProjectZD8.Diagnostics;
 using ProjectZD8.Domain.Entities;
 using ProjectZD8.Domain.Policies;
 using ProjectZD8.Domain.ValueObjects;
@@ -42,6 +44,9 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
 
     /// <summary>PID取得セッションが終了した原因をLoggingへ通知する処理です。</summary>
     private readonly Action<ConnectionSessionEndReason> sessionDidEnd;
+
+    /// <summary>周期の遅れを診断ログに Warning で書く下限です（1 周期分の 250 ミリ秒）。</summary>
+    private const ulong ScheduleDelayWarningNanoseconds = 250_000_000UL;
 
     /// <summary>取得できた取得元付き累積距離をLoggingへ通知する処理です。</summary>
     private readonly Action<ConnectionSessionDistanceObservation> distanceDidChange;
@@ -151,6 +156,7 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
             Samples = [],
             SupportedPIDCount = 0,
         };
+        AcquisitionLog.Started(AcquisitionLog.Logger, endpoint.Transport.ToRawValue(), generation, acquisitionEvidence is not null);
         systemSleepInhibitor?.SetVehicleConnectionActive(true);
         previousTask?.Cancel();
         var cancellation = new CancellationTokenSource();
@@ -236,9 +242,11 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
         await readMajorPIDs.EndSession();
         if (pollingGeneration != generation)
         {
+            AcquisitionLog.Stopped(AcquisitionLog.Logger, "superseded", stoppedGeneration);
             return;
         }
 
+        AcquisitionLog.Stopped(AcquisitionLog.Logger, "user", stoppedGeneration);
         State = State with { Phase = LiveTelemetryStatePhase.Idle };
         systemSleepInhibitor?.SetVehicleConnectionActive(false);
         if (shouldNotifySessionEnd)
@@ -262,6 +270,8 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
         ulong generation,
         CancellationToken cancellationToken)
     {
+        IDisposable? sessionScope = null;
+        var loadStarted = Stopwatch.GetTimestamp();
         try
         {
             IReadOnlyList<OBDPIDDefinition> definitions;
@@ -293,6 +303,12 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
                 capabilityInputs = [];
             }
 
+            AcquisitionLog.CapabilitiesLoaded(
+                AcquisitionLog.Logger,
+                definitions.Count,
+                capabilityInputs.Count,
+                (long)Stopwatch.GetElapsedTime(loadStarted).TotalMilliseconds);
+
             if (acquisitionEvidence is not null)
             {
                 if (capabilityInputs.Count != definitions.Count)
@@ -308,6 +324,13 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
                     orderedRequests: pollingPolicy.DefinitionsToPoll(definitions, tick: 0)
                         .Select(definition => new OBDPIDRequest(definition.Service, definition.Pid))
                         .ToList()));
+
+                // 取得のループ全体に接続セッション ID を 1 回だけ付けます（バッチごとに割り当てを増やさないため）。
+                if (acquisitionEvidence is ConnectionSessionAcquisitionController { DiagnosticSessionId: { } sessionId })
+                {
+                    sessionScope = DiagnosticLog.BeginConnectionSession(sessionId);
+                }
+
                 await PollPersisted(definitions, endpoint, generation, cancellationToken);
             }
             else
@@ -318,6 +341,10 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
         catch (Exception error)
         {
             await HandlePollingFailure(error, generation);
+        }
+        finally
+        {
+            sessionScope?.Dispose();
         }
     }
 
@@ -341,11 +368,13 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
 
         if (error is OperationCanceledException)
         {
+            AcquisitionLog.Stopped(AcquisitionLog.Logger, "cancelled", generation);
             return;
         }
 
         systemSleepInhibitor?.SetVehicleConnectionActive(false);
         var reason = (error as OBDPIDTelemetryException)?.Reason;
+        LogPollingFailure(error, reason, generation);
         switch (reason)
         {
             case OBDPIDTelemetryError.DefinitionCatalogUnavailable:
@@ -486,6 +515,13 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
                 scheduleDelayNanoseconds = overflow || actualWake < scheduledWake
                     ? null
                     : actualWake - scheduledWake;
+                if (scheduleDelayNanoseconds >= ScheduleDelayWarningNanoseconds)
+                {
+                    AcquisitionLog.ScheduleDelayed(
+                        AcquisitionLog.Logger,
+                        tick,
+                        (long)(scheduleDelayNanoseconds.Value / 1_000_000UL));
+                }
             }
             else
             {
@@ -537,6 +573,37 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
 
         await acquisitionEvidence.Cancel(generation);
         await readMajorPIDs.EndSession();
+    }
+
+    /// <summary>取得の失敗を、画面に出す区別に合わせて診断ログへ書きます。</summary>
+    /// <remarks>
+    /// 責務: 車両の無応答・接続の喪失（画面には切断として出る）は Warning、それ以外の失敗（画面にエラーが出る）は Error で、
+    /// どちらも元の例外つきで残します。
+    /// </remarks>
+    /// <param name="error">取得処理から伝播したエラー。</param>
+    /// <param name="reason">取得エラーの理由。取得エラーでなければ <c>null</c>。</param>
+    /// <param name="generation">エラーが属する取得世代。</param>
+    private static void LogPollingFailure(Exception error, OBDPIDTelemetryError? reason, ulong generation)
+    {
+        var logger = AcquisitionLog.Logger;
+        switch (reason)
+        {
+            case OBDPIDTelemetryError.NoVehicleResponse:
+                AcquisitionLog.Disconnected(logger, error, "vehicle-no-response", generation);
+                break;
+            case OBDPIDTelemetryError.ConnectionLost:
+                AcquisitionLog.Disconnected(logger, error, "connection-lost", generation);
+                break;
+            case OBDPIDTelemetryError.DefinitionCatalogUnavailable:
+                AcquisitionLog.Failed(logger, error, "telemetry.error.pid_catalog_unavailable", generation);
+                break;
+            case OBDPIDTelemetryError.Unavailable:
+                AcquisitionLog.Failed(logger, error, "telemetry.error.unavailable", generation);
+                break;
+            default:
+                AcquisitionLog.Failed(logger, error, "telemetry.error.read_failed", generation);
+                break;
+        }
     }
 
     /// <summary>新しい観測をPIDごとの最新値へ統合します。</summary>

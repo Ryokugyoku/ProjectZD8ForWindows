@@ -38,8 +38,8 @@ public sealed class CombinedAdapterDiscovery : IAdapterDiscoveryPort
             return await systemDiscovery.DiscoverAdapters(mode);
         }
 
-        var systemCandidates = Candidates(systemDiscovery, mode);
-        var lowEnergyCandidates = Candidates(lowEnergyDiscovery, mode);
+        var systemCandidates = Candidates(systemDiscovery, mode, "system");
+        var lowEnergyCandidates = Candidates(lowEnergyDiscovery, mode, "ble");
         var systemResult = await systemCandidates;
         var lowEnergyResult = await lowEnergyCandidates;
 
@@ -56,14 +56,27 @@ public sealed class CombinedAdapterDiscovery : IAdapterDiscoveryPort
     /// <param name="discovery">候補を取得する探索境界。</param>
     /// <param name="mode">探索対象の物理接続方式。</param>
     /// <returns>探索に成功した候補。失敗した場合は <c>null</c>。</returns>
-    private static async Task<IReadOnlyList<DiscoveredAdapter>?> Candidates(IAdapterDiscoveryPort discovery, AdapterTransportMode mode)
+    /// <param name="source">診断ログに書く探索の名前（<c>system</c> / <c>ble</c>）。</param>
+    private static async Task<IReadOnlyList<DiscoveredAdapter>?> Candidates(
+        IAdapterDiscoveryPort discovery,
+        AdapterTransportMode mode,
+        string source)
     {
         try
         {
             return await discovery.DiscoverAdapters(mode);
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            if (error is OperationCanceledException)
+            {
+                OBDDiscoveryLog.StepFailed(OBDDiscoveryLog.Logger, error, source);
+            }
+            else
+            {
+                OBDDiscoveryLog.SourceFailed(OBDDiscoveryLog.Logger, error, source, mode.ToString());
+            }
+
             return null;
         }
     }

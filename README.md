@@ -15,11 +15,13 @@ CloudKit Web Services を通じて iOS 版とデータを同期します。
 | `src/ProjectZD8.Application` | ユースケース層（iOS 版の `ProjectZD8/Application` に対応）。net10.0、Domain だけを参照する。機能ごとに `Features/<機能>/{Actions,Ports,State,UseCases}` |
 | `src/ProjectZD8.Data` | 実装層のうち OS に依存しない部分（iOS 版の `ProjectZD8/Data`）。net10.0。保存（SQLite とログストア）、JSON 互換、CloudKit Web Services、Sign in with Apple（Web）、ELM327 と OBD のアダプター |
 | `src/ProjectZD8.Data.Windows` | Windows の API が要る実装。USB シリアル（COM）、Bluetooth Classic（RFCOMM）、BLE（GATT の UART）、機器の検出と到来の監視、資格情報の保存（PasswordVault / DPAPI）、ブラウザーの起動、スリープ抑止 |
-| `tests/ProjectZD8.Domain.Tests`、`tests/ProjectZD8.Application.Tests`、`tests/ProjectZD8.Data.Tests` | 各層の xUnit テスト |
+| `src/ProjectZD8.Diagnostics` | 診断ログの土台（JSON Lines への書込み、チャンネル Dev / Beta / Stable、リングバッファ、伏せる処理）。net10.0。Domain からは参照しない |
+| `tests/ProjectZD8.Domain.Tests`、`tests/ProjectZD8.Application.Tests`、`tests/ProjectZD8.Data.Tests`、`tests/ProjectZD8.Diagnostics.Tests` | 各層の xUnit テスト |
 | `tools/ProjectZD8.LogStoreBenchmark` | 生ログストアの性能測定（100 万件の書込みと範囲読取） |
 | `scripts/ConvertXcstrings.cs` | iOS 版の `Localizable.xcstrings` と `Strings/WindowsOnly.xcstrings` から `.resw` を作る |
+| `scripts/Analyze-Diagnostics.ps1` | 不具合レポート（zip）や診断ログのフォルダーを読み、環境・実行ごとの件数・Error / Fatal の一覧を出す。`-Report 7F3A-1842` で報告番号の前後、`-Event` で絞り込み（PowerShell 5.1 / 7） |
 | `docs/PORTING_CONVENTIONS.md` | Swift から C# に移すときの規約 |
-| `docs/LOGGING_STRATEGY.md` | 診断ログの戦略（方針のみ。実装はこれから） |
+| `docs/LOGGING_STRATEGY.md` | 診断ログの戦略（ログの形、版の切り替え、伏せる項目、分析のしかた） |
 | `docs/CLOUD_SETUP.md`、`docs/web/` | iCloud 同期と Sign in with Apple の準備（開発者向け）と、サインイン後に戻るページの見本 |
 | `docs/USER_GUIDE.html` | お客様向けのご利用ガイド（画像は `docs/store/screenshots/` を参照） |
 | `docs/STORE_RELEASE.md`、`.github/workflows/`、`scripts/Set-PackageIdentity.ps1` | Microsoft Store への公開（プライベート対象ユーザーでのベータ配布）と、GitHub Actions のビルド・テスト・自動リリース |
@@ -37,6 +39,7 @@ iOS 版はすべてのデータを GRDB（SQLite）に入れています。**Win
   セッションごとのセグメントファイルに「長さ＋CRC32」で枠付けして追記し、疎な索引で sequence と時刻の範囲を速く読み、確定したセグメントは圧縮します。
   書込みは背景スレッドでまとめて行うので計測を止めず、途中で落ちても書きかけの末尾を切り詰めて開き直します。
   Domain のリポジトリのインターフェースの裏に隠しているので、保存方式はあとから替えられます。
+- **診断ログ**（`<データのフォルダー>\diagnostics\`、JSON Lines）：アプリの動きと不具合の記録。生ログの `logs\` とは別のフォルダーです。端末の中だけに置き、自動では送信しません（[PRIVACY.md](PRIVACY.md)）。
 
 データのフォルダーは、パッケージアプリならパッケージの `LocalState`（`%LOCALAPPDATA%\Packages\<パッケージファミリー名>\LocalState`）です。
 iOS 版とやりとりする JSON（CloudKit のレコード）の形式は、保存方式とは関係なく iOS 版と同じです。
@@ -80,6 +83,12 @@ dotnet test ProjectZD8ForWindows.slnx -p:Platform=x64
 
 アプリ本体は Visual Studio で `ProjectZD8ForWindows.slnx` を開き、プラットフォーム（x64 など）を選んで実行します。
 コマンドラインでは、ビルドしたあと `Add-AppxPackage -Register bin\x64\Debug\net10.0-windows10.0.19041.0\win-x64\AppxManifest.xml` で登録してスタートメニューから起動できます。
+
+診断ログの版（Dev / Beta / Stable）は MSBuild プロパティ `DiagnosticsChannel` で決まります。Debug 構成は既定で Dev、それ以外は Stable です。ベータの版で作るには次のようにします。
+
+```bash
+dotnet build ProjectZD8ForWindows.slnx -p:Platform=x64 -c Release -p:DiagnosticsChannel=Beta
+```
 
 Release ビルドはトリミングしません（トリミングすると起動直後に落ちるため）。
 

@@ -53,6 +53,7 @@
    | Secret | `PARTNER_CENTER_CLIENT_SECRET` | 1 のキー |
    | Variable | `STORE_PRODUCT_ID` | Store ID（9N…）。空のあいだは提出しない |
    | Variable | `STORE_FLIGHT_ID` | パッケージ フライトに出すときだけ。フライト ID |
+   | Variable | `RELEASE_CHANNEL` | 診断ログの版。`beta` か `stable`（[LOGGING_STRATEGY.md](LOGGING_STRATEGY.md) の 5）。空なら `beta`。それ以外の値はビルドを止める |
 
    クライアント シークレットには有効期限があります。切れたら作り直して Secret を更新します。
 
@@ -72,6 +73,7 @@ git push origin v1.0.1
 
 - 一般公開：Partner Center で「表示」を「公開」に変えて提出します。テスターはそのまま正式版の更新を受け取ります。
 - その後のベータは **パッケージ フライト** を使います。Partner Center でフライトを作ってグループを選び、フライト ID を `STORE_FLIGHT_ID` に入れると、タグの push がフライトへの提出になります。正式版を出すときは `STORE_FLIGHT_ID` を空に戻します。
+- 一般公開のときは `RELEASE_CHANNEL` を `stable` にします。これは提出の種類に関係なく効くので、フライトを続けるあいだは `beta` のままにしてください（フライトと通常提出の扱いを分けるかは未決定。[LOGGING_STRATEGY.md](LOGGING_STRATEGY.md) の 10）。
 
 ## 注意
 

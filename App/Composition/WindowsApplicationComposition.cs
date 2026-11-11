@@ -70,11 +70,20 @@ public static class WindowsApplicationComposition
     public static WindowsApplicationRoot MakeRoot(string[] arguments)
     {
         var dataDirectory = WindowsApplicationDataLocation.DataDirectory();
+        var settingsPath = WindowsApplicationDataLocation.LocalSettingsPath(dataDirectory);
         // 機能フラグ（AppleSignIn:Enabled）が無効なら、設定がそろっていても「設定なし」として扱う（Coming Soon）。
-        var loadedConfiguration = CloudServiceConfigurationLoader.Load(WindowsApplicationDataLocation.LocalSettingsPath(dataDirectory));
+        var loadedConfiguration = CloudServiceConfigurationLoader.Load(settingsPath);
+
+        // 診断ログの出力先を、ほかの何よりも先に差し込む（app.start にローカルモードかを書くため、設定の読み込みだけ先に行う）。
+        var diagnostics = WindowsDiagnosticsBootstrap.Start(dataDirectory, settingsPath, isLocalMode: !loadedConfiguration.IsAppleSignInActive);
         if (loadedConfiguration.AppleSignInAvailability == AppleSignInAvailability.MissingSettings)
         {
-            Debug.WriteLine($"AppleSignIn:Enabled は true ですが、設定が足りないため Coming Soon のままにします: {loadedConfiguration}");
+            CompositionLog.AppleSignInSettingsIncomplete(
+                CompositionLog.App,
+                hasServicesId: !string.IsNullOrWhiteSpace(loadedConfiguration.AppleServicesId),
+                hasRedirectUri: loadedConfiguration.AppleRedirectUri is not null,
+                hasApiToken: !string.IsNullOrWhiteSpace(loadedConfiguration.CloudKitApiToken),
+                cloudKitEnvironment: loadedConfiguration.CloudKitEnvironment);
         }
 
         var cloudConfiguration = loadedConfiguration.ForActiveFeatures();
@@ -248,7 +257,9 @@ public static class WindowsApplicationComposition
                 promptForDefaultAdapterConnection.Stop();
                 (connectionSessionStorage as IDisposable)?.Dispose();
                 httpClient.Dispose();
-            });
+                diagnostics?.Stop();
+            },
+            Diagnostics: diagnostics);
     }
 
     /// <summary>
@@ -268,7 +279,7 @@ public static class WindowsApplicationComposition
         }
         catch (Exception exception)
         {
-            Debug.WriteLine($"接続セッションの保存先を開けませんでした: {exception}");
+            CompositionLog.StoreOpenFailed(CompositionLog.StoreSqlite, exception, "connection-sessions");
             return new UnavailableConnectionSessionRepository();
         }
     }
@@ -290,7 +301,7 @@ public static class WindowsApplicationComposition
         }
         catch (Exception exception)
         {
-            Debug.WriteLine($"PID 定義の保存先を開けませんでした: {exception}");
+            CompositionLog.StoreOpenFailed(CompositionLog.StoreSqlite, exception, "pid-definitions");
             return new UnavailableOBDPIDDefinitionRepository();
         }
     }
@@ -309,7 +320,7 @@ public static class WindowsApplicationComposition
         }
         catch (Exception exception)
         {
-            Debug.WriteLine($"車両別対応 PID の保存先を開けませんでした: {exception}");
+            CompositionLog.StoreOpenFailed(CompositionLog.StoreSqlite, exception, "vehicle-pid-capabilities");
             return new UnavailableVehiclePIDCapabilityRepository();
         }
     }
@@ -328,7 +339,7 @@ public static class WindowsApplicationComposition
         }
         catch (Exception exception)
         {
-            Debug.WriteLine($"整備記録の保存先を開けませんでした: {exception}");
+            CompositionLog.StoreOpenFailed(CompositionLog.StoreSqlite, exception, "maintenance-records");
             return new UnavailableMaintenanceRecordRepository();
         }
     }

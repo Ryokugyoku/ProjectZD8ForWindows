@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
+using ProjectZD8.Diagnostics;
 using ProjectZD8ForWindows.AppRoot.Composition;
 using ProjectZD8ForWindows.AppRoot.Flow;
 using ProjectZD8ForWindows.AppRoot.Lifecycle;
@@ -27,28 +29,41 @@ public partial class App : Microsoft.UI.Xaml.Application
     {
         InitializeComponent();
         UnhandledException += OnUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
     }
 
     /// <summary>
     /// 画面の処理で捕まえられなかった例外を記録します（終了はさせたまま）。
     /// </summary>
-    /// <remarks>責務: 原因を調べられるよう、例外の内容をデバッグ出力と一時フォルダーのログへ書きます。</remarks>
+    /// <remarks>責務: 直前の出来事と例外を診断ログの <c>crash-*.jsonl</c> へ同期で書きます。</remarks>
     /// <param name="sender">送り元。</param>
     /// <param name="e">例外の情報。</param>
-    private static void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    private static void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e) =>
+        DiagnosticLog.ReportCrash(e.Exception, DiagnosticCrashSource.Xaml);
+
+    /// <summary>
+    /// UI スレッド以外で捕まえられなかった例外を記録します（プロセスは落ちる）。
+    /// </summary>
+    /// <remarks>責務: 直前の出来事と例外を診断ログの <c>crash-*.jsonl</c> へ同期で書きます。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">例外の情報。</param>
+    private static void OnDomainUnhandledException(object sender, System.UnhandledExceptionEventArgs e)
     {
-        var text = $"{DateTimeOffset.Now:O} {e.Exception}{Environment.NewLine}";
-        System.Diagnostics.Debug.WriteLine(text);
-        try
+        if (e.ExceptionObject is Exception exception)
         {
-            var directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "RevTorqueInsight");
-            System.IO.Directory.CreateDirectory(directory);
-            System.IO.File.AppendAllText(System.IO.Path.Combine(directory, "unhandled.log"), text);
-        }
-        catch (System.IO.IOException)
-        {
+            DiagnosticLog.ReportCrash(exception, DiagnosticCrashSource.AppDomain);
         }
     }
+
+    /// <summary>
+    /// 待たれなかったタスクの例外を記録します（プロセスは落ちない）。
+    /// </summary>
+    /// <remarks>責務: 例外を Error として診断ログへ書きます（<c>crash-*.jsonl</c> にも残す）。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">例外の情報。</param>
+    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e) =>
+        DiagnosticLog.ReportCrash(e.Exception, DiagnosticCrashSource.UnobservedTask);
 
     /// <summary>
     /// <c>revtorque-insight://</c> で起動されたときに URI を受け取る処理です（UI スレッドで呼ばれる）。
@@ -91,6 +106,7 @@ public partial class App : Microsoft.UI.Xaml.Application
     /// <param name="args">起動の情報。</param>
     private void OnRedirectedActivation(object? sender, AppActivationArguments args)
     {
+        AppLifecycleLog.ActivationRedirected(AppLifecycleLog.Logger, args.Kind.ToString());
         _dispatcherQueue?.TryEnqueue(() =>
         {
             HandleActivation(args);
@@ -109,6 +125,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             && args.Data is global::Windows.ApplicationModel.Activation.IProtocolActivatedEventArgs protocol
             && protocol.Uri is { } uri)
         {
+            AppLifecycleLog.ProtocolActivation(AppLifecycleLog.Logger, Redact.Url(uri));
             _protocolActivation.Deliver(uri);
         }
     }

@@ -18,6 +18,18 @@
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
+  <!--
+    診断ログのチャンネル（Dev / Beta / Stable、docs/LOGGING_STRATEGY.md の 5）。-p:DiagnosticsChannel=beta のように上書きできる。
+    指定がなければ Debug 構成は Dev、それ以外は Stable。アセンブリのメタデータに埋め込み、実行時に DiagnosticsChannelRawValue.FromAssembly で読む。
+  -->
+  <PropertyGroup>
+    <DiagnosticsChannel Condition="'$(DiagnosticsChannel)' == '' and '$(Configuration)' == 'Debug'">Dev</DiagnosticsChannel>
+    <DiagnosticsChannel Condition="'$(DiagnosticsChannel)' == ''">Stable</DiagnosticsChannel>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="DiagnosticsChannel" Value="$(DiagnosticsChannel)" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- ロゴは scripts/GenerateAppIcons.cs が iOS 版のアイコン（Design/AppIcon-1024.png）から作る。 -->
     <Content Include="Assets\*.png" />
@@ -45,6 +57,7 @@
     <ProjectReference Include="src\ProjectZD8.Application\ProjectZD8.Application.csproj" />
     <ProjectReference Include="src\ProjectZD8.Data\ProjectZD8.Data.csproj" />
     <ProjectReference Include="src\ProjectZD8.Data.Windows\ProjectZD8.Data.Windows.csproj" />
+    <ProjectReference Include="src\ProjectZD8.Diagnostics\ProjectZD8.Diagnostics.csproj" />
   </ItemGroup>
 
   <!--

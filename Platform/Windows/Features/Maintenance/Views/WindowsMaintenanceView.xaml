@@ -5,15 +5,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-      左：整備記録の時系列（選んだ記録は強調し、↑↓ キーでも選べる。右クリックで編集・削除）、右：概要か編集。iOS 版と同じ 2 列の構成。
+      一覧（時系列。選んだ記録は強調し、↑↓ キーでも選べる。右クリックで編集・削除）と、概要か編集。
+      2 つの面は AdaptiveSplit に入れて置く（Expanded 以上で左右、Compact・Medium は片方だけ）。配置はコードビハインドで行う。
     -->
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="340" MinWidth="260" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <Border Background="{ThemeResource LayerFillColorDefaultBrush}">
+    <Grid x:Name="Root">
+        <Border x:Name="TimelinePane" Style="{StaticResource SurfaceCardStyle}" Padding="0">
             <Grid x:Name="Timeline" Padding="16,16,8,12" RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -30,7 +26,6 @@
                 <ContentPresenter x:Name="EmptyHost" Grid.Row="1" VerticalAlignment="Top" Margin="4,0,8,0" />
             </Grid>
         </Border>
-        <Rectangle Grid.Column="1" Width="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-        <Border x:Name="DetailHost" Grid.Column="2" />
+        <Border x:Name="DetailHost" />
     </Grid>
 </UserControl>

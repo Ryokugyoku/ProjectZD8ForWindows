@@ -11,7 +11,6 @@ using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using ProjectZD8ForWindows.Platform.Windows.Formatting;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
 using ProjectZD8ForWindows.Platform.Windows.Logging;
-using Windows.UI;
 
 namespace ProjectZD8ForWindows.Platform.Windows.Features.VehicleManagement.Views;
 
@@ -171,9 +170,10 @@ public sealed partial class WindowsGarageView : UserControl
     /// <remarks>責務: 見出し、状態の帯、台数などの要約、車両のカード（なければ空の表示）を並べます。</remarks>
     /// <param name="state">車両管理の状態。</param>
     /// <returns>表示の要素。</returns>
-    private ScrollViewer Catalog(VehicleManagementState state)
+    private PageScaffold Catalog(VehicleManagementState state)
     {
-        var page = new StackPanel { Spacing = 24, Padding = new Thickness(32), MaxWidth = 1180 };
+        var scaffold = new PageScaffold();
+        var page = scaffold.Body;
         var refresh = new Button { Content = new GlyphLabel(FluentSymbol.Refresh, LocalizedText.Get("garage.refresh")) };
         refresh.Click += (_, _) => _model.Send(new VehicleManagementAction.RefreshRequested());
         refresh.KeyboardAccelerators.Add(new Microsoft.UI.Xaml.Input.KeyboardAccelerator { Key = global::Windows.System.VirtualKey.F5 });
@@ -188,7 +188,7 @@ public sealed partial class WindowsGarageView : UserControl
             page.Children.Add(banner);
         }
 
-        var summary = new AdaptiveGrid { MinItemWidth = 200, Spacing = 12 };
+        var summary = AdaptiveGrid.Tiles();
         summary.Children.Add(SummaryTile(NumberText.Integer(state.Vehicles.Count), "garage.summary.vehicles", FluentSymbol.Car));
         summary.Children.Add(SummaryTile(NumberText.Integer(state.ActivityByVehicleID.Values.Sum(activity => activity.SessionCount)), "garage.summary.sessions", FluentSymbol.Pulse));
         summary.Children.Add(SummaryTile(NumberText.Integer(state.ActivityByVehicleID.Values.Count(activity => activity.IsConnected)), "garage.summary.connected", FluentSymbol.Signal));
@@ -200,7 +200,8 @@ public sealed partial class WindowsGarageView : UserControl
         }
         else
         {
-            var grid = new AdaptiveGrid { MinItemWidth = 280, Spacing = 18 };
+            var grid = AdaptiveGrid.Cards();
+            grid.SetMaxColumns(1, 2, 3, 4);
             foreach (var vehicle in state.Vehicles)
             {
                 grid.Children.Add(VehicleCard(state, vehicle));
@@ -209,7 +210,7 @@ public sealed partial class WindowsGarageView : UserControl
             page.Children.Add(grid);
         }
 
-        return new ScrollViewer { Content = page, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        return scaffold;
     }
 
     /// <summary>状態の帯を作ります。</summary>
@@ -232,7 +233,7 @@ public sealed partial class WindowsGarageView : UserControl
                 Severity = InfoBarSeverity.Informational,
                 Title = LocalizedText.Get("garage.connection.in_progress"),
                 Message = LocalizedText.Get("garage.identification.loading_hint"),
-                Content = new ProgressBar { IsIndeterminate = true, Margin = new Thickness(0, 0, 0, 8) },
+                Content = new ProgressBar { IsIndeterminate = true, Margin = new Thickness(0, 0, 0, Space.S) },
             };
             return bar;
         }
@@ -264,14 +265,14 @@ public sealed partial class WindowsGarageView : UserControl
     /// <returns>タイル。</returns>
     private static Border SummaryTile(string value, string key, string glyph)
     {
-        var grid = new Grid { ColumnSpacing = 12 };
+        var grid = new Grid { ColumnSpacing = Space.M };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.Children.Add(IconTile.Create(glyph, Tone.Accent, 38));
-        var metric = new MetricBlock(value, LocalizedText.Get(key));
+        grid.Children.Add(IconTile.Create(glyph, Tone.Accent, Metrics.IconTileMedium));
+        var metric = new MetricBlock(value, LocalizedText.Get(key), valueStyleKey: TextStyles.MetricLarge);
         Grid.SetColumn(metric, 1);
         grid.Children.Add(metric);
-        return SurfaceCard.Create(grid, padding: 13);
+        return SurfaceCard.Create(grid, padding: Space.L);
     }
 
     /// <summary>車両のカードを作ります。</summary>
@@ -285,36 +286,35 @@ public sealed partial class WindowsGarageView : UserControl
     private Border VehicleCard(VehicleManagementState state, VehicleProfile vehicle)
     {
         var activity = state.ActivityByVehicleID.TryGetValue(vehicle.Id, out var value) ? value : new VehicleActivitySummary();
-        var stack = new StackPanel { Spacing = 14 };
-        var photo = new Grid { Height = 165, CornerRadius = new CornerRadius(14) };
+        var stack = new StackPanel { Spacing = Space.M };
+        var photo = new Grid { CornerRadius = new CornerRadius(Radius.L), Background = DesignTokens.Brush("RevTorqueQuietFillBrush") };
+        ResponsiveLayout.Bind(photo, widthClass => photo.Height = widthClass == WidthClass.Compact ? 140 : 176);
         if (vehicle.PhotoData is { } data)
         {
             photo.Children.Add(BytesImage.Create(data, 600));
         }
         else
         {
-            var gradient = new LinearGradientBrush { StartPoint = new global::Windows.Foundation.Point(0, 0), EndPoint = new global::Windows.Foundation.Point(1, 1) };
-            gradient.GradientStops.Add(new GradientStop { Color = Color.FromArgb(107, 0, 125, 166), Offset = 0 });
-            gradient.GradientStops.Add(new GradientStop { Color = Color.FromArgb(178, 0, 0, 0), Offset = 1 });
-            photo.Background = gradient;
-            photo.Children.Add(new FontIcon { Glyph = FluentSymbol.Car, FontSize = 52, Foreground = new SolidColorBrush(Color.FromArgb(230, 255, 255, 255)) });
+            photo.Background = DesignTokens.Brush("RevTorqueHeroBrush");
+            photo.Children.Add(new FontIcon { Glyph = FluentSymbol.Car, FontSize = Metrics.IconTileLarge, Foreground = DesignTokens.Foreground(Tone.Accent) });
         }
 
         if (activity.IsConnected)
         {
             var connected = StatusPill.Create(FluentSymbol.Signal, LocalizedText.Get("garage.connection.active"), Tone.Success);
-            connected.Margin = new Thickness(10);
+            connected.Margin = new Thickness(Space.M);
             connected.VerticalAlignment = VerticalAlignment.Top;
+            connected.HorizontalAlignment = HorizontalAlignment.Left;
             photo.Children.Add(connected);
         }
 
         if (state.SpecialPIDModelCodeByVehicleID.TryGetValue(vehicle.Id, out var modelCode))
         {
-            photo.Children.Add(new VehicleModelBadge(modelCode) { Margin = new Thickness(10), HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top });
+            photo.Children.Add(new VehicleModelBadge(modelCode) { Margin = new Thickness(Space.M), HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top });
         }
 
         stack.Children.Add(photo);
-        var activityRow = new Grid { ColumnSpacing = 8 };
+        var activityRow = new Grid { ColumnSpacing = Space.S };
         activityRow.ColumnDefinitions.Add(new ColumnDefinition());
         activityRow.ColumnDefinitions.Add(new ColumnDefinition());
         activityRow.Children.Add(new MetricBlock(NumberText.Integer(activity.SessionCount), LocalizedText.Get("garage.activity.sessions"), valueStyleKey: "BodyStrongTextBlockStyle"));
@@ -340,12 +340,12 @@ public sealed partial class WindowsGarageView : UserControl
             FluentSymbol.Calendar,
             "garage.activity.last_log",
             activity.LastLoggedAt is { } last ? DateText.DateAndMinute(last) : LocalizedText.Get("garage.activity.no_logs")));
-        var names = new StackPanel { Spacing = 4 };
+        var names = new StackPanel { Spacing = Space.XS };
         names.Children.Add(Typography.Text(vehicle.Name.Length == 0 ? vehicle.DisplayIdentifier : vehicle.Name, "SubtitleTextBlockStyle"));
         names.Children.Add(Typography.Text(vehicle.Manufacturer.Length == 0 ? LocalizedText.Get("garage.unknown_manufacturer") : vehicle.Manufacturer, "SecondaryBodyTextStyle"));
         names.Children.Add(Typography.Text(vehicle.DisplayIdentifier, "MonospaceCaptionTextStyle"));
         stack.Children.Add(names);
-        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.S };
         var edit = new Button { Content = new GlyphLabel(FluentSymbol.Edit, LocalizedText.Get("garage.edit")), Style = DesignTokens.Style("AccentButtonStyle") };
         edit.Click += (_, _) => _model.Send(new VehicleManagementAction.EditRequested(vehicle.Id));
         actions.Children.Add(edit);
@@ -362,7 +362,7 @@ public sealed partial class WindowsGarageView : UserControl
         };
         actions.Children.Add(delete);
         stack.Children.Add(actions);
-        var card = SurfaceCard.Create(stack, padding: 14);
+        var card = SurfaceCard.Create(stack, padding: Space.L);
         card.ContextFlyout = new ContextMenu()
             .Item(FluentSymbol.Edit, LocalizedText.Get("garage.edit"), () => _model.Send(new VehicleManagementAction.EditRequested(vehicle.Id)))
             .Item(FluentSymbol.Pulse, LocalizedText.Get("garage.pid_settings.open"), () => _model.Send(new VehicleManagementAction.PidSettingsRequested(vehicle.Id)))
@@ -384,7 +384,7 @@ public sealed partial class WindowsGarageView : UserControl
     /// <returns>行。</returns>
     private static Grid KeyValueRow(string glyph, string key, string value)
     {
-        var row = new Grid { ColumnSpacing = 7 };
+        var row = new Grid { ColumnSpacing = Space.S };
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -402,9 +402,10 @@ public sealed partial class WindowsGarageView : UserControl
     /// <remarks>責務: 読み取った VIN（または OBD の識別子）と識別の項目を出し、登録へ進むか取り消すボタンを作ります。</remarks>
     /// <param name="snapshot">車両の識別の結果。</param>
     /// <returns>表示の要素。</returns>
-    private ScrollViewer IdentificationConfirmation(VehicleIdentificationSnapshot snapshot)
+    private PageScaffold IdentificationConfirmation(VehicleIdentificationSnapshot snapshot)
     {
-        var page = new StackPanel { Spacing = 22, Padding = new Thickness(36), MaxWidth = 900, HorizontalAlignment = HorizontalAlignment.Left };
+        var scaffold = new PageScaffold(Metrics.ReadingMaxWidth + Space.XXXL * 4);
+        var page = scaffold.Body;
         page.Children.Add(new GlyphLabel(FluentSymbol.Car, LocalizedText.Get("garage.identification.eyebrow"), "BodyStrongTextBlockStyle", DesignTokens.Foreground(Tone.Accent)));
         page.Children.Add(Typography.Text(LocalizedText.Get("garage.identification.title"), "TitleTextBlockStyle"));
         page.Children.Add(Typography.Text(LocalizedText.Get("garage.identification.description"), "SecondaryBodyTextStyle"));
@@ -412,7 +413,7 @@ public sealed partial class WindowsGarageView : UserControl
         vin.FontFamily = new FontFamily("Cascadia Mono, Consolas");
         vin.IsTextSelectionEnabled = true;
         page.Children.Add(vin);
-        var fields = new Grid { ColumnSpacing = 24, RowSpacing = 10 };
+        var fields = new Grid { ColumnSpacing = Space.XXL, RowSpacing = Space.M };
         fields.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         fields.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         fields.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -434,8 +435,8 @@ public sealed partial class WindowsGarageView : UserControl
             fields.Children.Add(source);
         }
 
-        page.Children.Add(SurfaceCard.Create(fields, padding: 20));
-        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+        page.Children.Add(SurfaceCard.Create(fields));
+        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.M };
         var cancel = new Button { Content = LocalizedText.Get("garage.cancel") };
         cancel.Click += (_, _) => _model.Send(new VehicleManagementAction.RegistrationCancelled());
         actions.Children.Add(cancel);
@@ -443,6 +444,6 @@ public sealed partial class WindowsGarageView : UserControl
         confirm.Click += (_, _) => _model.Send(new VehicleManagementAction.IdentificationConfirmed());
         actions.Children.Add(confirm);
         page.Children.Add(actions);
-        return new ScrollViewer { Content = page, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        return scaffold;
     }
 }

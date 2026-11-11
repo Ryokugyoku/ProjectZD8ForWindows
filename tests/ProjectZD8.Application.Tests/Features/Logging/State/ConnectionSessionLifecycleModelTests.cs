@@ -7,7 +7,7 @@ using ProjectZD8.Domain.ValueObjects;
 namespace ProjectZD8.Application.Tests.Logging.State;
 
 /// <summary>接続セッションの開始、車両関連付け、終了を検証します。</summary>
-public sealed class ConnectionSessionLifecycleModelTests
+public sealed partial class ConnectionSessionLifecycleModelTests
 {
     /// <summary>HOME開始から車両確定と無応答終了までを同じセッションIDへ保存します。</summary>
     /// <remarks>責務: 1回の接続ライフサイクルが安定IDを維持して終端されることを確認します。</remarks>

@@ -18,6 +18,9 @@ namespace ProjectZD8.Data.Windows.Devices.Bluetooth;
 /// </remarks>
 public sealed class WindowsBluetoothRFCOMMOBDTransport : IOBDCommandTransport
 {
+    /// <summary>診断ログに書く Transport の種類です。</summary>
+    private const string Transport = OBDDiagnosticText.TransportRFCOMM;
+
     /// <summary>SDP（サービス）照会を待つ最大時間です。</summary>
     private static readonly TimeSpan ServiceQueryTimeout = TimeSpan.FromSeconds(10);
 
@@ -63,6 +66,7 @@ public sealed class WindowsBluetoothRFCOMMOBDTransport : IOBDCommandTransport
     {
         if (socket is not null || !BluetoothAddressText.TryParse(deviceAddress, out var address))
         {
+            OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "open", socket is not null ? "already-open" : "invalid-address");
             throw ConnectionFailed();
         }
 
@@ -71,6 +75,7 @@ public sealed class WindowsBluetoothRFCOMMOBDTransport : IOBDCommandTransport
             var candidate = await BluetoothDevice.FromBluetoothAddressAsync(address);
             if (candidate is null || !candidate.DeviceInformation.Pairing.IsPaired)
             {
+                OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "device-lookup", candidate is null ? "not-found" : "not-paired");
                 candidate?.Dispose();
                 throw ConnectionFailed();
             }
@@ -78,6 +83,7 @@ public sealed class WindowsBluetoothRFCOMMOBDTransport : IOBDCommandTransport
             var service = await SerialPortService(candidate);
             if (service is null)
             {
+                OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "sdp-query", "no-serial-port-service");
                 candidate.Dispose();
                 throw ConnectionFailed();
             }
@@ -106,14 +112,16 @@ public sealed class WindowsBluetoothRFCOMMOBDTransport : IOBDCommandTransport
             device = candidate;
             socket = opened;
             writer = new DataWriter(opened.OutputStream);
+            OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "socket-connect", "connected");
             _ = ReceiveLoop(opened);
         }
         catch (VehicleIdentificationException)
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            OBDConnectionLog.TransportFailed(OBDConnectionLog.Logger, error, Transport, "open");
             throw ConnectionFailed();
         }
     }
@@ -136,8 +144,9 @@ public sealed class WindowsBluetoothRFCOMMOBDTransport : IOBDCommandTransport
             activeWriter.WriteBytes(data);
             await activeWriter.StoreAsync();
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            OBDConnectionLog.TransportFailed(OBDConnectionLog.Logger, error, Transport, "write");
             throw ConnectionFailed();
         }
     }
@@ -164,6 +173,7 @@ public sealed class WindowsBluetoothRFCOMMOBDTransport : IOBDCommandTransport
             await Task.Delay(10);
         }
 
+        OBDConnectionLog.TransportTimeout(OBDConnectionLog.Logger, Transport, "read", (long)responseTimeout.TotalMilliseconds, BufferedCount);
         throw new VehicleIdentificationException(new VehicleIdentificationError.ResponseTimedOut());
     }
 
@@ -185,6 +195,18 @@ public sealed class WindowsBluetoothRFCOMMOBDTransport : IOBDCommandTransport
         device?.Dispose();
         device = null;
         return Task.CompletedTask;
+    }
+
+    /// <summary>受信済みで未消費のバイト数です（診断ログ用）。</summary>
+    private int BufferedCount
+    {
+        get
+        {
+            lock (gate)
+            {
+                return receiveBuffer.Count;
+            }
+        }
     }
 
     /// <summary>チャネルが閉じているかどうかです。</summary>
@@ -211,14 +233,18 @@ public sealed class WindowsBluetoothRFCOMMOBDTransport : IOBDCommandTransport
             return cached.Services[0];
         }
 
+        OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "sdp-query", $"cached={cached.Error}、照会し直します");
+
         var query = candidate.GetRfcommServicesForIdAsync(RfcommServiceId.SerialPort, BluetoothCacheMode.Uncached).AsTask();
         var finished = await Task.WhenAny(query, Task.Delay(ServiceQueryTimeout));
         if (finished != query)
         {
+            OBDConnectionLog.TransportTimeout(OBDConnectionLog.Logger, Transport, "sdp-query", (long)ServiceQueryTimeout.TotalMilliseconds, 0);
             return null;
         }
 
         var uncached = await query;
+        OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "sdp-query", $"uncached={uncached.Error}、services={uncached.Services.Count}");
         return uncached.Error == BluetoothError.Success && uncached.Services.Count > 0 ? uncached.Services[0] : null;
     }
 
@@ -247,17 +273,25 @@ public sealed class WindowsBluetoothRFCOMMOBDTransport : IOBDCommandTransport
                 }
             }
         }
-        catch (Exception)
+        catch (Exception error)
         {
             // 切断や Close によるソケット破棄で読取が失敗します。下の閉鎖状態として扱います。
+            OBDConnectionLog.TransportFailed(OBDConnectionLog.Logger, error, Transport, "receive");
         }
 
+        bool lost;
         lock (gate)
         {
+            lost = ReferenceEquals(socket, connected) && !closed;
             if (ReferenceEquals(socket, connected) || socket is null)
             {
                 closed = true;
             }
+        }
+
+        if (lost)
+        {
+            OBDConnectionLog.TransportLost(OBDConnectionLog.Logger, Transport, "receive-ended");
         }
     }
 

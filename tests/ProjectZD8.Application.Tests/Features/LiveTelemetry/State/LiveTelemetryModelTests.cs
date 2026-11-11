@@ -4,6 +4,7 @@ using ProjectZD8.Application.LiveTelemetry.Actions;
 using ProjectZD8.Application.LiveTelemetry.Ports;
 using ProjectZD8.Application.LiveTelemetry.State;
 using ProjectZD8.Application.LiveTelemetry.UseCases;
+using ProjectZD8.Application.Tests.Logging;
 using ProjectZD8.Application.Tests.TestSupport;
 using ProjectZD8.Domain.Entities;
 using ProjectZD8.Domain.Policies;
@@ -610,4 +611,64 @@ file sealed class FailingPIDDefinitionRepository : FixedDefinitionsRepository
     /// <exception cref="InvalidOperationException">常にテスト用読込エラー。</exception>
     public override IReadOnlyList<OBDPIDDefinition> Definitions() =>
         throw new InvalidOperationException("ReadError");
+}
+
+/// <summary>取得の開始・停止・失敗の診断ログ（<c>acq.*</c>）を検証します。</summary>
+/// <remarks>出力先を差し替えるため、このクラスのテストはほかと並行させません。</remarks>
+[Collection(AcquisitionDiagnosticLogCollection.Name)]
+public sealed class LiveTelemetryModelDiagnosticsTests
+{
+    /// <summary>テスト用OBD接続終端です。</summary>
+    private static OBDConnectionEndpoint Endpoint =>
+        new(OBDConnectionEndpointTransport.Serial, "COM3", "Test adapter");
+
+    /// <summary>テスト用のアプリ内車両IDです。</summary>
+    private static VehicleID VehicleID => new(Guid.Parse("10000000-0000-0000-0000-000000000002"));
+
+    /// <summary>取得の開始と、利用者の切断による停止が理由つきで出ることを確かめます。</summary>
+    /// <remarks>責務: <c>acq.started</c> と <c>acq.stopped</c>（<c>user</c>）を確認します。</remarks>
+    [Fact]
+    public void StartAndUserStopAreLogged() => MainThread.Run(async () =>
+    {
+        using var capture = new DiagnosticLogCapture();
+        var telemetry = new CountingPIDTelemetryFake();
+        var model = new LiveTelemetryModel(
+            readMajorPIDs: new ReadMajorOBDPIDsUseCase(new FixedPIDDefinitionRepository(), telemetry));
+
+        model.Send(new LiveTelemetryAction.StartRequested(Endpoint, VehicleID, null));
+        await AsyncWait.UntilAsync(() => telemetry.ReadCount >= 2);
+        model.Send(new LiveTelemetryAction.StopRequested());
+        await AsyncWait.UntilAsync(() => model.State.Phase == LiveTelemetryStatePhase.Idle);
+
+        var started = Assert.Single(capture.Named("acq.started"));
+        Assert.Equal("serial", started.Prop("Transport"));
+        Assert.Equal(false, started.Prop("Persisted"));
+        Assert.Equal(ProjectZD8.Diagnostics.DiagnosticCategories.Acquisition, started.Category);
+        var stopped = Assert.Single(capture.Named("acq.stopped"));
+        Assert.Equal("user", stopped.Prop("Reason"));
+        Assert.Equal(started.Prop("Generation"), stopped.Prop("Generation"));
+        Assert.Contains(capture.Named("acq.capabilities.loaded"), loaded => Equals(loaded.Prop("Definitions"), 1));
+    });
+
+    /// <summary>PID 定義の一覧を読めない失敗が、元の例外と、画面のエラーの種類つきの Error で出ることを確かめます。</summary>
+    /// <remarks>責務: <c>acq.catalog.failed</c>（元の例外）と <c>acq.failed</c>（表示キー）を確認します。</remarks>
+    [Fact]
+    public void CatalogFailureIsLoggedWithCauseAndFailureKey() => MainThread.Run(async () =>
+    {
+        using var capture = new DiagnosticLogCapture();
+        var model = new LiveTelemetryModel(
+            readMajorPIDs: new ReadMajorOBDPIDsUseCase(
+                new FailingPIDDefinitionRepository(),
+                new UnavailableOBDPIDTelemetryFake()));
+
+        model.Send(new LiveTelemetryAction.StartRequested(Endpoint, VehicleID, null));
+        await AsyncWait.UntilAsync(() => model.State.Phase == LiveTelemetryStatePhase.Failed);
+
+        var cause = Assert.Single(capture.Named("acq.catalog.failed"));
+        Assert.NotNull(cause.Exception);
+        var failed = Assert.Single(capture.Named("acq.failed"));
+        Assert.Equal(Microsoft.Extensions.Logging.LogLevel.Error, failed.Level);
+        Assert.Equal("telemetry.error.pid_catalog_unavailable", failed.Prop("Reason"));
+        Assert.NotNull(failed.Exception);
+    });
 }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using ProjectZD8.Application.LiveTelemetry.Ports;
+using ProjectZD8.Application.Logging;
 using ProjectZD8.Domain.Entities;
 using ProjectZD8.Domain.Policies;
 using ProjectZD8.Domain.Repositories;
@@ -63,8 +64,9 @@ public sealed class ReadMajorOBDPIDsUseCase
         {
             definitions = definitionRepository.Definitions();
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            AcquisitionLog.CatalogFailed(AcquisitionLog.Logger, error);
             throw new OBDPIDTelemetryException(OBDPIDTelemetryError.DefinitionCatalogUnavailable);
         }
 

@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using ProjectZD8.Application.DeviceConnection.Ports;
 using ProjectZD8.Application.DeviceConnection.State;
 using ProjectZD8.Domain.ValueObjects;
@@ -65,26 +67,36 @@ public sealed class LatestAdapterDiscoveryUseCase
         ulong requestedGeneration,
         CancellationTokenSource cancellation)
     {
+        var logger = AdapterDiscoveryLog.Logger;
+        var modeName = mode.ToString();
+        var started = Stopwatch.GetTimestamp();
+        AdapterDiscoveryLog.Started(logger, modeName);
         AdapterDiscoveryOutcome outcome;
         try
         {
-            outcome = new AdapterDiscoveryOutcome.Discovered(await discoverAdapters.Execute(mode));
+            var adapters = await discoverAdapters.Execute(mode);
+            LogCompleted(modeName, adapters, started);
+            outcome = new AdapterDiscoveryOutcome.Discovered(adapters);
         }
         catch (OperationCanceledException)
         {
+            AdapterDiscoveryLog.Cancelled(logger, modeName);
             return;
         }
         catch (AdapterDiscoveryException error)
         {
+            AdapterDiscoveryLog.Unavailable(logger, error, modeName, error.Reason.ToString(), ElapsedMilliseconds(started));
             outcome = new AdapterDiscoveryOutcome.Unavailable(error.Reason);
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            AdapterDiscoveryLog.Failed(logger, error, modeName, ElapsedMilliseconds(started));
             outcome = new AdapterDiscoveryOutcome.Failed();
         }
 
         if (!AcceptsResult(requestedGeneration, cancellation.Token))
         {
+            AdapterDiscoveryLog.ResultDiscarded(logger, modeName);
             return;
         }
 
@@ -112,5 +124,48 @@ public sealed class LatestAdapterDiscoveryUseCase
         {
             discoveryGeneration += 1;
         }
+    }
+
+    /// <summary>開始からの経過ミリ秒です。</summary>
+    /// <remarks>責務: <see cref="Stopwatch.GetTimestamp"/> の値から経過時間を求めます。</remarks>
+    /// <param name="started">開始の時刻印。</param>
+    /// <returns>経過ミリ秒。</returns>
+    private static long ElapsedMilliseconds(long started) => (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+
+    /// <summary>探索の結果を種類ごとの件数で書きます。</summary>
+    /// <remarks>責務: 候補を USB・RFCOMM・BLE・デモに数え分けて Info で残します（無効なレベルでは数えません）。</remarks>
+    /// <param name="modeName">探索の種類。</param>
+    /// <param name="adapters">候補。</param>
+    /// <param name="started">開始の時刻印。</param>
+    private static void LogCompleted(string modeName, IReadOnlyList<DiscoveredAdapter> adapters, long started)
+    {
+        var logger = AdapterDiscoveryLog.Logger;
+        if (!logger.IsEnabled(LogLevel.Information))
+        {
+            return;
+        }
+
+        int usb = 0, rfcomm = 0, ble = 0, demo = 0;
+        foreach (var adapter in adapters)
+        {
+            if (adapter.SystemIdentifier.StartsWith("projectzd8://", StringComparison.Ordinal))
+            {
+                demo++;
+            }
+            else if (adapter.Id.StartsWith("usb:", StringComparison.Ordinal))
+            {
+                usb++;
+            }
+            else if (adapter.Id.StartsWith("bluetooth-classic:", StringComparison.Ordinal))
+            {
+                rfcomm++;
+            }
+            else
+            {
+                ble++;
+            }
+        }
+
+        AdapterDiscoveryLog.Completed(logger, modeName, adapters.Count, usb, rfcomm, ble, demo, ElapsedMilliseconds(started));
     }
 }

@@ -13,7 +13,7 @@ namespace ProjectZD8.Application.Tests.Logging.UseCases;
 /// iOS 版は file-backed の Production GRDB を使います。C# 版にはまだ Data 層がないため、
 /// 同じ repository 契約と性能 event（Queue 通過点）を再現するメモリ上の保存先で検証します。
 /// </remarks>
-public sealed class ConnectionSessionAcquisitionControllerIntegrationTests
+public sealed partial class ConnectionSessionAcquisitionControllerIntegrationTests
 {
     /// <summary>manifest保存後だけ物理要求を許可し、同じ応答をRawとsampleへ変換します。</summary>
     /// <remarks>責務: storage、manifest gate、typed transport、方式B batchの一連接続を確認します。</remarks>

@@ -1,7 +1,11 @@
+using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using ProjectZD8.Application.DeviceConnection.Ports;
 using ProjectZD8.Data.Devices;
+using ProjectZD8.Data.Devices.OBD;
 using ProjectZD8.Data.Devices.Serial;
 using ProjectZD8.Data.Windows.Devices.Bluetooth;
+using ProjectZD8.Diagnostics;
 using ProjectZD8.Domain.ValueObjects;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Rfcomm;
@@ -61,6 +65,8 @@ public sealed class WindowsSystemAdapterDiscovery : IAdapterDiscoveryPort
     /// <returns>USB シリアル候補（ポート名順）。</returns>
     private async Task<IReadOnlyList<DiscoveredAdapter>> DiscoverUSBDevices()
     {
+        var started = Stopwatch.GetTimestamp();
+        var seen = 0;
         var adapters = new Dictionary<string, DiscoveredAdapter>(StringComparer.OrdinalIgnoreCase);
         try
         {
@@ -69,6 +75,7 @@ public sealed class WindowsSystemAdapterDiscovery : IAdapterDiscoveryPort
                 [PortNameProperty, InstanceIdProperty]);
             foreach (var information in interfaces)
             {
+                seen += 1;
                 var portName = information.Properties.TryGetValue(PortNameProperty, out var port) ? port as string : null;
                 var instanceId = information.Properties.TryGetValue(InstanceIdProperty, out var id) ? id as string : null;
                 var adapter = await MakeUSBAdapter(portName, instanceId ?? information.Id, information.Name);
@@ -81,6 +88,7 @@ public sealed class WindowsSystemAdapterDiscovery : IAdapterDiscoveryPort
         catch (Exception error) when (error is not OperationCanceledException)
         {
             // インターフェイスを列挙できない場合も、下のデバイスクラスの列挙で補います。
+            OBDDiscoveryLog.StepFailed(OBDDiscoveryLog.Logger, error, "usb-interfaces");
         }
 
         try
@@ -97,6 +105,7 @@ public sealed class WindowsSystemAdapterDiscovery : IAdapterDiscoveryPort
                     continue;
                 }
 
+                seen += 1;
                 var adapter = await MakeUSBAdapter(portName, information.Id, information.Name);
                 if (adapter is not null)
                 {
@@ -107,8 +116,10 @@ public sealed class WindowsSystemAdapterDiscovery : IAdapterDiscoveryPort
         catch (Exception error) when (error is not OperationCanceledException)
         {
             // デバイスクラスを列挙できない環境では、インターフェイスから得た候補だけを返します。
+            OBDDiscoveryLog.StepFailed(OBDDiscoveryLog.Logger, error, "usb-ports-class");
         }
 
+        OBDDiscoveryLog.SourceCompleted(OBDDiscoveryLog.Logger, "usb", seen, adapters.Count, OBDDiagnosticText.ElapsedMilliseconds(started));
         return adapters.Values.OrderBy(adapter => adapter.SystemIdentifier, StringComparer.Ordinal).ToArray();
     }
 
@@ -131,12 +142,16 @@ public sealed class WindowsSystemAdapterDiscovery : IAdapterDiscoveryPort
             product = device.Properties.TryGetValue(BusReportedDescriptionProperty, out var description) ? description as string : null;
             manufacturer = device.Properties.TryGetValue(ManufacturerProperty, out var maker) ? maker as string : null;
         }
-        catch (Exception)
+        catch (Exception error)
         {
             // 親デバイスの属性を読めない場合はフレンドリ名だけで表示します。
+            OBDDiscoveryLog.StepFailed(OBDDiscoveryLog.Logger, error, "usb-parent");
         }
 
-        return serialMapper.MakeAdapter(portName, instanceId, manufacturer, string.IsNullOrWhiteSpace(product) ? friendlyName : product);
+        var name = string.IsNullOrWhiteSpace(product) ? friendlyName : product;
+        var adapter = serialMapper.MakeAdapter(portName, instanceId, manufacturer, name);
+        LogUSBCandidate(adapter is not null, portName, instanceId, name);
+        return adapter;
     }
 
     /// <summary>ペアリング済みで Serial Port サービスを持つ Bluetooth Classic 機器を候補へ変換します。</summary>
@@ -146,6 +161,7 @@ public sealed class WindowsSystemAdapterDiscovery : IAdapterDiscoveryPort
     private async Task<IReadOnlyList<DiscoveredAdapter>> DiscoverBluetoothClassicDevices()
     {
         await WindowsBluetoothAvailability.Ensure(requiresLowEnergy: false);
+        var started = Stopwatch.GetTimestamp();
         var paired = await DeviceInformation.FindAllAsync(BluetoothDevice.GetDeviceSelectorFromPairingState(true));
         var adapters = new List<DiscoveredAdapter>();
         foreach (var information in paired)
@@ -165,12 +181,15 @@ public sealed class WindowsSystemAdapterDiscovery : IAdapterDiscoveryPort
                     service.Dispose();
                 }
 
+                var address = BluetoothAddressText.Format(device.BluetoothAddress);
+                var isPaired = device.DeviceInformation.Pairing.IsPaired;
                 var adapter = classicMapper.MakeAdapter(
-                    BluetoothAddressText.Format(device.BluetoothAddress),
+                    address,
                     device.Name,
-                    isPaired: device.DeviceInformation.Pairing.IsPaired,
+                    isPaired: isPaired,
                     hasSerialPortService: hasSerialPortService,
                     isConnected: device.ConnectionStatus == BluetoothConnectionStatus.Connected);
+                LogClassicCandidate(adapter is not null, address, device.Name, isPaired, hasSerialPortService, services.Error);
                 if (adapter is not null)
                 {
                     adapters.Add(adapter);
@@ -179,9 +198,79 @@ public sealed class WindowsSystemAdapterDiscovery : IAdapterDiscoveryPort
             catch (Exception error) when (error is not OperationCanceledException)
             {
                 // 1件の機器を読めなくても、ほかの機器の探索を続けます。
+                OBDDiscoveryLog.StepFailed(OBDDiscoveryLog.Logger, error, "rfcomm-device");
             }
         }
 
+        OBDDiscoveryLog.SourceCompleted(
+            OBDDiscoveryLog.Logger,
+            OBDDiagnosticText.TransportRFCOMM,
+            paired.Count,
+            adapters.Count,
+            OBDDiagnosticText.ElapsedMilliseconds(started));
         return classicMapper.Sorted(adapters);
+    }
+
+    /// <summary>USB シリアルのポートを候補にしたか・外したかを書きます。</summary>
+    /// <remarks>責務: 判定の理由を Debug で残します（無効なレベルでは文字列を作りません）。</remarks>
+    /// <param name="accepted">候補にしたか。</param>
+    /// <param name="portName">COM ポート名。</param>
+    /// <param name="instanceId">デバイスインスタンスID（理由の判定だけに使い、書かない）。</param>
+    /// <param name="name">表示名。</param>
+    private static void LogUSBCandidate(bool accepted, string? portName, string? instanceId, string? name)
+    {
+        var logger = OBDDiscoveryLog.Logger;
+        if (!logger.IsEnabled(LogLevel.Debug))
+        {
+            return;
+        }
+
+        var reason = SerialPortAdapterMapper.DiagnosticReason(portName, instanceId);
+        if (accepted)
+        {
+            OBDDiscoveryLog.CandidateAccepted(logger, "usb", name ?? string.Empty, portName ?? string.Empty, reason);
+        }
+        else
+        {
+            OBDDiscoveryLog.CandidateRejected(logger, "usb", name ?? string.Empty, portName ?? string.Empty, reason);
+        }
+    }
+
+    /// <summary>Bluetooth Classic の機器を候補にしたか・外したかを書きます。</summary>
+    /// <remarks>責務: 判定の理由と SDP の結果を Debug で残します。アドレスは末尾 2 バイトだけにします。</remarks>
+    /// <param name="accepted">候補にしたか。</param>
+    /// <param name="address">機器のアドレス文字列。</param>
+    /// <param name="name">機器の名前。</param>
+    /// <param name="isPaired">ペアリング済みか。</param>
+    /// <param name="hasSerialPortService">Serial Port サービスを公開しているか。</param>
+    /// <param name="serviceError">Serial Port サービスの照会の結果。</param>
+    private void LogClassicCandidate(
+        bool accepted,
+        string address,
+        string? name,
+        bool isPaired,
+        bool hasSerialPortService,
+        BluetoothError serviceError)
+    {
+        var logger = OBDDiscoveryLog.Logger;
+        if (!logger.IsEnabled(LogLevel.Debug))
+        {
+            return;
+        }
+
+        var reason = classicMapper.DiagnosticReason(address, name, isPaired, hasSerialPortService);
+        if (accepted)
+        {
+            OBDDiscoveryLog.CandidateAccepted(logger, OBDDiagnosticText.TransportRFCOMM, name ?? string.Empty, Redact.BluetoothAddress(address), reason);
+        }
+        else
+        {
+            OBDDiscoveryLog.CandidateRejected(
+                logger,
+                OBDDiagnosticText.TransportRFCOMM,
+                name ?? string.Empty,
+                Redact.BluetoothAddress(address),
+                serviceError == BluetoothError.Success ? reason : $"{reason}（SDP {serviceError}）");
+        }
     }
 }

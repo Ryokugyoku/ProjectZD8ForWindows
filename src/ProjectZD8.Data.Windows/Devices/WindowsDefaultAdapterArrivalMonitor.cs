@@ -1,6 +1,8 @@
 using ProjectZD8.Application.DeviceConnection.Ports;
 using ProjectZD8.Application.DeviceConnection.State;
 using ProjectZD8.Data.Devices;
+using ProjectZD8.Data.Devices.OBD;
+using ProjectZD8.Diagnostics;
 using ProjectZD8.Domain.ValueObjects;
 using Windows.Devices.Bluetooth.Advertisement;
 using Windows.Devices.Enumeration;
@@ -37,8 +39,10 @@ public sealed class WindowsDefaultAdapterArrivalMonitor : IDefaultAdapterArrival
     public void StartMonitoring(DefaultAdapterPreference preference, Action<OBDConnectionEndpoint> arrival)
     {
         StopWatchers();
+        var transportName = OBDDiagnosticText.Transport(preference.ConnectionTransport);
         if (!DefaultAdapterArrivalDelivery.IsMonitorable(preference))
         {
+            OBDDiscoveryLog.ArrivalNotMonitorable(OBDDiscoveryLog.Logger, transportName);
             StopMonitoring();
             return;
         }
@@ -54,9 +58,12 @@ public sealed class WindowsDefaultAdapterArrivalMonitor : IDefaultAdapterArrival
             {
                 StartAdvertisementWatcher(current);
             }
+
+            OBDDiscoveryLog.ArrivalStarted(OBDDiscoveryLog.Logger, transportName, DiagnosticDevice(preference.ConnectionTransport, preference.SystemIdentifier));
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            OBDDiscoveryLog.ArrivalStartFailed(OBDDiscoveryLog.Logger, error, transportName);
             // Bluetooth が無効などで監視を始められない場合は、監視なしの状態にします（iOS の電源オフ時と同じ）。
             StopWatchers();
         }
@@ -68,6 +75,7 @@ public sealed class WindowsDefaultAdapterArrivalMonitor : IDefaultAdapterArrival
     {
         StopWatchers();
         delivery.Stop();
+        OBDDiscoveryLog.ArrivalStopped(OBDDiscoveryLog.Logger);
     }
 
     /// <summary>COM ポートの追加を監視します。</summary>
@@ -81,6 +89,7 @@ public sealed class WindowsDefaultAdapterArrivalMonitor : IDefaultAdapterArrival
             var portName = information.Properties.TryGetValue(PortNameProperty, out var value) ? value as string : null;
             if (portName is not null && delivery.TryDeliver(current, OBDConnectionEndpointTransport.Serial, portName))
             {
+                OBDDiscoveryLog.ArrivalDetected(OBDDiscoveryLog.Logger, OBDDiagnosticText.TransportSerial, portName);
                 StopWatcher(sender);
             }
         };
@@ -101,6 +110,7 @@ public sealed class WindowsDefaultAdapterArrivalMonitor : IDefaultAdapterArrival
         {
             if (delivery.TryDeliver(current, OBDConnectionEndpointTransport.BluetoothLowEnergy, BluetoothAddressText.Format(args.BluetoothAddress)))
             {
+                OBDDiscoveryLog.ArrivalDetected(OBDDiscoveryLog.Logger, OBDDiagnosticText.TransportBLE, Redact.BluetoothAddress(args.BluetoothAddress));
                 sender.Stop();
             }
         };
@@ -125,9 +135,10 @@ public sealed class WindowsDefaultAdapterArrivalMonitor : IDefaultAdapterArrival
             {
                 advertisement.Stop();
             }
-            catch (Exception)
+            catch (Exception error)
             {
                 // 既に止まっている場合は何もしません。
+                OBDDiscoveryLog.ArrivalStopFailed(OBDDiscoveryLog.Logger, error, OBDDiagnosticText.TransportBLE);
             }
         }
     }
@@ -144,9 +155,18 @@ public sealed class WindowsDefaultAdapterArrivalMonitor : IDefaultAdapterArrival
                 watcher.Stop();
             }
         }
-        catch (Exception)
+        catch (Exception error)
         {
             // 既に止まっている場合は何もしません。
+            OBDDiscoveryLog.ArrivalStopFailed(OBDDiscoveryLog.Logger, error, OBDDiagnosticText.TransportSerial);
         }
     }
+
+    /// <summary>診断ログに書く機器の識別子です。</summary>
+    /// <remarks>責務: COM ポート名はそのまま、Bluetooth のアドレスは末尾 2 バイトだけにします。</remarks>
+    /// <param name="transport">物理方式。</param>
+    /// <param name="systemIdentifier">システム識別子。</param>
+    /// <returns>伏せた識別子。</returns>
+    private static string DiagnosticDevice(OBDConnectionEndpointTransport transport, string systemIdentifier) =>
+        transport == OBDConnectionEndpointTransport.Serial ? systemIdentifier : Redact.BluetoothAddress(systemIdentifier);
 }

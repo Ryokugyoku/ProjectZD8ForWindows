@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using System.Globalization;
+using Microsoft.Extensions.Logging;
 using ProjectZD8.Application.LiveTelemetry.Ports;
 using ProjectZD8.Application.Logging.Ports;
 using ProjectZD8.Domain.Entities;
@@ -128,6 +131,9 @@ public sealed class PersistAcquisitionBatchUseCase
     /// <summary>actor の直列化を表す同期区間のロックです。</summary>
     private readonly Lock _gate = new();
 
+    /// <summary>今の世代で数値化の失敗を診断ログに書いた PID です（同じ PID をバッチごとに書かないため。<see cref="_gate"/> で守る）。</summary>
+    private readonly HashSet<OBDPIDRequest> _decodeFailureLogged = [];
+
     /// <summary>現在の取得workflowが有効としたpolling世代です。</summary>
     private ulong? _activeGeneration;
 
@@ -164,6 +170,7 @@ public sealed class PersistAcquisitionBatchUseCase
         lock (_gate)
         {
             _activeGeneration = generation;
+            _decodeFailureLogged.Clear();
         }
     }
 
@@ -197,6 +204,8 @@ public sealed class PersistAcquisitionBatchUseCase
     /// <exception cref="PersistAcquisitionBatchException">stale世代、入力不一致、metadataまたはRaw保存失敗。</exception>
     public async Task<PersistedAcquisitionBatchResult> ExecuteWithSamples(PersistAcquisitionBatchInput input)
     {
+        var batchStarted = Stopwatch.GetTimestamp();
+        var counts = default(BatchOutcomeCounts);
         try
         {
             var generation = input.Permission.Generation;
@@ -228,10 +237,12 @@ public sealed class PersistAcquisitionBatchUseCase
                 resumed = BeginOrResume(open, sessionID);
                 if (resumed.CompletionState is not null)
                 {
+                    AcquisitionLog.BatchResumed(AcquisitionLog.Logger, input.BatchIdentity.Ordinal, "completed");
                     return new PersistedAcquisitionBatchResult(resumed, []);
                 }
                 if (resumed.Requests.Any(request => request.DispatchState == PIDRequestDispatchState.DispatchBegun))
                 {
+                    AcquisitionLog.BatchResumed(AcquisitionLog.Logger, input.BatchIdentity.Ordinal, "dispatch-begun");
                     throw new PersistAcquisitionBatchException(PersistAcquisitionBatchError.PersistenceFailure);
                 }
             }
@@ -260,6 +271,7 @@ public sealed class PersistAcquisitionBatchUseCase
                     started = _monotonicNanoseconds();
                 }
                 var outcome = await TransportOutcome(item.Definition, input.Endpoint);
+                counts.Add(outcome);
                 lock (_gate)
                 {
                     var ended = _monotonicNanoseconds();
@@ -294,6 +306,18 @@ public sealed class PersistAcquisitionBatchUseCase
             {
                 var terminal = TerminalBatch(resumed, persistedRequests, _now());
                 _repository.FinishBatch(terminal, sessionID);
+                AcquisitionLog.BatchCompleted(
+                    AcquisitionLog.Logger,
+                    input.BatchIdentity.Ordinal,
+                    input.PolicyTick,
+                    requests.Count,
+                    counts.Responded,
+                    counts.TimedOut,
+                    counts.TransportFailed,
+                    counts.Unclassified,
+                    counts.Cancelled,
+                    samples.Count,
+                    (long)Stopwatch.GetElapsedTime(batchStarted).TotalMilliseconds);
                 return new PersistedAcquisitionBatchResult(terminal, samples);
             }
         }
@@ -305,8 +329,9 @@ public sealed class PersistAcquisitionBatchUseCase
         {
             throw new PersistAcquisitionBatchException(PersistAcquisitionBatchError.InactiveGeneration);
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            AcquisitionLog.BatchPersistFailed(AcquisitionLog.Logger, error, input.BatchIdentity.Ordinal, input.Permission.Generation);
             throw new PersistAcquisitionBatchException(PersistAcquisitionBatchError.PersistenceFailure);
         }
     }
@@ -358,8 +383,9 @@ public sealed class PersistAcquisitionBatchUseCase
             {
                 throw;
             }
-            catch (Exception)
+            catch (Exception error)
             {
+                AcquisitionLog.BatchPersistFailed(AcquisitionLog.Logger, error, batchIdentity.Ordinal, 0);
                 throw new PersistAcquisitionBatchException(PersistAcquisitionBatchError.PersistenceFailure);
             }
         }
@@ -463,8 +489,9 @@ public sealed class PersistAcquisitionBatchUseCase
                 _ => new OBDPIDRequestTransportOutcome.UnclassifiedResponse(),
             };
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            AcquisitionLog.RequestUnexpectedError(AcquisitionLog.Logger, error, PidText(request));
             return new OBDPIDRequestTransportOutcome.UnclassifiedResponse();
         }
     }
@@ -570,8 +597,9 @@ public sealed class PersistAcquisitionBatchUseCase
         {
             return PIDRequestValueOutcome.InvalidValue;
         }
-        catch (Exception)
+        catch (Exception error)
         {
+            LogDecodeFailed(error, definition);
             return PIDRequestValueOutcome.DecodeFailure;
         }
     }
@@ -591,6 +619,7 @@ public sealed class PersistAcquisitionBatchUseCase
         }
         catch (Exception)
         {
+            // 同じ失敗は値の評価（EvaluateValueOutcome）で診断ログに書いています。
             return null;
         }
         if (!double.IsFinite(value))
@@ -653,6 +682,81 @@ public sealed class PersistAcquisitionBatchUseCase
             completedAt: completedAt,
             failure: failure,
             requests: requests);
+    }
+
+    /// <summary>Service と PID を診断ログ用の文字列にします。</summary>
+    /// <remarks>責務: 要求を <c>010C</c> の形にします（失敗の経路だけで使う）。</remarks>
+    /// <param name="request">要求。</param>
+    /// <returns>文字列。</returns>
+    private static string PidText(OBDPIDRequest request) =>
+        string.Create(CultureInfo.InvariantCulture, $"{request.Service:X2}{request.Pid:X2}");
+
+    /// <summary>応答を数値にできなかったことを、世代の中で PID ごとに 1 回だけ書きます。</summary>
+    /// <remarks>責務: 想定内の数値化の失敗を Debug で残します。同じ PID の失敗はバッチごとに繰り返さない。</remarks>
+    /// <param name="error">例外。</param>
+    /// <param name="definition">PID 定義。</param>
+    private void LogDecodeFailed(Exception error, OBDPIDDefinition definition)
+    {
+        var logger = AcquisitionLog.Logger;
+        if (!logger.IsEnabled(LogLevel.Debug))
+        {
+            return;
+        }
+
+        var request = new OBDPIDRequest(definition.Service, definition.Pid);
+        lock (_gate)
+        {
+            if (!_decodeFailureLogged.Add(request))
+            {
+                return;
+            }
+        }
+
+        AcquisitionLog.DecodeFailed(logger, error, PidText(request));
+    }
+
+    /// <summary>バッチの中の要求の結果の件数です（診断ログの要約用。割り当てなしで数える）。</summary>
+    private struct BatchOutcomeCounts
+    {
+        /// <summary>応答があった件数です。</summary>
+        public int Responded;
+
+        /// <summary>期限切れの件数です。</summary>
+        public int TimedOut;
+
+        /// <summary>通信の失敗の件数です。</summary>
+        public int TransportFailed;
+
+        /// <summary>読めない応答の件数です。</summary>
+        public int Unclassified;
+
+        /// <summary>取消の件数です。</summary>
+        public int Cancelled;
+
+        /// <summary>1 件の結果を数えます。</summary>
+        /// <remarks>責務: Transport の結果の種類ごとに件数を 1 増やします。</remarks>
+        /// <param name="outcome">結果。</param>
+        public void Add(OBDPIDRequestTransportOutcome outcome)
+        {
+            switch (outcome)
+            {
+                case OBDPIDRequestTransportOutcome.Responded:
+                    Responded++;
+                    break;
+                case OBDPIDRequestTransportOutcome.TimedOut:
+                    TimedOut++;
+                    break;
+                case OBDPIDRequestTransportOutcome.TransportFailure:
+                    TransportFailed++;
+                    break;
+                case OBDPIDRequestTransportOutcome.Cancelled:
+                    Cancelled++;
+                    break;
+                default:
+                    Unclassified++;
+                    break;
+            }
+        }
     }
 
     /// <summary>指定世代が現在の取得workflowに属することを検証します。</summary>

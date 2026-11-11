@@ -12,6 +12,9 @@ namespace ProjectZD8.Data.Windows.Devices.Serial;
 /// </remarks>
 public sealed class WindowsSerialPortOBDTransport : IOBDCommandTransport
 {
+    /// <summary>診断ログに書く Transport の種類です。</summary>
+    private const string Transport = OBDDiagnosticText.TransportSerial;
+
     /// <summary>通信速度です。</summary>
     private const int BaudRate = 115_200;
 
@@ -42,6 +45,7 @@ public sealed class WindowsSerialPortOBDTransport : IOBDCommandTransport
     {
         if (port is not null || !portName.StartsWith("COM", StringComparison.OrdinalIgnoreCase))
         {
+            OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "open", port is not null ? "already-open" : "invalid-port-name");
             throw ConnectionFailed();
         }
 
@@ -62,11 +66,14 @@ public sealed class WindowsSerialPortOBDTransport : IOBDCommandTransport
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException)
         {
+            // UnauthorizedAccessException はほかのアプリがポートを開いているときに起きます。
+            OBDConnectionLog.TransportFailed(OBDConnectionLog.Logger, error, Transport, "open");
             candidate.Dispose();
             throw ConnectionFailed();
         }
 
         port = candidate;
+        OBDConnectionLog.TransportStep(OBDConnectionLog.Logger, Transport, "open", "115200 bps 8N1、DTR/RTS あり");
         return Task.CompletedTask;
     }
 
@@ -85,6 +92,7 @@ public sealed class WindowsSerialPortOBDTransport : IOBDCommandTransport
         }
         catch (Exception error) when (error is IOException or InvalidOperationException or TimeoutException or UnauthorizedAccessException)
         {
+            OBDConnectionLog.TransportFailed(OBDConnectionLog.Logger, error, Transport, "write");
             throw ConnectionFailed();
         }
     }
@@ -103,6 +111,7 @@ public sealed class WindowsSerialPortOBDTransport : IOBDCommandTransport
         {
             if (!active.IsOpen)
             {
+                OBDConnectionLog.TransportLost(OBDConnectionLog.Logger, Transport, "port-closed");
                 throw ConnectionFailed();
             }
 
@@ -114,6 +123,7 @@ public sealed class WindowsSerialPortOBDTransport : IOBDCommandTransport
             }
             catch (Exception error) when (error is IOException or InvalidOperationException or UnauthorizedAccessException)
             {
+                OBDConnectionLog.TransportFailed(OBDConnectionLog.Logger, error, Transport, "read");
                 throw ConnectionFailed();
             }
 
@@ -131,6 +141,7 @@ public sealed class WindowsSerialPortOBDTransport : IOBDCommandTransport
             }
         }
 
+        OBDConnectionLog.TransportTimeout(OBDConnectionLog.Logger, Transport, "read", (long)responseTimeout.TotalMilliseconds, response.Count);
         throw new VehicleIdentificationException(new VehicleIdentificationError.ResponseTimedOut());
     }
 
@@ -147,9 +158,10 @@ public sealed class WindowsSerialPortOBDTransport : IOBDCommandTransport
             {
                 active.Close();
             }
-            catch (IOException)
+            catch (IOException error)
             {
                 // 抜かれたUSB機器では閉じる時点で失敗することがあります。状態は破棄済みです。
+                OBDConnectionLog.TransportFailed(OBDConnectionLog.Logger, error, Transport, "close");
             }
 
             active.Dispose();

@@ -1,4 +1,5 @@
 using ProjectZD8.Application.DeviceConnection.Ports;
+using ProjectZD8.Data.Devices;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Radios;
 
@@ -7,6 +8,7 @@ namespace ProjectZD8.Data.Windows.Devices.Bluetooth;
 /// <summary>Bluetooth アダプターと無線の状態を探索エラーへ変換します。</summary>
 /// <remarks>
 /// iOS 版の CoreBluetooth 状態通知（poweredOff、unauthorized、unsupported、状態確定の2秒期限）に対応します。
+/// 判定の結果は <c>obd.discovery.bluetooth.*</c> に書きます（使えないときは OS の状態の説明つき）。
 /// </remarks>
 internal static class WindowsBluetoothAvailability
 {
@@ -23,39 +25,51 @@ internal static class WindowsBluetoothAvailability
         var checking = Check(requiresLowEnergy);
         if (await Task.WhenAny(checking, Task.Delay(StateTimeout)) != checking)
         {
+            OBDDiscoveryLog.BluetoothUnavailable(
+                OBDDiscoveryLog.Logger,
+                requiresLowEnergy,
+                nameof(AdapterDiscoveryError.BluetoothStateUnavailable),
+                "state-timeout");
             throw new AdapterDiscoveryException(AdapterDiscoveryError.BluetoothStateUnavailable);
         }
 
-        if (await checking is { } error)
+        var (error, detail) = await checking;
+        if (error is { } reason)
         {
-            throw new AdapterDiscoveryException(error);
+            OBDDiscoveryLog.BluetoothUnavailable(OBDDiscoveryLog.Logger, requiresLowEnergy, reason.ToString(), detail);
+            throw new AdapterDiscoveryException(reason);
         }
+
+        OBDDiscoveryLog.BluetoothAvailable(OBDDiscoveryLog.Logger, requiresLowEnergy);
     }
 
     /// <summary>アダプターと無線の状態を読み取ります。</summary>
-    /// <remarks>責務: OS の状態を探索エラーの理由（なければ <c>null</c>）へ写像します。</remarks>
+    /// <remarks>責務: OS の状態を探索エラーの理由（なければ <c>null</c>）と、診断ログ用の短い説明へ写像します。</remarks>
     /// <param name="requiresLowEnergy">BLE 中央機能が必要かどうか。</param>
-    /// <returns>使えない理由。使える場合は <c>null</c>。</returns>
-    private static async Task<AdapterDiscoveryError?> Check(bool requiresLowEnergy)
+    /// <returns>使えない理由（使える場合は <c>null</c>）と、OS の状態の説明。</returns>
+    private static async Task<(AdapterDiscoveryError? Error, string Detail)> Check(bool requiresLowEnergy)
     {
         BluetoothAdapter? adapter;
         try
         {
             adapter = await BluetoothAdapter.GetDefaultAsync();
         }
-        catch (Exception)
+        catch (Exception error)
         {
-            return AdapterDiscoveryError.BluetoothStateUnavailable;
+            OBDDiscoveryLog.StepFailed(OBDDiscoveryLog.Logger, error, "bluetooth-adapter");
+            return (AdapterDiscoveryError.BluetoothStateUnavailable, "adapter-query-failed");
         }
 
         if (adapter is null)
         {
-            return AdapterDiscoveryError.BluetoothUnsupported;
+            return (AdapterDiscoveryError.BluetoothUnsupported, "no-adapter");
         }
 
         if (requiresLowEnergy ? !adapter.IsLowEnergySupported || !adapter.IsCentralRoleSupported : !adapter.IsClassicSupported)
         {
-            return AdapterDiscoveryError.BluetoothUnsupported;
+            return (
+                AdapterDiscoveryError.BluetoothUnsupported,
+                $"classic={adapter.IsClassicSupported} le={adapter.IsLowEnergySupported} central={adapter.IsCentralRoleSupported}");
         }
 
         Radio? radio;
@@ -63,20 +77,23 @@ internal static class WindowsBluetoothAvailability
         {
             radio = await adapter.GetRadioAsync();
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException error)
         {
-            return AdapterDiscoveryError.BluetoothUnauthorized;
+            OBDDiscoveryLog.StepFailed(OBDDiscoveryLog.Logger, error, "bluetooth-radio");
+            return (AdapterDiscoveryError.BluetoothUnauthorized, "radio-access-denied");
         }
-        catch (Exception)
+        catch (Exception error)
         {
-            return AdapterDiscoveryError.BluetoothStateUnavailable;
+            OBDDiscoveryLog.StepFailed(OBDDiscoveryLog.Logger, error, "bluetooth-radio");
+            return (AdapterDiscoveryError.BluetoothStateUnavailable, "radio-query-failed");
         }
 
+        var detail = radio is null ? "radio=none" : $"radio={radio.State}";
         return radio?.State switch
         {
-            RadioState.On => null,
-            RadioState.Off or RadioState.Disabled => AdapterDiscoveryError.BluetoothPoweredOff,
-            _ => AdapterDiscoveryError.BluetoothStateUnavailable,
+            RadioState.On => (null, detail),
+            RadioState.Off or RadioState.Disabled => (AdapterDiscoveryError.BluetoothPoweredOff, detail),
+            _ => (AdapterDiscoveryError.BluetoothStateUnavailable, detail),
         };
     }
 }

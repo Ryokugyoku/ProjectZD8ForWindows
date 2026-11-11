@@ -145,7 +145,10 @@ internal static partial class AcquisitionLog
         Message = "バッチ {Batch}（世代 {Generation}）を落としました（{Reason}）")]
     public static partial void BatchDropped(ILogger logger, ulong generation, long batch, string reason);
 
-    /// <summary>バッチ 1 件の要約を書きます（PID 1 件ごとには書かない）。</summary>
+    /// <summary>
+    /// バッチ 1 件の要約を書きます（PID 1 件ごとには書かない）。
+    /// 世代の最初のバッチと、異常のあるバッチだけ書きます（正常なバッチは <see cref="BatchSummary"/> にまとめる）。
+    /// </summary>
     /// <param name="logger">ロガー。</param>
     /// <param name="batch">バッチの番号。</param>
     /// <param name="tick">周期の番号。</param>
@@ -174,6 +177,50 @@ internal static partial class AcquisitionLog
         int cancelled,
         int samples,
         long elapsedMs);
+
+    /// <summary>
+    /// 正常なバッチをまとめて書く間隔（バッチ数）です。1 か所で変えられます。
+    /// </summary>
+    /// <remarks>世代の最初のバッチと、異常のあるバッチは、この間隔に関わらずその場で 1 行書きます。</remarks>
+    public const int NormalBatchSummaryInterval = 10;
+
+    /// <summary>
+    /// 正常なバッチ（期限切れ・通信失敗・不明・取消がすべて 0）の複数件分の合計を 1 行で書きます。
+    /// </summary>
+    /// <param name="logger">ロガー。</param>
+    /// <param name="firstBatch">まとめた最初のバッチの番号。</param>
+    /// <param name="lastBatch">まとめた最後のバッチの番号。</param>
+    /// <param name="batches">まとめたバッチの数。</param>
+    /// <param name="requests">要求した PID の合計。</param>
+    /// <param name="responded">応答があった合計。</param>
+    /// <param name="samples">数値にできた合計。</param>
+    /// <param name="elapsedTotalMs">所要時間の合計（ミリ秒）。</param>
+    /// <param name="elapsedMaxMs">1 バッチの所要時間の最大（ミリ秒）。</param>
+    [LoggerMessage(
+        EventId = 5027,
+        EventName = "acq.batch.summary",
+        Level = LogLevel.Debug,
+        Message = "正常なバッチ {Batches} 件（{FirstBatch}〜{LastBatch}）：要求 {Requests}、応答 {Responded}、数値 {Samples}（合計 {ElapsedTotalMs} ms、最大 {ElapsedMaxMs} ms）")]
+    public static partial void BatchSummary(
+        ILogger logger,
+        long firstBatch,
+        long lastBatch,
+        int batches,
+        long requests,
+        long responded,
+        long samples,
+        long elapsedTotalMs,
+        long elapsedMaxMs);
+
+    /// <summary>止めるべき取得が動いていなかったことを書きます（<c>acq.stopped</c> は出さない）。</summary>
+    /// <param name="logger">ロガー。</param>
+    /// <param name="generation">停止要求で進めた世代。</param>
+    [LoggerMessage(
+        EventId = 5028,
+        EventName = "acq.stop.nothing-running",
+        Level = LogLevel.Debug,
+        Message = "止める取得はありませんでした（世代 {Generation}）")]
+    public static partial void StopNothingRunning(ILogger logger, ulong generation);
 
     /// <summary>バッチの保存に失敗したことを、元の例外つきで書きます。</summary>
     /// <param name="logger">ロガー。</param>

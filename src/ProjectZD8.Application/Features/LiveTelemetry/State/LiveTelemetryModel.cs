@@ -60,6 +60,12 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
     /// <summary>古い取得完了を新しい接続状態へ反映しないための世代です。</summary>
     private ulong pollingGeneration;
 
+    /// <summary>診断ログの <c>sid</c>（取得を始めた時点の接続セッション）です。セッションがなければ null。</summary>
+    private string? diagnosticSessionId;
+
+    /// <summary><see cref="diagnosticSessionId"/> を取った取得の世代です。</summary>
+    private ulong diagnosticSessionGeneration;
+
     /// <summary>初期状態、PID読取ユースケース、更新方針、終了通知先を固定します。</summary>
     /// <remarks>
     /// 責務: PID表示状態を1件の読取ユースケースへ結び付けます。
@@ -156,7 +162,6 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
             Samples = [],
             SupportedPIDCount = 0,
         };
-        AcquisitionLog.Started(AcquisitionLog.Logger, endpoint.Transport.ToRawValue(), generation, acquisitionEvidence is not null);
         systemSleepInhibitor?.SetVehicleConnectionActive(true);
         previousTask?.Cancel();
         var cancellation = new CancellationTokenSource();
@@ -185,6 +190,20 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
         CancellationToken cancellationToken)
     {
         await Task.Yield();
+
+        // 取得を始めたことを、接続セッションの sid つきで書きます（セッションがなければ sid なし）。
+        // 旧世代の完了待ちより前に書くので、同じ世代の acq.stopped（この取得の完了を待つ）より必ず前になります。
+        if (acquisitionEvidence is ConnectionSessionAcquisitionController controller)
+        {
+            diagnosticSessionId = await controller.ResolveDiagnosticSessionId();
+            diagnosticSessionGeneration = generation;
+        }
+
+        using (DiagnosticSessionScope(generation))
+        {
+            AcquisitionLog.Started(AcquisitionLog.Logger, endpoint.Transport.ToRawValue(), generation, acquisitionEvidence is not null);
+        }
+
         if (previousTask is not null)
         {
             await previousTask.Task;
@@ -215,6 +234,39 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
         _ = RunStop(previousTask, stoppedGeneration, generation, shouldNotifySessionEnd);
     }
 
+    /// <summary>取得を止めたことを診断ログに書きます。止める取得がなかったときは Info を出さず Debug だけ書きます。</summary>
+    /// <remarks>
+    /// 責務: 動いていた取得の停止は <c>acq.stopped</c>（その取得の <c>sid</c> つき）、動いていなかったときは
+    /// <c>acq.stop.nothing-running</c>（Debug）へ振り分けます。アプリの起動時の認証確認でも停止要求が来るため、後者になります。
+    /// </remarks>
+    /// <param name="wasRunning">止めた時点で取得（または接続）が動いていたか。</param>
+    /// <param name="reason">理由。</param>
+    /// <param name="stoppedGeneration">止めた取得の世代。</param>
+    private void LogStopped(bool wasRunning, string reason, ulong stoppedGeneration)
+    {
+        if (!wasRunning)
+        {
+            AcquisitionLog.StopNothingRunning(AcquisitionLog.Logger, stoppedGeneration);
+            return;
+        }
+
+        using (DiagnosticSessionScope(stoppedGeneration))
+        {
+            AcquisitionLog.Stopped(AcquisitionLog.Logger, reason, stoppedGeneration);
+        }
+    }
+
+    /// <summary>指定の世代の取得に接続セッションがあれば、その <c>sid</c> を付ける範囲を始めます。</summary>
+    /// <remarks>責務: すでに <c>sid</c> が付いている範囲の中、またはセッションがない取得では何もしません。</remarks>
+    /// <param name="generation">取得の世代。</param>
+    /// <returns>範囲。付けるものがなければ null。</returns>
+    private IDisposable? DiagnosticSessionScope(ulong generation) =>
+        diagnosticSessionId is not null
+        && diagnosticSessionGeneration == generation
+        && DiagnosticLog.CurrentSessionId is null
+            ? DiagnosticLog.BeginConnectionSession(diagnosticSessionId)
+            : null;
+
     /// <summary>取得停止と通信資源の解放を待ってから待機状態へ戻します。</summary>
     /// <remarks>責務: Swift の停止 <c>Task</c> 本体として、同じ世代のままなら待機状態とスリープ抑止解除を反映します。</remarks>
     /// <param name="previousTask">完了を待つ取得タスク。</param>
@@ -242,11 +294,11 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
         await readMajorPIDs.EndSession();
         if (pollingGeneration != generation)
         {
-            AcquisitionLog.Stopped(AcquisitionLog.Logger, "superseded", stoppedGeneration);
+            LogStopped(shouldNotifySessionEnd, "superseded", stoppedGeneration);
             return;
         }
 
-        AcquisitionLog.Stopped(AcquisitionLog.Logger, "user", stoppedGeneration);
+        LogStopped(shouldNotifySessionEnd, "user", stoppedGeneration);
         State = State with { Phase = LiveTelemetryStatePhase.Idle };
         systemSleepInhibitor?.SetVehicleConnectionActive(false);
         if (shouldNotifySessionEnd)
@@ -368,7 +420,7 @@ public sealed class LiveTelemetryModel : INotifyPropertyChanged
 
         if (error is OperationCanceledException)
         {
-            AcquisitionLog.Stopped(AcquisitionLog.Logger, "cancelled", generation);
+            LogStopped(true, "cancelled", generation);
             return;
         }
 

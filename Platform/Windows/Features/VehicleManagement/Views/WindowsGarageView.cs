@@ -201,8 +201,6 @@ public sealed partial class WindowsGarageView : UserControl
         else
         {
             var grid = AdaptiveGrid.Cards();
-            // 車両のカードは中身が多いので、Compact では 1 列にして文字が切れないようにする。
-            grid.SetMaxColumns(1, 0, 0, 0);
             grid.SetMaxColumns(1, 2, 3, 4);
             foreach (var vehicle in state.Vehicles)
             {

@@ -284,7 +284,7 @@ footer .links { display: flex; flex-wrap: wrap; gap: 8px 20px; }
         <li>
           <div>
             <h3>車のエンジンをかけ、<span class="ui">接続する</span> を押す</h3>
-            <p>画面上部の接続バーか、ホームから接続できます。どの画面にいても接続・切断ができます。</p>
+            <p>ホームの大きなボタンか、ウインドウ上端（タイトルバー）の接続コンソール（アダプター名と状態が出ている欄）から接続できます。どの画面にいても接続・切断ができます。</p>
           </div>
         </li>
         <li>
@@ -319,7 +319,7 @@ footer .links { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 
     <section id="screens">
       <h2><small>SCREENS</small>画面ごとの使い方</h2>
-      <p class="prose muted">左のメニューから画面を切り替えます。設定はメニューのいちばん下にあります。</p>
+      <p class="prose muted">左のメニューから画面を切り替えます。設定はメニューのいちばん下にあります。ウインドウを狭くすると、メニューは記号だけの細い列に、さらに狭くすると画面の下のタブ（設定はいちばん右）に変わります。</p>
 
       <div class="feature">
         <h3>ホーム <span class="key">Ctrl+1</span></h3>
@@ -343,7 +343,7 @@ footer .links { display: flex; flex-wrap: wrap; gap: 8px 20px; }
         <h3>接続履歴と分析 <span class="key">Ctrl+3</span></h3>
         <ul>
           <li>接続してから切断するまでが、1 回分の「セッション」として残ります。車 › 日時 の順に開いて詳細を見ます。</li>
-          <li>上部のパンくず（例：接続履歴 › ZD8 デモ › 2026/11/10 23:49）で、ひとつ前の階層に戻れます。</li>
+          <li>上部のパンくず（例：接続履歴 › ZD8 デモ › 2026/11/10 23:49）か、ウインドウ左上の戻るボタン（<span class="mono">←</span>）で、ひとつ前の階層に戻れます。</li>
           <li>セッションの詳細から「ログデータ解析」を開くと、次の 3 つのタブで振り返れます。</li>
         </ul>
         <div class="tabs-row">
@@ -391,7 +391,8 @@ footer .links { display: flex; flex-wrap: wrap; gap: 8px 20px; }
       <div class="feature">
         <h3>設定 <span class="key">Ctrl+,</span></h3>
         <ul>
-          <li>プライマリーアダプターの選択、外観（ライト／ダーク）、表示言語（日本語・English・Español）を変更できます。</li>
+          <li>「全般」「接続」「データと同期」「診断」「アカウント」の順に並んでいます。ウインドウが広いときは、左の目次から各項目へ移れます。</li>
+          <li>「全般」で表示言語（日本語・English・Español）と外観（システム／ライト／ダーク）、「接続」でプライマリーアダプターを選べます。</li>
           <li>「アカウントを削除」で、このアプリに保存した走行ログや設定を消去できます。</li>
           <li>「診断」では、不具合の調査に使う記録（診断ログ）を扱えます。<span class="ui">不具合レポートを書き出す</span> で、開発者に渡すファイル（zip）を作れます。<span class="ui">詳細ログ</span> は、調査への協力をお願いしたときだけ入れてください（7 日たつと自動で切れます）。<span class="ui">診断ログを消す</span> で、たまった記録を消せます。</li>
         </ul>
@@ -408,7 +409,7 @@ footer .links { display: flex; flex-wrap: wrap; gap: 8px 20px; }
         <div><dt><kbd>Ctrl</kbd>+<kbd>S</kbd></dt><dd>整備記録・車両の編集を保存</dd></div>
         <div><dt><kbd>F5</kbd></dt><dd>Garage と整備の一覧を更新</dd></div>
       </dl>
-      <p class="prose muted">ウインドウを広くすると、接続履歴ではセッションの一覧と詳細が左右に並びます。</p>
+      <p class="prose muted">ウインドウを広くすると、接続履歴ではセッションの一覧と詳細が、整備では記録の一覧と内容が左右に並びます。狭いときは片方ずつ表示し、戻るボタンで一覧に戻ります。</p>
     </section>
 
     <section id="data">

@@ -26,7 +26,7 @@
 原則：
 
 - **画面は SizeChanged を見ない**。`ResponsiveLayout.Bind(this, ApplyLayout)` で購読し、クラスが変わったときだけ Grid の行・列・余白・Visibility を差し替える（木を作り直さない）。外されたら自動で解除される。XAML の画面は `ResponsiveLayout.BindVisualStates(this)` で VisualState（"Compact" など）へ移す。
-- 横スクロールを出さない。文字は折り返すか、`TextTrimming` で切る。固定幅の要素は Compact で入るか確かめる。
+- 横スクロールを出さない。文字は折り返すか、`TextTrimming` で切る。チップ・状態の印・ボタンの並びは `FlowPanel` で折り返す（等幅の枠に詰めて文字を切らない）。固定幅の要素は Compact で入るか確かめる。
 - 本文の行は `Metrics.ReadingMaxWidth`（720）まで。ページの中身は `Metrics.ContentMaxWidth`（1360）まで（`PageScaffold` がやる）。
 - 例外：グラフや一覧の**中**で、要素の実際の幅に合わせて描くもの（グラフの再描画など）は SizeChanged を見てよい。そのときも木は作り直さず、描き直すのは図形だけ。
 
@@ -54,15 +54,17 @@
 |---|---|---|
 | `PageScaffold` | 画面の外枠（縦スクロール・最大幅で中央・幅クラスの余白）。`Body` に節を足す | — |
 | `AdaptiveGrid` | カード・タイルの格子。`AdaptiveGrid.Tiles()` / `Cards()` / `WideCards()`、`SetMaxColumns(c,m,e,w)`、`AnimatesReflow`。間隔を指定しなければ幅クラスのトークン。Collapsed の子は詰める。子は数十個まで | 子は `KeyedChildren` で |
-| `AdaptiveSplit` | 主と副の 2 面。広いと左右、`CollapseBelow` より狭いと `Stack`（積む）か `Single`（片方だけ。`ShowsSecondary`） | `Apply()` |
+| `AdaptiveSplit` | 主と副の 2 面。広いと左右、`CollapseBelow` より狭いと `Stack`（積む）か `Single`（片方だけ。`ShowsSecondary`）。設定はどの順に入れても入れた時点で並べ直す。外周の余白は持たないので、`PageScaffold` の外で使うときは `Space.PageGutter` を付ける（整備） | `Apply()` |
 | `SurfaceCard.Create(content, tone, padding, tinted, variant)` / `SurfaceCard.Hero(content)` | カード。主役（Hero）は 1 画面に 1 枚 | — |
-| `ScreenHeader` | 画面の見出し。Compact で要約を下へ回す | `SetTitle` / `SetSubtitle` |
+| `ScreenHeader` | 画面の見出し（記号のタイル・Eyebrow・題・副題・右の要約）。ホーム以外の画面は記号のタイルを付ける。Compact で要約を下へ回す。一覧の横の細い欄では右の要約を使わず、題の下に `FlowPanel` で並べる | `SetTitle` / `SetSubtitle` |
 | `MetricBlock(value, [unit,] caption, …)` | 数値＋説明。等幅数字 | `SetValue` / `SetCaption` |
 | `StatusPill.Create(glyph, text, tone)` | 状態の印（glyph が null なら点） | `StatusPill.Set(pill, …)` |
 | `IconTile.Create(glyph, tone, size)` | 見出しの記号のタイル | `IconTile.SetTone(tile, …)` |
 | `SettingsRow.Create(…)` / `Header` | 設定の行。Compact で操作を下の段へ | — |
 | `ContentUnavailablePanel` | 表示するものがないとき | — |
-| `VirtualList<TItem>` | 何百件にもなる一覧（仮想化した ListView。行はコードで 1 回だけ組み、使い回す） | `Sync(items, key)` |
+| `FlowPanel` | 小さな部品（チップ・状態の印・操作のボタン）を左から並べ、収まらなければ次の行へ（`Wraps = false` で 1 行） | 子はそのまま |
+| `GlyphLabel(glyph, text, …)` | 記号＋文字。ボタンの中身に置くと、名前のないボタンへ文字を読み上げ名として渡す | — |
+| `VirtualList<TItem>` | 何百件にもなる一覧（仮想化した ListView。行はコードで 1 回だけ組み、使い回す）。行の要素に `AutomationProperties.Name` を付けると器へ写す（付けないと項目の ToString が読み上げられる） | `Sync(items, key)` |
 | `KeyedChildren<TKey,TItem,TElement>` | 数十個までの手組みの並び（カード・行） | `Sync(items)` |
 | `Retained.SetText / SetVisible / SetEnabled / SetStyle / SetForeground / SetGlyph` | 値が違うときだけ設定する | — |
 | `UiUpdateThrottle` | モデルの知らせを束ね、1 フレームに 1 回まで（`MinInterval` でさらに間引く） | `Request()` / `FlushNow()` |
@@ -111,37 +113,41 @@ void Update() { var state = ...; Retained.SetText(_name, state.Name); StatusPill
 - 文字を足すとき `Strings/WindowsOnly.xcstrings` に日・英・西をそろえずに足すこと（足したら `scripts/ConvertXcstrings.cs` で .resw を作り直す）。
 - 主の操作（`AccentButtonStyle`）を 1 画面に 2 つ以上置くこと。主役のカード（Hero）を 2 枚以上置くこと。
 
-## 8. 画面ごとの狙いのレイアウト
+## 8. 画面ごとのレイアウト（最終の実装）
 
-今の作り（2026-11-11 時点）を踏まえた目標。各画面の担当が詰めてよいが、幅クラスでの振る舞いはこれに合わせる。
+2026-11-11 に統合して実機（640 / 900 / 1280 / 1920、高さ 420、明・暗、日・英・西）で確かめた形。作り直すときもこれに合わせる。
 
-**ホーム**（作り直し済み・見本）
-- 見出し（Display）→ 主役のカード（左：計器の輪＋アダプター名＋状態、右：主の操作）→ 今後の機能の帯。
-- Compact：主役のカードの中を積み、操作は全幅。Medium 以上：左右。Wide：中身は 1360 で中央。
+**共通**
+- 画面の頭は `ScreenHeader`（記号のタイル＋Eyebrow＋題＋副題）。ホームだけは記号なしの Display の見出し。整備は一覧の面の頭が見出しを兼ねる。
+- 外周の余白は `Space.PageGutter`（`PageScaffold` か、整備のように自前で付ける）。シェルの InfoBar（前回の異常終了など）も同じ余白で並ぶ。
+- 文字の短い名前：Compact の下のタブは「ライブ」「履歴」（`windows.nav.tab.*`）。ペインの題は長い訳で末尾を「…」に（全文はツールチップ）。スイッチのオン／オフはアプリの言語の文字（`windows.toggle.*`）。
+
+**ホーム**（見本）
+- 見出し（Display）→ 主役のカード（左：計器の輪＋アダプター名＋状態、右：主の操作）→ 今後の機能の帯。Compact は主役のカードの中を積み、操作は全幅。
 
 **ライブ表示**（`WindowsLiveTelemetryView`）
-- 上に計器帯：エンジン回転数・車速を MetricHero で大きく（Compact は 2 つを縦、Medium 以上は横に 2 つ、Expanded 以上は応答 PID 数・状態も同じ帯に）。
-- 分類のチップは Compact・Medium で横スクロールの 1 行、Expanded 以上で折り返し。値の格子は `AdaptiveGrid.Tiles()`（Compact 2 列〜Wide 6 列程度）。
-- 値は要素を保持して `UiUpdateThrottle(minInterval: 100ms)` で差し替え。分類の切り替えでも作り直さず、`KeyedChildren` で入れ替える。
+- 計器帯：エンジン回転数・車速を MetricHero で（Compact は縦に 2 つ、Medium 以上は横に 2 つ）。Expanded 以上は右に応答 PID 数と状態の印、Medium 以下は応答数を見出しの右へ。
+- 状態の帯（InfoBar）は読み取り中・停止中・失敗で出す。取得が落ち着いたら（Loaded）Expanded 以上では帯を閉じ、右の印だけにする（同じ文言を 2 か所に出さない）。
+- 分類のボタンはどの幅でも `FlowPanel` で折り返す。値の格子は `SetMaxColumns(2, 3, 4, 6)`。
+- 値は要素を保持して `UiUpdateThrottle(100ms)` で差し替え、並びは `KeyedChildren`。切断後に残る最後の値は薄く（不透明度 0.55）して、読み取り中の値と見分ける。
 
 **履歴・詳細・分析**（`WindowsConnectionHistoryView`・`WindowsConnectionSessionDetailView`・`WindowsSessionLogAnalysisView`）
-- アーカイブ（車両別）：`AdaptiveGrid.Cards()`。進行中のセッションは上に横長のカード。
-- セッション一覧と詳細：`AdaptiveSplit`（`SecondaryFirst`、一覧 360〜420、`CollapseMode=Single`）。Expanded 以上で左右、Compact・Medium は片方だけ（詳細を開くと一覧を隠し、戻るで一覧へ）。今の 1100 のしきい値は幅クラスに置き換える。一覧は `VirtualList`。
-- 分析：要約は `AdaptiveGrid.Tiles()`、グラフは `WideCards()`（Wide で 2 列）。グラフは高さ 320 を Compact で 240 に。読込み中の進み具合は値だけ差し替える（全体を作り直さない）。
+- アーカイブ：見出しのカード（総数・総走行時間）→ 車両カードの格子（`Cards()`、Compact は 1 列）。
+- セッション一覧と詳細：`AdaptiveSplit`（一覧 400、`SecondaryFirst`、Expanded 以上で左右、Medium 以下は `Single`）。一覧は `VirtualList`。行の時間・距離の列は幅をそろえ、状態の印は折り返す。
+- 詳細：操作のボタンは文字の幅のまま `FlowPanel` で折り返す。見出しの下に状態・車種・ID を並べる。
+- 分析：見出し（件数は出さない）→ 要約の 3 枚 → タブ（走行サマリー・折れ線・相関）。グラフは最小の高さ 320（Compact 240）、右に PID の選択と説明（Medium 以下は上に積む）。
 
 **ガレージ・車両編集・PID 設定**（`WindowsGarageView`・`WindowsVehicleEditorView`・`WindowsVehiclePIDSettingsDialog`）
-- ガレージ：要約タイル（`Tiles()`）→ 車両カードの格子（`Cards()`、Wide で 4 列）。写真の高さは Compact で 140。
-- 車両編集：`AdaptiveSplit`（副＝写真 320、`Stack`）。Medium 以下は写真を上に積む（今の 760 のしきい値を置き換える）。入力のカードは `AdaptiveGrid`（最小 240）。
-- PID 設定のダイアログ：固定の幅 600・高さ 380 をやめ、ダイアログの最大幅に合わせて伸縮。一覧は `VirtualList`（100 件超）。
+- ガレージ：見出し（右に同期）→ 要約タイル → 車両カード（`SetMaxColumns(1, 2, 3, 4)`、写真の高さは Compact 140・ほか 176）。
+- 車両編集：`AdaptiveSplit`（写真 320 を左、Expanded 未満は写真を上に積む）。入力のカードは `AdaptiveGrid`（最小 240）。保存は右上（Ctrl+S）、戻るは左上の丸いボタン。
+- PID 設定のダイアログ：一覧は `VirtualList`、高さはウインドウに合わせて 220〜560。
 
 **整備**（`WindowsMaintenanceView`・`WindowsMaintenanceEditorView`）
-- タイムラインと詳細：`AdaptiveSplit`（`SecondaryFirst`、タイムライン 340、`Single`）。Expanded 以上で左右、Compact・Medium は片方だけ（今は 2 列固定で、640 では詳細が狭すぎる）。
-- 編集：入力は `AdaptiveGrid`（最小 240）、写真は `Tiles()`。ツールバー（削除・取消・保存）は Compact で記号だけにする。
+- タイムラインと詳細：`AdaptiveSplit`（タイムライン 340、`SecondaryFirst`、Expanded 以上で左右、Medium 以下は `Single`）。外周に `Space.PageGutter`。
+- 編集：入力は `AdaptiveGrid`（最小 240）、写真は `Tiles()`。ツールバー（削除・取消・保存）は Compact で記号だけ。
 
 **設定**（`WindowsSettingsView`）
-- Windows 11 の設定アプリの形を保つ。中身の最大幅は 1000（読みやすさ優先。`PageScaffold(1000)`）。
-- 行（`SettingsRow`）は Compact で操作を下の段へ（済み）。Wide でも 2 列にはしない。グループの再描画は行単位で（`KeyedChildren`）。
+- 中身の最大幅 1000。グループ（全般・接続・データと同期・診断・アカウント）ごとに見出し、Expanded 以上は左に目次（押すとそのグループへ移る）。行は作り直さず値だけ差し替える。Compact は行の操作を下の段へ。
 
 **ログイン**（`WindowsLoginView`）
-- 今の「横に紹介とサインインのパネル、狭いと積む」を保ち、独自の scale 計算と SizeChanged を幅クラスに置き換える：Compact は積む（パネル全幅・紹介は小さく）、Medium は積むか左右（高さ 560 未満なら積む）、Expanded 以上は左右。
-- 直書きの色（グラデーション・円）をトークン（`RevTorqueBrandTileBrush`・`RevTorqueSignalBrush` など）に置き換える。ログインは常に暗い外観のまま。
+- 常に暗い外観。Expanded 以上（または Medium で高さが十分）は紹介とサインインのパネルを左右、それ以外は積む。

@@ -74,6 +74,9 @@ public sealed partial class WindowsAppShellView : UserControl
     /// <summary>下のタブ帯のタブです（行き先ごとに 1 回だけ作って使い回す）。</summary>
     private readonly Dictionary<WindowsSidebarDestination, BottomTab> _tabs = [];
 
+    /// <summary>タイトルバーの押せる領域の数え直しを頼んでいるかです。</summary>
+    private bool _titleBarRegionsPending;
+
     /// <summary>下のタブ帯の 1 つ分の要素です。</summary>
     /// <param name="Button">押せる面。</param>
     /// <param name="Indicator">選択中の印（シアンの線）。</param>
@@ -107,10 +110,12 @@ public sealed partial class WindowsAppShellView : UserControl
         }
 
         // 押せる領域は、位置や大きさが変わりうるときだけ数え直す（LayoutUpdated は毎回の配置で起きるので使わない）。
-        TitleBar.SizeChanged += (_, _) => UpdateTitleBarRegions();
-        ConnectionConsole.SizeChanged += (_, _) => UpdateTitleBarRegions();
-        BackButton.SizeChanged += (_, _) => UpdateTitleBarRegions();
-        BuildBottomTabs();
+        // 幅を変えている間は 3 つの SizeChanged が同じ配置で続けて来るので、1 回の配置につき 1 回だけ数え直す。
+        TitleBar.SizeChanged += (_, _) => ScheduleTitleBarRegions();
+        ConnectionConsole.SizeChanged += (_, _) => ScheduleTitleBarRegions();
+        BackButton.SizeChanged += (_, _) => ScheduleTitleBarRegions();
+
+        // 下のタブ帯は Compact になったときに初めて作る（広い幅で起動したときに要素を作らない）。
         ActualThemeChanged += (_, _) => RefreshTabTheme();
         ResponsiveLayout.Bind(this, ApplyWidthClass);
         foreach (var destination in WindowsSidebarDestinationPresentation.AllCases)
@@ -457,6 +462,11 @@ public sealed partial class WindowsAppShellView : UserControl
         Navigation.IsPaneOpen = widthClass >= WidthClass.Expanded;
         var compact = widthClass == WidthClass.Compact;
 
+        if (compact)
+        {
+            EnsureBottomTabs();
+        }
+
         // Compact のナビは下のタブ帯。タイトルバーの ≡ は出さず、重ねて開くペインは使わない。
         Retained.SetVisible(BottomBar, compact);
         Retained.SetVisible(PaneToggleButton, !compact);
@@ -481,6 +491,22 @@ public sealed partial class WindowsAppShellView : UserControl
     /// タイトルバーの押せる領域（戻る・ナビの開閉・接続コンソール）を OS へ伝えます。
     /// </summary>
     /// <remarks>責務: 押せる要素の位置を物理ピクセルの矩形にし、前回と違うときだけ伝えます。キャプションボタンの幅も合わせます。</remarks>
+    /// <summary>タイトルバーの押せる領域の数え直しを、次の配置のあと 1 回にまとめて頼みます。</summary>
+    private void ScheduleTitleBarRegions()
+    {
+        if (_titleBarRegionsPending)
+        {
+            return;
+        }
+
+        _titleBarRegionsPending = true;
+        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+        {
+            _titleBarRegionsPending = false;
+            UpdateTitleBarRegions();
+        });
+    }
+
     private void UpdateTitleBarRegions()
     {
         if (_appWindow is null || XamlRoot is null)
@@ -715,9 +741,28 @@ public sealed partial class WindowsAppShellView : UserControl
             ToolTipService.SetToolTip(item.InfoBadge, LocalizedText.Get("history.warning.interrupted"));
         }
 
-        var tabBadge = _tabs[WindowsSidebarDestination.History].Badge;
-        tabBadge.Value = count;
-        Retained.SetVisible(tabBadge, count > 0);
+        if (_tabs.TryGetValue(WindowsSidebarDestination.History, out var tab))
+        {
+            tab.Badge.Value = count;
+            Retained.SetVisible(tab.Badge, count > 0);
+        }
+    }
+
+    /// <summary>下のタブ帯がまだなければ作り、今の選択・バッジに合わせます。</summary>
+    private void EnsureBottomTabs()
+    {
+        if (_tabs.Count > 0)
+        {
+            return;
+        }
+
+        BuildBottomTabs();
+
+        // ナビの項目がまだない（コンストラクターの途中）こともあるので、タブのバッジだけを合わせる。
+        var count = _flow.Root.ConnectionHistory.State.InterruptedCount;
+        var badge = _tabs[WindowsSidebarDestination.History].Badge;
+        badge.Value = count;
+        Retained.SetVisible(badge, count > 0);
     }
 
     /// <summary>下のタブ帯を作ります（行き先ごとに 1 回だけ）。</summary>
@@ -833,7 +878,7 @@ public sealed partial class WindowsAppShellView : UserControl
             var visual = ElementCompositionPreview.GetElementVisual(tab.Indicator);
             var scale = selected ? Vector3.One : new Vector3(0.2f, 1, 1);
             var opacity = selected ? 1f : 0f;
-            if (Motion.IsEnabled && IsLoaded && tab.Button.IsLoaded)
+            if (Motion.IsEnabled && IsLoaded && tab.Button.IsLoaded && BottomBar.Visibility == Visibility.Visible)
             {
                 var compositor = visual.Compositor;
                 var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();

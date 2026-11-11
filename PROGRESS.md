@@ -23,6 +23,10 @@ README 確認済みのコミット: 55daff9（＋未コミットの docs/USER_GU
 - 確かめていない：実機の OBD アダプター（USB シリアル・RFCOMM・BLE の接続と送受信、探索、到来の監視）、実際の CloudKit と Apple のサインイン（テストは偽の HTTP 応答だけ）、本物の車、電源断での fsync の効き目、ARM64 と x86 のビルド、狭いウインドウ（640×420）、写真の取り込み、停止確認・Raw の解放・セッション削除の各ダイアログ、Release ビルド（トリミングあり）での起動。
 
 ## 直近の作業
+- 2026-11-11: 診断ログの土台ができた（別セッション・Opus、ブランチ `claude/diagnostics-foundation-88ca30` のコミット b66318d。**main にはまだ入れていない**、push もしていない）。`src/ProjectZD8.Diagnostics` と `tests/ProjectZD8.Diagnostics.Tests`（53 件）。リードがブランチで全テストを走らせ、575 件（既存 522 ＋ 53）合格を確かめた。Debug 版で app.start / app.exit と、強制終了後の app.previous-run.crashed が書かれることはセッションが確認。確かめていない：Beta・Stable チャンネルでのビルド、実アプリでの未処理例外（どちらも単体テストだけ）。呼び出し側の待ち時間は有効な 1 行で平均約 1µs・p99 3.4µs、無効なレベルは割り当て 0。方針の文書と違う点：リングバッファから吐いた行に `"ring":true` が付く、app.start / app.exit / app.previous-run.crashed / diag.dropped はレベルに関係なく必ず書く、キューは 3/4 で Trace・Debug を捨て満杯で Info 以上も捨てる。
+- 2026-11-11: **注意**：上の確認で登録した開発版パッケージ（Ryokugyoku.RevTorqueInsight、作業ツリーの bin を指す）が残っている。Store 版と競合するので、Store 版を入れる前に外す（`Get-AppxPackage Ryokugyoku.RevTorqueInsight | Remove-AppxPackage`）。
+- 2026-11-11: 診断ログの戦略を立てた（開発者の依頼）。docs/LOGGING_STRATEGY.md。現状は Debug.WriteLine 9 か所と %TEMP% の unhandled.log だけで、Release では何も残らない。方針：JSON Lines のファイル（LocalState\diagnostics\、RDB なし）、Beta は Debug 以上を全部、Stable は Warning 以上＋直近 2,000 件のリングバッファを Error・クラッシュ時に吐き出す、自動送信なし・設定画面から不具合レポート（zip）を書き出す。実装は 5 つの作業に分け、新しいセッションで難しさ別のモデル（Opus / Sonnet / Haiku）に任せる。実装はまだ（土台のセッションを始めた段階）。
+- 2026-11-11: Store の審査結果を確認した。1.0.0.0 は合格し、プライベート対象ユーザー向けに公開済み（「In Microsoft Store」）。iCloud ボタンは指摘されなかった。
 - 2026-11-11: お客様向けのご利用ガイド docs/USER_GUIDE.html を作った（開発者の依頼）。準備・はじめかた・アダプターのつなぎ方・各画面・ショートカット・データとプライバシー・FAQ。画像は docs/store/screenshots/ を相対パスで参照。claude.ai の Artifact（非公開、https://claude.ai/artifact/XnjyGvo4QDDjsDPSqzf5Xg）にも公開した。お客様に見せるには共有設定が要る。
 - 2026-11-11: Microsoft Store に 1.0.0.0 を提出した（審査中）。Partner Center でプロパティ・年齢区分（3+）・パッケージ（x64、Desktop のみ）・3 言語の掲載情報・認定メモ・runFullTrust の理由・無料・プライベート対象ユーザー（既知のユーザー グループ「RevTorque Insight Beta Testers」、開発者の個人の Microsoft アカウント 1 件）を設定した。IARC の同意、パッケージとスクリーンショットのアップロード、アプリ開発者契約 8.11 への同意は開発者が行った。手元のビルドで .msixupload の中身が古い Identity のまま再利用され弾かれたので、出力を消して作り直した（docs/STORE_RELEASE.md に注意を追記）。
 - 2026-11-10: Store の最初の提出の準備（開発者の依頼）。PRIVACY.md、docs/store/listing.md（日・英・西の掲載文、認定メモ、年齢区分の答え）、docs/store/screenshots/（UI オートメーションでデモ用アダプターを操作して撮影）を作って push した。CI が GitHub で成功。Partner Center で提出の下書きを作り、プロパティを入力・保存し、年齢区分のアンケートに答えた（同意と保存は開発者）。
@@ -37,7 +41,8 @@ README 確認済みのコミット: 55daff9（＋未コミットの docs/USER_GU
 - 2026-11-10: iOS 版の CloudKit と認証の実装を調べ、Windows から同期する方式を設計した（下の「同期の設計メモ」）。
 
 ## 次にやること
-- Microsoft Store の審査結果を待つ（2026-11-11 に 1.0.0.0 を提出、「In certification」）。通ったら、テスターのアカウントで https://apps.microsoft.com/detail/restricted/9N7FN5KKVR1M から入れて動作を確かめる。不合格なら理由を見て直し、1.0.1 で出し直す（iCloud ボタンが理由になる可能性あり。下の検討事項）。
+- 診断ログの実装（docs/LOGGING_STRATEGY.md の 9）：①土台（Opus）→ main に入れてから ②OBD と取得の計装（Opus）③保存・認証・同期・モデルの計装（Sonnet）④設定画面・報告用番号・InfoBar（Sonnet）⑤release.yml・分析スクリプト・文書（Haiku）。各作業は別セッション・別ブランチ。入れ終わったら README（構成・データの保存）、PRIVACY.md、USER_GUIDE を直す。
+- 1.0.0.0 は審査に通り、Store に公開済み（Partner Center の状態「In Microsoft Store」、確認は 2026-11-11 以降）。テスターのアカウント（Store にサインインしている個人の Microsoft アカウント）で https://apps.microsoft.com/detail/restricted/9N7FN5KKVR1M から入れて、起動・デモ接続・データの保存を確かめる（まだ確かめていない）。2026-11-11 20 時ごろ：テスター用リンクも Store アプリの製品ページ（ms-windows-store://pdp/?productid=9N7FN5KKVR1M）も「お探しのものはここにはありません」、Store アプリ内の検索にも出ない。確かめたこと：Store アプリはグループと同じ個人の Microsoft アカウントでサインイン済み、公開中の設定はプライベート＋グループ選択済み、Windows 11 Pro x64・地域日本、wsreset でキャッシュを消しても同じ。公式の反映時間の記載はなく、フォーラムでは数日待てとの例あり → Store 側の反映待ちと判断。2026-11-13 ごろまで待っても出なければ Partner Center のサポートに問い合わせる。撮影用に登録した開発版（同じパッケージ名・署名なし）は 2026-11-11 に削除済み。今後、手元で同じパッケージ名の開発版を登録すると Store 版と競合するので注意（Store 版を入れている間は、開発版を登録する前に Store 版を外す）。
 - 自動提出の設定：Partner Center で Entra のアプリ（マネージャー）を作り、GitHub の Secrets（PARTNER_CENTER_*）と Variables（STORE_PRODUCT_ID=9N7FN5KKVR1M）を登録する（docs/STORE_RELEASE.md の 3）。そのあとはタグ v1.2.3 の push で提出される。次のバージョンは 1.0.1 以上にする。
 - パッケージ ID を Store の値（Ryokugyoku.RevTorqueInsight）に変えたので、手元の開発用のインストール（d2fa5ca6-… の仮の ID）とはデータのフォルダが別になる。古い方は不要になったら「アプリ」から削除する。
 - GitHub Actions：CI は GitHub 上で成功した（2026-11-10、fae48b4）。Release はまだ動かしていない（最初の提出は手元で作った同じ形のパッケージを使う）。
@@ -80,6 +85,8 @@ README 確認済みのコミット: 55daff9（＋未コミットの docs/USER_GU
 - CloudKit Console で、スキーマを本番環境（Production）に反映する必要がある（開発者の作業）。
 
 ## 検討事項・未決定
+- 診断ログ（docs/LOGGING_STRATEGY.md の 10）→ 開発者に確認：①（決定済み → 決定事項）②Beta と Stable の分け方は、ビルド時の DiagnosticsChannel を release.yml の Variables `RELEASE_CHANNEL` で渡す案でよいか（今は beta、一般公開後はフライト＝beta・通常＝stable）。③レポートの zip の渡し方（メールか GitHub Issue か）。④iOS 版とイベント名を揃えるか。
+- 診断ログで NuGet を 1 つ足す案（Microsoft.Extensions.Logging.Abstractions）。「NuGet を増やさない」これまでの方針と違うが、ソース生成の LoggerMessage が使えるので採った。ロガーは静的な入口（DiagnosticLog.For<T>()）で取り、コンストラクターには足さない（DI なしの組み立てとテストを変えないため）。
 - ご利用ガイド（docs/USER_GUIDE.html）をお客様にどう届けるか未定：Artifact の共有リンク、GitHub Pages、Store の「Web サイト」欄に載せる、など → 開発者に確認。ガイドの FAQ（USB ドライバー、スリープ抑止）とガレージ・設定の説明は実機・画面で確かめていない。機能を変えたらガイドも直す。
 - Store の審査で、ログイン画面と設定画面の押せない「近日対応」ボタンが「機能が完全でない」と指摘されるかもしれない。指摘されたら、Coming Soon の間はボタンを隠すか → 開発者に確認。
 - 配布する CPU：今は x64 だけ。ARM64（Snapdragon の PC）も出すか → 開発者に確認。出すなら、ワークフローで ARM64 も作り、2 つの .msixupload を同じ提出に入れる工夫が要る（msstore publish は 1 ファイル）。
@@ -115,6 +122,10 @@ README 確認済みのコミット: 55daff9（＋未コミットの docs/USER_GU
 - GitHub（Ryokugyoku/ProjectZD8ForWindows）に push 済み。git の user.name / user.email は未設定（コミットは -c で Ryokugyoku を指定）。
 
 ## 決定事項
+- 2026-11-11: 診断ログは開発者のサーバーへ自動送信しない。端末内（LocalState\diagnostics\）に置き、利用者が設定画面から不具合レポート（zip）を書き出して渡す（開発者が承認）。PRIVACY.md の「クラッシュ情報の自動送信も行いません」と合わせるため。
+- 2026-11-11: 実装（コーディング）は作業ごとに新しいセッションで行い、難しさに応じてモデルを分ける（開発者の指示）。
+- 2026-11-11: 診断ログの保存先は RDB にしない。分析できる形（JSON Lines）で置く。テストリリースは不具合を突き止められる詳しさ、リリース版は最小限にしつつバグ報告のときにすぐ分かるようにする（開発者の指示）。
+- 2026-11-11: Store の配布はプライベート対象ユーザー（メールで限定）のまま続ける。「公開＋直接リンクのみ（リンクを知っている人なら誰でも）」も検討したが、やめた（開発者の判断）。理由：一度「公開」で保存するとメールで限定するプライベート配布に戻せず、再審査も要るため。テスターを増やすときは既知のユーザー グループにメールを足す。
 - 2026-11-11: 最初の提出は、ローカルモードの iCloud ボタンを直さずにそのまま出す（開発者の判断「このまま提出して」）。審査で指摘されたら直して出し直す。
 - 2026-11-11: Store のカテゴリは Utilities + tools、配布先は Windows デスクトップだけ、価格は無料、掲載言語は日本語・英語・スペイン語（パッケージの言語と同じ）。
 - 2026-11-10: Windows 版のロゴは iOS 版のアプリアイコン（R の回転計とシアン・オレンジの信号の線）をそのまま使う（開発者が Claude に一任）。ブランドを揃え、Windows 版の配色もこのアイコンから取っているため。タスクバーとスタートは紺の角丸の板に図柄を置く。

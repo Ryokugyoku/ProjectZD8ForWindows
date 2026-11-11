@@ -5,34 +5,21 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     RequestedTheme="Dark">
 
-    <Grid x:Name="LayoutRoot">
-        <!-- 背景：濃い紺のグラデーションと、シアン（右上）・わずかなオレンジ（左下）のぼかし -->
-        <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#FF0D0D0F" Offset="0" />
-                <GradientStop Color="#FF06090E" Offset="0.55" />
-                <GradientStop Color="#FF040506" Offset="1" />
-            </LinearGradientBrush>
-        </Grid.Background>
-        <Ellipse Width="760" Height="760" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-420,-300,0" IsHitTestVisible="False">
-            <Ellipse.Fill>
-                <RadialGradientBrush>
-                    <GradientStop Color="#3005C7E6" Offset="0" />
-                    <GradientStop Color="#0005C7E6" Offset="1" />
-                </RadialGradientBrush>
-            </Ellipse.Fill>
-        </Ellipse>
-        <Ellipse Width="640" Height="640" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-320,0,0,-320" IsHitTestVisible="False">
-            <Ellipse.Fill>
-                <RadialGradientBrush>
-                    <GradientStop Color="#12FF9F2E" Offset="0" />
-                    <GradientStop Color="#00FF9F2E" Offset="1" />
-                </RadialGradientBrush>
-            </Ellipse.Fill>
-        </Ellipse>
+    <!-- ログインは常に暗い外観。色はすべてテーマのトークン（Dark）から引く。 -->
+    <Grid x:Name="LayoutRoot" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <!-- 背景：紺の面と、右上を中心にした計器の同心円（シアン）・左下のオレンジの輪 -->
+        <Rectangle Fill="{ThemeResource RevTorqueHeroBrush}" IsHitTestVisible="False" />
+        <Grid HorizontalAlignment="Right" VerticalAlignment="Top" Width="0" Height="0" IsHitTestVisible="False">
+            <Ellipse Width="320" Height="320" Stroke="{ThemeResource RevTorqueAccentStrokeBrush}" StrokeThickness="1" />
+            <Ellipse Width="520" Height="520" Stroke="{ThemeResource RevTorqueDividerBrush}" StrokeThickness="1" />
+            <Ellipse Width="760" Height="760" Stroke="{ThemeResource RevTorqueDividerBrush}" StrokeThickness="1" StrokeDashArray="2,9" />
+        </Grid>
+        <Grid HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="0" Height="0" IsHitTestVisible="False">
+            <Ellipse Width="420" Height="420" Stroke="{ThemeResource RevTorqueCautionSubtleBrush}" StrokeThickness="6" />
+        </Grid>
 
-        <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <Grid x:Name="Layout" Padding="40" ColumnSpacing="40" RowSpacing="24">
+        <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled">
+            <Grid x:Name="Layout" VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition x:Name="IntroColumn" Width="*" />
                     <ColumnDefinition x:Name="PanelColumn" Width="Auto" />
@@ -43,32 +30,26 @@
                 </Grid.RowDefinitions>
 
                 <!-- 左：ブランドと紹介 -->
-                <Grid x:Name="IntroArea" RowSpacing="28">
+                <Grid x:Name="IntroArea" RowSpacing="24">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal" Spacing="13">
-                        <Grid Width="50" Height="50">
-                            <Border CornerRadius="14" BorderThickness="1" BorderBrush="#5205C7E6">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#FF04131F" Offset="0" />
-                                        <GradientStop Color="#FF06263B" Offset="1" />
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                            </Border>
-                            <FontIcon Glyph="&#xEC4A;" FontSize="22" Foreground="#FF05C7E6" />
-                            <Ellipse Width="5" Height="5" Fill="#FFFF9F2E" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,11,11,0" />
+                    <StackPanel x:Name="BrandRow" Orientation="Horizontal" Spacing="12">
+                        <Grid Width="48" Height="48">
+                            <Border CornerRadius="12" BorderThickness="1" BorderBrush="{ThemeResource RevTorqueAccentStrokeBrush}"
+                                    Background="{ThemeResource RevTorqueBrandTileBrush}" />
+                            <FontIcon Glyph="&#xEC4A;" FontSize="22" Foreground="{ThemeResource RevTorqueBrandGlyphBrush}" />
+                            <Ellipse Width="5" Height="5" Fill="{ThemeResource RevTorqueBrandDotBrush}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,10,0" />
                         </Grid>
                         <StackPanel VerticalAlignment="Center" Spacing="2">
-                            <TextBlock Text="RevTorque Insight" FontSize="17" FontWeight="Bold" Foreground="White" />
-                            <TextBlock x:Name="Eyebrow" FontSize="10" FontWeight="SemiBold" CharacterSpacing="140" Foreground="#FF05C7E6" />
+                            <TextBlock Text="RevTorque Insight" Style="{StaticResource CardTitleTextStyle}" />
+                            <TextBlock x:Name="Eyebrow" Style="{StaticResource EyebrowTextStyle}" />
                         </StackPanel>
                     </StackPanel>
 
-                    <Grid x:Name="HeroRow" Grid.Row="1" ColumnSpacing="34" RowSpacing="16" VerticalAlignment="Center">
+                    <Grid x:Name="HeroRow" Grid.Row="1" ColumnSpacing="24" RowSpacing="20" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -77,43 +58,49 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Grid x:Name="Hero" Width="240" Height="240" VerticalAlignment="Center">
-                            <Ellipse Stroke="#12FFFFFF" StrokeThickness="16" />
-                            <Path x:Name="HeroArc" Stroke="#FF05C7E6" StrokeThickness="5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
-                            <Ellipse Margin="29" Stroke="#2EFFFFFF" StrokeThickness="1" StrokeDashArray="2,9" />
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="-6">
-                                <TextBlock x:Name="HeroLetter" Text="R" FontWeight="Bold" Foreground="#FF05C7E6" VerticalAlignment="Center" />
-                                <FontIcon x:Name="HeroPulse" Glyph="&#xE9D9;" Foreground="#FF05C7E6" VerticalAlignment="Center" />
-                            </StackPanel>
-                            <Ellipse x:Name="HeroDot" Width="8" Height="8" Fill="#FFFF9F2E" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <!-- 回転計：外周・信号色の弧・点線の内周・中央のブランドタイル -->
+                        <Grid x:Name="Hero" HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <Ellipse x:Name="HeroOuter" Stroke="{ThemeResource RevTorqueDividerBrush}" StrokeThickness="12" />
+                            <Path x:Name="HeroArc" Stroke="{ThemeResource RevTorqueSignalBrush}" StrokeThickness="5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                            <Ellipse x:Name="HeroInner" Stroke="{ThemeResource RevTorqueChartGridBrush}" StrokeThickness="1" StrokeDashArray="2,9" />
+                            <Grid x:Name="HeroTile" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Border CornerRadius="999" BorderThickness="1" BorderBrush="{ThemeResource RevTorqueAccentStrokeBrush}"
+                                        Background="{ThemeResource RevTorqueBrandTileBrush}" />
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="-6">
+                                    <TextBlock x:Name="HeroLetter" Text="R" FontWeight="Bold" Foreground="{ThemeResource RevTorqueBrandGlyphBrush}" VerticalAlignment="Center" />
+                                    <FontIcon x:Name="HeroPulse" Glyph="&#xE9D9;" Foreground="{ThemeResource RevTorqueBrandGlyphBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <Ellipse x:Name="HeroDot" Width="8" Height="8" Fill="{ThemeResource RevTorqueBrandDotBrush}" HorizontalAlignment="Right" VerticalAlignment="Top" />
+                            </Grid>
                         </Grid>
-                        <StackPanel x:Name="IntroTexts" Grid.Column="1" Spacing="10" VerticalAlignment="Center">
-                            <TextBlock x:Name="Title" FontSize="38" FontWeight="Bold" Foreground="White" TextWrapping="WrapWholeWords" />
-                            <TextBlock x:Name="Subtitle" FontSize="15" Foreground="#A8FFFFFF" TextWrapping="WrapWholeWords" />
+                        <StackPanel x:Name="IntroTexts" Grid.Column="1" Spacing="8" VerticalAlignment="Center">
+                            <TextBlock x:Name="Title" Style="{StaticResource DisplayTextStyle}" TextWrapping="WrapWholeWords" />
+                            <TextBlock x:Name="Subtitle" Style="{StaticResource SecondaryBodyTextStyle}" TextWrapping="WrapWholeWords" MaxWidth="560" HorizontalAlignment="Left" />
                         </StackPanel>
                     </Grid>
 
-                    <VariableSizedWrapGrid x:Name="Capabilities" Grid.Row="2" Orientation="Horizontal" ItemHeight="44" />
+                    <Grid x:Name="CapabilitiesHost" Grid.Row="2" MaxWidth="640" HorizontalAlignment="Left" />
                 </Grid>
 
-                <!-- 右：サインインの操作 -->
-                <Border x:Name="AuthPanel" Grid.Column="1" MaxWidth="460" MinWidth="340" Padding="26" CornerRadius="20"
-                        Background="#14FFFFFF" BorderBrush="#1AFFFFFF" BorderThickness="1" VerticalAlignment="Center">
-                    <StackPanel Spacing="18">
-                        <StackPanel Spacing="7">
-                            <TextBlock x:Name="PanelEyebrow" FontSize="12" FontWeight="SemiBold" CharacterSpacing="120" Foreground="#FF05C7E6" />
-                            <TextBlock x:Name="PanelTitle" Style="{StaticResource SubtitleTextBlockStyle}" Foreground="White" TextWrapping="WrapWholeWords" />
-                            <TextBlock x:Name="PanelSubtitle" Style="{StaticResource BodyTextBlockStyle}" Foreground="#9EFFFFFF" TextWrapping="WrapWholeWords" />
+                <!-- 右：サインインの操作（この画面の主役のカード） -->
+                <Grid x:Name="PanelHost" Grid.Column="1">
+                    <Border x:Name="AuthPanel" Style="{StaticResource HeroCardStyle}" MaxWidth="460" VerticalAlignment="Center">
+                        <StackPanel Spacing="16">
+                            <StackPanel Spacing="6">
+                                <TextBlock x:Name="PanelEyebrow" Style="{StaticResource EyebrowTextStyle}" />
+                                <TextBlock x:Name="PanelTitle" Style="{StaticResource SectionTitleTextStyle}" TextWrapping="WrapWholeWords" />
+                                <TextBlock x:Name="PanelSubtitle" Style="{StaticResource SecondaryBodyTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                            <Rectangle Height="1" Fill="{ThemeResource RevTorqueDividerBrush}" />
+                            <StackPanel x:Name="PhaseArea" Spacing="12" />
+                            <StackPanel x:Name="TrustRow" Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xEA18;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                                <TextBlock x:Name="TrustText" Style="{StaticResource SecondaryCaptionTextStyle}" />
+                            </StackPanel>
+                            <TextBlock x:Name="ConsentHint" Style="{StaticResource SecondaryCaptionTextStyle}" TextWrapping="WrapWholeWords" />
                         </StackPanel>
-                        <Rectangle Height="1" Fill="#1AFFFFFF" />
-                        <StackPanel x:Name="PhaseArea" Spacing="12" />
-                        <StackPanel x:Name="TrustRow" Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xEA18;" FontSize="12" Foreground="#9EFFFFFF" />
-                            <TextBlock x:Name="TrustText" Style="{StaticResource CaptionTextBlockStyle}" Foreground="#9EFFFFFF" />
-                        </StackPanel>
-                        <TextBlock x:Name="ConsentHint" Style="{StaticResource CaptionTextBlockStyle}" Foreground="#73FFFFFF" TextWrapping="WrapWholeWords" />
-                    </StackPanel>
-                </Border>
+                    </Border>
+                </Grid>
             </Grid>
         </ScrollViewer>
     </Grid>

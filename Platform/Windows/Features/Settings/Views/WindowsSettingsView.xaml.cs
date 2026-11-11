@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -23,11 +25,16 @@ namespace ProjectZD8ForWindows.Platform.Windows.Features.Settings.Views;
 /// 設定画面です。言語・外観・アダプター・自動アップロード・アカウント削除を扱います（iOS 版の <c>MacOSSettingsView</c>）。
 /// </summary>
 /// <remarks>
-/// Windows 11 の「設定」アプリと同じく、見出し（全般・接続・データと同期・アカウント）ごとに、
+/// Windows 11 の「設定」アプリと同じく、グループ（全般・接続・データと同期・診断・アカウント）ごとに、
 /// 左に記号・題・説明、右に操作を置いた 1 行のカードを縦に並べます。
+/// 行は最初に 1 回だけ組み、モデルが変わったら <see cref="UiUpdateThrottle"/> で束ねて値だけを差し替えます（押している最中の行が消えない）。
+/// Expanded 以上ではグループの目次を左に出し、それより狭いときは 1 列にします。
 /// </remarks>
 public sealed partial class WindowsSettingsView : UserControl
 {
+    /// <summary>目次の幅です。</summary>
+    private const double TableOfContentsWidth = 200;
+
     /// <summary>アダプター選択の表示モデルです。</summary>
     private readonly WindowsSettingsPresentationModel _settings;
 
@@ -52,26 +59,71 @@ public sealed partial class WindowsSettingsView : UserControl
     /// <summary>診断ログを消す前の確認ダイアログです。</summary>
     private readonly StateBoundDialog _clearLogsDialog = new();
 
+    /// <summary>更新を 1 フレームに 1 回へ束ねる仕組みです。</summary>
+    private readonly UiUpdateThrottle _throttle;
+
+    /// <summary>値を差し替えている最中かどうかです（差し替えで起きるイベントを無視するため）。</summary>
+    private bool _isUpdating;
+
     /// <summary>診断ログを消してよいか尋ねている最中かどうかです。</summary>
     private bool _isConfirmingClearLogs;
 
-    /// <summary>診断の行のまとまりです（スイッチを押したあとなどに、ここだけ作り直す）。</summary>
-    private StackPanel? _diagnosticsGroup;
-
-    /// <summary>操作中の作り直しを待たせる仕組みです。</summary>
-    private readonly RenderGate _gate;
-
-    /// <summary>描いている最中かどうかです（描画中のイベントを無視するため）。</summary>
-    private bool _isRendering;
-
-    /// <summary>最後にカードを描いたときの入力です（同じなら描き直さない）。</summary>
-    private object? _pageKey;
-
-    /// <summary>最後に描いたアダプターのまとまりです。</summary>
-    private FrameworkElement? _adapterCard;
-
     /// <summary>画面が処理したアダプターへの注意の通し番号です。</summary>
     private uint _handledAttentionSequence;
+
+    /// <summary>目次と内容を左右に置く格子です。</summary>
+    private readonly Grid _layout = new();
+
+    /// <summary>グループの目次です。</summary>
+    private readonly StackPanel _tableOfContents = new() { Spacing = Space.XS, VerticalAlignment = VerticalAlignment.Top };
+
+    /// <summary>グループを縦に積むパネルです。</summary>
+    private readonly StackPanel _groups = new() { Spacing = Space.XXL };
+
+    /// <summary>言語の選択肢です。</summary>
+    private readonly ComboBox _language = new() { MinWidth = 200 };
+
+    /// <summary>外観の選択肢です。</summary>
+    private readonly ComboBox _appearance = new() { MinWidth = 200 };
+
+    /// <summary>アダプターの行のまとまりです（ホームから来たときに揺らす対象）。</summary>
+    private readonly StackPanel _adapterGroup = new() { Spacing = Space.S, RenderTransform = new TranslateTransform() };
+
+    /// <summary>役割ごとのアダプターの行です。</summary>
+    private readonly List<(AdapterConnectionRole Role, SettingsItem Item)> _adapterRows = [];
+
+    /// <summary>自動アップロードのスイッチです。</summary>
+    private readonly ToggleSwitch _upload = new() { MinWidth = 0 };
+
+    /// <summary>iCloud の行です。</summary>
+    private SettingsItem? _cloudRow;
+
+    /// <summary>iCloud のサインイン中の表示です。</summary>
+    private readonly StackPanel _cloudSigningIn = new() { Orientation = Orientation.Horizontal, Spacing = Space.M };
+
+    /// <summary>サインイン中の進行表示です。</summary>
+    private readonly ProgressRing _cloudRing = new() { Width = Space.XL - Space.XXS, Height = Space.XL - Space.XXS };
+
+    /// <summary>iCloud の「近日対応」の印とボタンです。</summary>
+    private readonly StackPanel _cloudComingSoon = new() { Orientation = Orientation.Horizontal, Spacing = Space.M };
+
+    /// <summary>iCloud のサインインのボタンです。</summary>
+    private readonly Button _cloudSignIn = new() { Content = LocalizedText.Get("windows.cloud.sign_in"), Style = DesignTokens.Style("AccentButtonStyle") };
+
+    /// <summary>iCloud のサインアウトのボタンです。</summary>
+    private readonly Button _cloudSignOut = new() { Content = LocalizedText.Get("windows.cloud.sign_out") };
+
+    /// <summary>iCloud の操作を入れる枠です。</summary>
+    private readonly StackPanel _cloudTrailing = new() { Orientation = Orientation.Horizontal, Spacing = Space.M };
+
+    /// <summary>詳細ログのスイッチです。</summary>
+    private readonly ToggleSwitch _verbose = new() { MinWidth = 0 };
+
+    /// <summary>詳細ログの行です。</summary>
+    private SettingsItem? _verboseRow;
+
+    /// <summary>診断ログを消す行です。</summary>
+    private SettingsItem? _clearRow;
 
     /// <summary>モデルを受け取って設定画面を作ります。</summary>
     /// <param name="settings">アダプター選択の表示モデル。</param>
@@ -94,13 +146,18 @@ public sealed partial class WindowsSettingsView : UserControl
         _adapterSelection = new WindowsAdapterSelectionDialog(settings.Send);
         _accountDeletion = new WindowsAccountDeletionFlow(authentication.Send);
         InitializeComponent();
-        _gate = new RenderGate(this);
+
+        BuildPage();
+        _throttle = new UiUpdateThrottle(this, Update);
+        ResponsiveLayout.Bind(this, ApplyLayout);
+        UpdateValues();
+        UpdateDiagnostics();
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
     }
 
     /// <summary>表示されたときの処理です。</summary>
-    /// <remarks>責務: モデルの監視を始めて描きます。</remarks>
+    /// <remarks>責務: モデルの監視を始めて、値とダイアログを今の状態に合わせます。</remarks>
     /// <param name="sender">送り元。</param>
     /// <param name="e">イベントの情報。</param>
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -109,8 +166,8 @@ public sealed partial class WindowsSettingsView : UserControl
         _accountSettings.PropertyChanged += OnModelChanged;
         _authentication.PropertyChanged += OnModelChanged;
         _cloudSync.PropertyChanged += OnModelChanged;
-        _pageKey = null;
-        Render();
+        UpdateDiagnostics();
+        _throttle.FlushNow();
     }
 
     /// <summary>外されたときの処理です。</summary>
@@ -126,24 +183,17 @@ public sealed partial class WindowsSettingsView : UserControl
     }
 
     /// <summary>モデルが変わったときの処理です。</summary>
-    /// <remarks>責務: 画面を描き直します。</remarks>
+    /// <remarks>責務: 次のフレームでの更新を頼みます（何度来ても 1 回にまとまる）。</remarks>
     /// <param name="sender">送り元。</param>
     /// <param name="e">変更の内容。</param>
-    private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => Render();
+    private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => _throttle.Request();
 
-    /// <summary>設定画面を描きます。</summary>
-    /// <remarks>責務: 入力が変わったときだけ（押している最中でなければ）行を作り直し、ダイアログとアダプターへの注意の表示を状態に合わせます。</remarks>
-    private void Render()
+    /// <summary>画面を今の状態に合わせます。</summary>
+    /// <remarks>責務: 行の値を差し替え、ダイアログとアダプターへの注意の表示を状態に合わせます。</remarks>
+    private void Update()
     {
+        UpdateValues();
         var state = _settings.State;
-        var account = _accountSettings.Settings;
-        var pageKey = (state.SelectedAdapters, account, _cloudSync.Availability, _cloudSync.IsSigningIn, _cloudSync.DidFail);
-        if (!Equals(pageKey, _pageKey) && !_gate.TryDefer(Render))
-        {
-            _pageKey = pageKey;
-            RenderPage(state, account);
-        }
-
         _adapterSelection.Render(state, XamlRoot);
         var authentication = _authentication.State;
         _accountDeletion.Render(authentication.AccountDeletionPhase, authentication.AccountDeletionFailure, XamlRoot);
@@ -155,121 +205,195 @@ public sealed partial class WindowsSettingsView : UserControl
                 _diagnostics.ClearLogs();
             }
 
-            RefreshDiagnostics();
+            UpdateDiagnostics();
         });
         PresentAdapterAttentionIfNeeded(state);
     }
 
-    /// <summary>設定の行を描き直します。</summary>
-    /// <remarks>責務: 見出しと、全般（言語・外観）・接続（アダプター）・データと同期（アップロード・iCloud）・アカウント（削除）の行を並べます。</remarks>
-    /// <param name="state">設定画面の状態。</param>
-    /// <param name="account">アカウント設定。</param>
-    private void RenderPage(WindowsSettingsState state, AccountSettings account)
+    /// <summary>
+    /// 幅クラスに合わせて配置を切り替えます。
+    /// </summary>
+    /// <remarks>責務: Expanded 以上では目次を左に出し、それより狭いときは隠して 1 列にします（木は作り直さない）。</remarks>
+    /// <param name="widthClass">幅クラス。</param>
+    private void ApplyLayout(WidthClass widthClass)
     {
-        _isRendering = true;
-        Page.Children.Clear();
-        var header = new ScreenHeader(
+        var showsContents = widthClass >= WidthClass.Expanded;
+        _layout.ColumnDefinitions[0].Width = showsContents ? new GridLength(TableOfContentsWidth) : new GridLength(0);
+        _layout.ColumnSpacing = showsContents ? Space.XXL : 0;
+        Retained.SetVisible(_tableOfContents, showsContents);
+    }
+
+    /// <summary>ページ全体を組みます（1 回だけ）。</summary>
+    /// <remarks>責務: 見出し・目次・グループ（全般・接続・データと同期・診断・アカウント）の行を組んで並べます。</remarks>
+    private void BuildPage()
+    {
+        _layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(TableOfContentsWidth) });
+        _layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        Grid.SetColumn(_groups, 1);
+        _layout.Children.Add(_tableOfContents);
+        _layout.Children.Add(_groups);
+
+        AddGroup(FluentSymbol.Sliders, "windows.settings.group.general", LanguageRow(), AppearanceRow());
+        BuildAdapterGroup();
+        AddGroup(FluentSymbol.Plug, "windows.settings.group.connection", _adapterGroup);
+        AddGroup(FluentSymbol.Cloud, "windows.settings.group.data", UploadRow(), CloudSyncRow());
+        if (_diagnostics.IsAvailable)
+        {
+            AddGroup(FluentSymbol.Diagnostics, "windows.settings.group.diagnostics", VerboseLoggingRow(), ExportReportRow(), ClearLogsRow());
+        }
+
+        AddGroup(FluentSymbol.Shield, "windows.settings.group.account", AccountDeletionRow());
+
+        var page = new PageScaffold(1000);
+        page.Body.Children.Add(new ScreenHeader(
             FluentSymbol.Sliders,
             null,
             LocalizedText.Get("settings.title"),
-            LocalizedText.Get("settings.subtitle"));
-        header.Margin = new Thickness(0, 0, 0, 8);
-        Page.Children.Add(header);
-
-        Page.Children.Add(SettingsRow.Header(LocalizedText.Get("windows.settings.group.general")));
-        Page.Children.Add(LanguageRow(account));
-        Page.Children.Add(AppearanceRow(account));
-
-        Page.Children.Add(SettingsRow.Header(LocalizedText.Get("windows.settings.group.connection")));
-        var adapters = AdapterGroup(state);
-        _adapterCard = adapters;
-        Page.Children.Add(adapters);
-
-        Page.Children.Add(SettingsRow.Header(LocalizedText.Get("windows.settings.group.data")));
-        Page.Children.Add(UploadRow(account));
-        Page.Children.Add(CloudSyncRow());
-
-        _diagnosticsGroup = null;
-        if (_diagnostics.IsAvailable)
-        {
-            Page.Children.Add(SettingsRow.Header(LocalizedText.Get("windows.settings.group.diagnostics")));
-            _diagnosticsGroup = new StackPanel { Spacing = 4 };
-            FillDiagnostics(_diagnosticsGroup);
-            Page.Children.Add(_diagnosticsGroup);
-        }
-
-        Page.Children.Add(SettingsRow.Header(LocalizedText.Get("windows.settings.group.account")));
-        Page.Children.Add(AccountDeletionRow());
-        _isRendering = false;
+            LocalizedText.Get("settings.subtitle")));
+        page.Body.Children.Add(_layout);
+        Content = page;
     }
 
-    /// <summary>診断の行だけを作り直します。</summary>
-    /// <remarks>責務: スイッチやボタンを押した結果（期限・合計サイズ）を、押している最中でなければすぐ、そうでなければ操作が終わってから反映します。</remarks>
-    private void RefreshDiagnostics()
+    /// <summary>グループを 1 つ足します。</summary>
+    /// <remarks>責務: 見出しと行を縦に並べたまとまりを作り、目次に項目を足します。</remarks>
+    /// <param name="glyph">目次の記号。</param>
+    /// <param name="titleKey">グループの題のキー。</param>
+    /// <param name="rows">行（要素または <see cref="SettingsItem"/>）。</param>
+    private void AddGroup(string glyph, string titleKey, params object[] rows)
     {
-        if (_diagnosticsGroup is not { } group || _gate.TryDefer(RefreshDiagnostics))
+        var title = LocalizedText.Get(titleKey);
+        var group = new StackPanel { Spacing = Space.S };
+        group.Children.Add(Typography.Text(title, TextStyles.SectionTitle));
+        foreach (var row in rows)
+        {
+            group.Children.Add(row switch
+            {
+                SettingsItem item => item.Element,
+                UIElement element => element,
+                _ => throw new ArgumentException("行の型が違います。", nameof(rows)),
+            });
+        }
+
+        _groups.Children.Add(group);
+
+        var entry = new Button
+        {
+            Content = new GlyphLabel(glyph, title, TextStyles.Body),
+            Style = DesignTokens.Style("SubtleButtonStyle"),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            HorizontalContentAlignment = HorizontalAlignment.Left,
+        };
+        AutomationProperties.SetName(entry, title);
+        entry.Click += (_, _) => group.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0, AnimationDesired = Motion.IsEnabled });
+        _tableOfContents.Children.Add(entry);
+    }
+
+    /// <summary>値を今のモデルに合わせます。</summary>
+    /// <remarks>責務: 言語・外観・アダプター・アップロード・iCloud の行の値を、違うときだけ差し替えます。</remarks>
+    private void UpdateValues()
+    {
+        var state = _settings.State;
+        var account = _accountSettings.Settings;
+        _isUpdating = true;
+        try
+        {
+            SelectIndex(_language, IndexOf(SettingsLanguageRawValue.AllCases, account.Language));
+            SelectIndex(_appearance, IndexOf(SettingsAppearanceRawValue.AllCases, account.Appearance));
+            if (_upload.IsOn != account.AutomaticSessionUploadEnabled)
+            {
+                _upload.IsOn = account.AutomaticSessionUploadEnabled;
+            }
+        }
+        finally
+        {
+            _isUpdating = false;
+        }
+
+        foreach (var (role, item) in _adapterRows)
+        {
+            item.SetDescription(state.SelectedAdapters.TryGetValue(role, out var adapter)
+                ? adapter.DisplayName
+                : LocalizedText.Get("settings.adapter.not_selected"));
+        }
+
+        UpdateCloudSync();
+    }
+
+    /// <summary>選択の位置を差し替えます。</summary>
+    /// <param name="box">選択肢。</param>
+    /// <param name="index">位置。</param>
+    private static void SelectIndex(ComboBox box, int index)
+    {
+        if (box.SelectedIndex != index)
+        {
+            box.SelectedIndex = index;
+        }
+    }
+
+    /// <summary>診断の行の値を今の状態に合わせます。</summary>
+    /// <remarks>責務: 詳細ログのスイッチと期限、診断ログの合計サイズを差し替えます。スイッチやボタンを押したあと・表示したときに呼びます。</remarks>
+    private void UpdateDiagnostics()
+    {
+        if (_verboseRow is not { } verboseRow || _clearRow is not { } clearRow)
         {
             return;
         }
 
-        _isRendering = true;
-        group.Children.Clear();
-        FillDiagnostics(group);
-        _isRendering = false;
-    }
+        var byChannel = _diagnostics.IsVerboseByChannel;
+        _isUpdating = true;
+        try
+        {
+            if (_verbose.IsOn != _diagnostics.VerboseLogging)
+            {
+                _verbose.IsOn = _diagnostics.VerboseLogging;
+            }
+        }
+        finally
+        {
+            _isUpdating = false;
+        }
 
-    /// <summary>診断の行（詳細ログ・不具合レポート・診断ログを消す）を並べます。</summary>
-    /// <param name="group">行を入れるまとまり。</param>
-    private void FillDiagnostics(StackPanel group)
-    {
-        group.Children.Add(VerboseLoggingRow());
-        group.Children.Add(ExportReportRow());
-        group.Children.Add(ClearLogsRow());
+        Retained.SetEnabled(_verbose, !byChannel);
+        verboseRow.SetDescription(byChannel
+            ? LocalizedText.Get("windows.diagnostics.verbose.always")
+            : _diagnostics.VerboseExpiresAt is { } expiresAt
+                ? LocalizedText.Format("windows.diagnostics.verbose.on", DateText.DateAndMinute(expiresAt))
+                : LocalizedText.Get("windows.diagnostics.verbose.description"));
+        clearRow.SetDescription(LocalizedText.Format("windows.diagnostics.clear.description", ByteCountText.Format(_diagnostics.TotalLogBytes())));
     }
 
     /// <summary>「詳細ログ」の行を作ります。</summary>
     /// <remarks>責務: スイッチで詳細ログを切り替えます。入れると 7 日で自動で切れます。Dev / Beta では最初から詳細なので、その旨を出してスイッチは無効にします。</remarks>
     /// <returns>行。</returns>
-    private Border VerboseLoggingRow()
+    private SettingsItem VerboseLoggingRow()
     {
-        var byChannel = _diagnostics.IsVerboseByChannel;
-        var toggle = new ToggleSwitch
+        _verbose.Toggled += (_, _) =>
         {
-            IsOn = _diagnostics.VerboseLogging,
-            IsEnabled = !byChannel,
-            MinWidth = 0,
-        };
-        toggle.Toggled += (_, _) =>
-        {
-            if (_isRendering || byChannel)
+            if (_isUpdating || _diagnostics.IsVerboseByChannel)
             {
                 return;
             }
 
-            _diagnostics.SetVerboseLogging(toggle.IsOn);
-            RefreshDiagnostics();
+            _diagnostics.SetVerboseLogging(_verbose.IsOn);
+            UpdateDiagnostics();
         };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(toggle, "windows-settings-verbose-logging");
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(toggle, LocalizedText.Get("windows.diagnostics.verbose.title"));
-        var description = byChannel
-            ? LocalizedText.Get("windows.diagnostics.verbose.always")
-            : _diagnostics.VerboseExpiresAt is { } expiresAt
-                ? LocalizedText.Format("windows.diagnostics.verbose.on", DateText.DateAndMinute(expiresAt))
-                : LocalizedText.Get("windows.diagnostics.verbose.description");
-        return SettingsRow.Create(
+        AutomationProperties.SetAutomationId(_verbose, "windows-settings-verbose-logging");
+        AutomationProperties.SetName(_verbose, LocalizedText.Get("windows.diagnostics.verbose.title"));
+        _verboseRow = new SettingsItem(
             FluentSymbol.Diagnostics,
             LocalizedText.Get("windows.diagnostics.verbose.title"),
-            description,
-            toggle);
+            LocalizedText.Get("windows.diagnostics.verbose.description"),
+            _verbose);
+        return _verboseRow;
     }
 
     /// <summary>「不具合レポートを書き出す」の行を作ります。</summary>
     /// <remarks>責務: 保存先を選んでもらって zip を作り、エクスプローラーで開きます。書き出している間はボタンを押せなくします。</remarks>
     /// <returns>行。</returns>
-    private Border ExportReportRow()
+    private SettingsItem ExportReportRow()
     {
         var button = new Button { Content = LocalizedText.Get("windows.diagnostics.report.button") };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-settings-export-report");
+        AutomationProperties.SetAutomationId(button, "windows-settings-export-report");
         button.Click += async (_, _) =>
         {
             button.IsEnabled = false;
@@ -282,7 +406,7 @@ public sealed partial class WindowsSettingsView : UserControl
                 button.IsEnabled = true;
             }
         };
-        return SettingsRow.Create(
+        return new SettingsItem(
             FluentSymbol.Document,
             LocalizedText.Get("windows.diagnostics.report.title"),
             LocalizedText.Get("windows.diagnostics.report.description"),
@@ -292,21 +416,22 @@ public sealed partial class WindowsSettingsView : UserControl
     /// <summary>「診断ログを消す」の行を作ります。</summary>
     /// <remarks>責務: 診断ログの合計サイズを説明に出し、確認のあとで今の実行のファイル以外を消します。</remarks>
     /// <returns>行。</returns>
-    private Border ClearLogsRow()
+    private SettingsItem ClearLogsRow()
     {
         var button = new Button { Content = LocalizedText.Get("windows.diagnostics.clear.button") };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-settings-clear-logs");
+        AutomationProperties.SetAutomationId(button, "windows-settings-clear-logs");
         button.Click += (_, _) =>
         {
             _isConfirmingClearLogs = true;
-            Render();
+            _throttle.FlushNow();
         };
-        return SettingsRow.Create(
+        _clearRow = new SettingsItem(
             FluentSymbol.Delete,
             LocalizedText.Get("windows.diagnostics.clear.title"),
-            LocalizedText.Format("windows.diagnostics.clear.description", ByteCountText.Format(_diagnostics.TotalLogBytes())),
+            null,
             button,
             Tone.Neutral);
+        return _clearRow;
     }
 
     /// <summary>診断ログを消す前の確認ダイアログを作ります。</summary>
@@ -314,7 +439,7 @@ public sealed partial class WindowsSettingsView : UserControl
     private static ContentDialog MakeClearLogsDialog() => new()
     {
         Title = LocalizedText.Get("windows.diagnostics.clear.confirm.title"),
-        Content = Typography.Text(LocalizedText.Get("windows.diagnostics.clear.confirm.message"), "BodyTextBlockStyle"),
+        Content = Typography.Text(LocalizedText.Get("windows.diagnostics.clear.confirm.message"), TextStyles.Body),
         PrimaryButtonText = LocalizedText.Get("windows.diagnostics.clear.confirm.action"),
         PrimaryButtonStyle = DesignTokens.Style("DangerButtonStyle"),
         CloseButtonText = LocalizedText.Get("windows.diagnostics.cancel"),
@@ -322,138 +447,152 @@ public sealed partial class WindowsSettingsView : UserControl
     };
 
     /// <summary>言語の行を作ります。</summary>
-    /// <param name="account">アカウント設定。</param>
     /// <returns>行。</returns>
-    private Border LanguageRow(AccountSettings account)
+    private SettingsItem LanguageRow()
     {
-        var choices = new ComboBox { MinWidth = 200 };
         foreach (var language in SettingsLanguageRawValue.AllCases)
         {
-            choices.Items.Add(new ComboBoxItem { Content = LocalizedText.Get(language.TitleKey()), Tag = language });
+            _language.Items.Add(new ComboBoxItem { Content = LocalizedText.Get(language.TitleKey()), Tag = language });
         }
 
-        choices.SelectedIndex = IndexOf(SettingsLanguageRawValue.AllCases, account.Language);
-        choices.SelectionChanged += (_, _) =>
+        _language.SelectionChanged += (_, _) =>
         {
-            if (!_isRendering && choices.SelectedItem is ComboBoxItem { Tag: SettingsLanguage language })
+            if (!_isUpdating && _language.SelectedItem is ComboBoxItem { Tag: SettingsLanguage language })
             {
                 _accountSettings.Send(new AccountSettingsAction.LanguageSelected(language));
             }
         };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(choices, "windows-settings-language");
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(choices, LocalizedText.Get("settings.language.title"));
-        return SettingsRow.Create(
+        AutomationProperties.SetAutomationId(_language, "windows-settings-language");
+        AutomationProperties.SetName(_language, LocalizedText.Get("settings.language.title"));
+        return new SettingsItem(
             FluentSymbol.Language,
             LocalizedText.Get("settings.language.title"),
             LocalizedText.Get("settings.language.description"),
-            choices);
+            _language);
     }
 
     /// <summary>外観の行を作ります。</summary>
-    /// <param name="account">アカウント設定。</param>
     /// <returns>行。</returns>
-    private Border AppearanceRow(AccountSettings account)
+    private SettingsItem AppearanceRow()
     {
-        var choices = new ComboBox { MinWidth = 200 };
         foreach (var appearance in SettingsAppearanceRawValue.AllCases)
         {
-            choices.Items.Add(new ComboBoxItem
+            _appearance.Items.Add(new ComboBoxItem
             {
                 Content = new GlyphLabel(appearance.Glyph(), LocalizedText.Get(appearance.TitleKey())),
                 Tag = appearance,
             });
         }
 
-        choices.SelectedIndex = IndexOf(SettingsAppearanceRawValue.AllCases, account.Appearance);
-        choices.SelectionChanged += (_, _) =>
+        _appearance.SelectionChanged += (_, _) =>
         {
-            if (!_isRendering && choices.SelectedItem is ComboBoxItem { Tag: SettingsAppearance appearance })
+            if (!_isUpdating && _appearance.SelectedItem is ComboBoxItem { Tag: SettingsAppearance appearance })
             {
                 _accountSettings.Send(new AccountSettingsAction.AppearanceSelected(appearance));
             }
         };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(choices, "windows-settings-appearance");
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(choices, LocalizedText.Get("settings.appearance.title"));
-        return SettingsRow.Create(
+        AutomationProperties.SetAutomationId(_appearance, "windows-settings-appearance");
+        AutomationProperties.SetName(_appearance, LocalizedText.Get("settings.appearance.title"));
+        return new SettingsItem(
             FluentSymbol.Sliders,
             LocalizedText.Get("settings.appearance.title"),
             LocalizedText.Get("settings.appearance.description"),
-            choices);
+            _appearance);
     }
 
-    /// <summary>アダプターの行のまとまりを作ります。</summary>
-    /// <param name="state">設定画面の状態。</param>
-    /// <returns>まとまり（ホームから来たときに揺らす対象）。</returns>
-    private StackPanel AdapterGroup(WindowsSettingsState state)
+    /// <summary>アダプターの行のまとまりを組みます。</summary>
+    /// <remarks>責務: 役割（主・副）ごとの行と注記を 1 回だけ作ります。探索で状態が変わっても行は作り直しません。</remarks>
+    private void BuildAdapterGroup()
     {
-        var group = new StackPanel { Spacing = 4, RenderTransform = new TranslateTransform() };
         foreach (var role in AdapterConnectionRoleRawValue.AllCases)
         {
-            group.Children.Add(AdapterRow(role, state));
+            var item = AdapterRow(role);
+            _adapterRows.Add((role, item));
+            _adapterGroup.Children.Add(item.Element);
         }
 
-        var note = Typography.Text(LocalizedText.Get("settings.adapter.description"), "SecondaryCaptionTextStyle");
-        note.Margin = new Thickness(4, 2, 0, 0);
-        group.Children.Add(note);
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(group, "windows-settings-adapter-card");
-        return group;
+        var note = Typography.Text(LocalizedText.Get("settings.adapter.description"), TextStyles.SecondaryCaption);
+        note.Margin = new Thickness(Space.XS, Space.XXS, 0, 0);
+        _adapterGroup.Children.Add(note);
+        AutomationProperties.SetAutomationId(_adapterGroup, "windows-settings-adapter-card");
     }
 
     /// <summary>アダプターの役割（主・副）の行を作ります。</summary>
     /// <param name="role">役割。</param>
-    /// <param name="state">設定画面の状態。</param>
     /// <returns>行。</returns>
-    private Border AdapterRow(AdapterConnectionRole role, WindowsSettingsState state)
+    private SettingsItem AdapterRow(AdapterConnectionRole role)
     {
-        var description = state.SelectedAdapters.TryGetValue(role, out var adapter)
-            ? adapter.DisplayName
-            : LocalizedText.Get("settings.adapter.not_selected");
-        var trailing = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
-        trailing.Children.Add(StatusPill.Create(null, LocalizedText.Get(role.BadgeKey()), role == AdapterConnectionRole.Primary ? Tone.Accent : Tone.Neutral));
+        var tone = role == AdapterConnectionRole.Primary ? Tone.Accent : Tone.Neutral;
+        var trailing = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.M };
+        trailing.Children.Add(StatusPill.Create(null, LocalizedText.Get(role.BadgeKey()), tone));
         var select = new Button { Content = LocalizedText.Get("settings.adapter.select"), MinWidth = 96 };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(select, LocalizedText.Get(role.TitleKey()));
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(select, $"windows-settings-adapter-{role.ToRawValue()}-select");
+        AutomationProperties.SetName(select, LocalizedText.Get(role.TitleKey()));
+        AutomationProperties.SetAutomationId(select, $"windows-settings-adapter-{role.ToRawValue()}-select");
         select.Click += (_, _) => _settings.Send(new WindowsSettingsAction.AdapterSelectionRequested(role));
         trailing.Children.Add(select);
-        return SettingsRow.Create(
-            role.Glyph(),
-            LocalizedText.Get(role.TitleKey()),
-            description,
-            trailing,
-            role == AdapterConnectionRole.Primary ? Tone.Accent : Tone.Neutral);
+        return new SettingsItem(role.Glyph(), LocalizedText.Get(role.TitleKey()), null, trailing, tone);
     }
 
     /// <summary>自動アップロードの行を作ります。</summary>
-    /// <param name="account">アカウント設定。</param>
     /// <returns>行。</returns>
-    private Border UploadRow(AccountSettings account)
+    private SettingsItem UploadRow()
     {
-        var toggle = new ToggleSwitch
+        _upload.Toggled += (_, _) =>
         {
-            IsOn = account.AutomaticSessionUploadEnabled,
-            MinWidth = 0,
-        };
-        toggle.Toggled += (_, _) =>
-        {
-            if (!_isRendering)
+            if (!_isUpdating)
             {
-                _accountSettings.Send(new AccountSettingsAction.AutomaticSessionUploadChanged(toggle.IsOn));
+                _accountSettings.Send(new AccountSettingsAction.AutomaticSessionUploadChanged(_upload.IsOn));
             }
         };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(toggle, "windows-settings-automatic-upload");
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(toggle, LocalizedText.Get("settings.upload.automatic"));
-        return SettingsRow.Create(
+        AutomationProperties.SetAutomationId(_upload, "windows-settings-automatic-upload");
+        AutomationProperties.SetName(_upload, LocalizedText.Get("settings.upload.automatic"));
+        return new SettingsItem(
             FluentSymbol.Upload,
             LocalizedText.Get("settings.upload.automatic"),
             LocalizedText.Get("settings.upload.description"),
-            toggle);
+            _upload);
     }
 
     /// <summary>iCloud 同期の行を作ります。</summary>
-    /// <remarks>責務: 状態（近日対応・サインアウト・サインイン済み・サインイン中・失敗）を説明に、サインイン・サインアウトのボタンを右に置きます。</remarks>
+    /// <remarks>責務: 状態ごとの操作（サインイン中・近日対応・サインイン・サインアウト）を 1 回だけ組み、状態に合わせて出し分けます（<see cref="UpdateCloudSync"/>）。</remarks>
     /// <returns>行。</returns>
-    private Border CloudSyncRow()
+    private SettingsItem CloudSyncRow()
     {
+        _cloudSigningIn.Children.Add(_cloudRing);
+        _cloudSigningIn.Children.Add(Typography.Text(LocalizedText.Get("windows.cloud.signing_in"), TextStyles.SecondaryCaption));
+
+        // Coming Soon の間は、入口があることだけを示す押せないボタンを出す（機能フラグ AppleSignIn:Enabled で有効になる）。
+        _cloudComingSoon.Children.Add(StatusPill.Create(null, LocalizedText.Get("windows.login.apple_coming_soon"), Tone.Accent));
+        _cloudComingSoon.Children.Add(new Button { Content = LocalizedText.Get("windows.cloud.sign_in"), IsEnabled = false });
+        AutomationProperties.SetAutomationId(_cloudComingSoon, "windows-settings-cloud-coming-soon");
+
+        _cloudSignIn.Click += (_, _) => _ = _cloudSync.SignIn();
+        AutomationProperties.SetAutomationId(_cloudSignIn, "windows-settings-cloud-sign-in");
+        _cloudSignOut.Click += (_, _) => _cloudSync.SignOut();
+        AutomationProperties.SetAutomationId(_cloudSignOut, "windows-settings-cloud-sign-out");
+
+        _cloudTrailing.Children.Add(_cloudSigningIn);
+        _cloudTrailing.Children.Add(_cloudComingSoon);
+        _cloudTrailing.Children.Add(_cloudSignIn);
+        _cloudTrailing.Children.Add(_cloudSignOut);
+        _cloudRow = new SettingsItem(
+            FluentSymbol.Cloud,
+            LocalizedText.Get("settings.windows_cloud.title"),
+            null,
+            _cloudTrailing,
+            Tone.Neutral);
+        return _cloudRow;
+    }
+
+    /// <summary>iCloud の行を今の状態に合わせます。</summary>
+    /// <remarks>責務: 状態（近日対応・サインアウト・サインイン済み・サインイン中・失敗）を説明に出し、操作を出し分けます。</remarks>
+    private void UpdateCloudSync()
+    {
+        if (_cloudRow is not { } row)
+        {
+            return;
+        }
+
         var availability = _cloudSync.Availability;
         var statusKey = availability switch
         {
@@ -467,66 +606,36 @@ public sealed partial class WindowsSettingsView : UserControl
             description += "\n" + LocalizedText.Get("windows.cloud.sign_in_failed");
         }
 
-        UIElement? trailing = null;
-        if (_cloudSync.IsSigningIn)
+        row.SetDescription(description);
+        row.SetTone(availability == WindowsCloudSyncAvailability.Available ? Tone.Accent : Tone.Neutral);
+        var signingIn = _cloudSync.IsSigningIn;
+        var comingSoon = !signingIn && availability == WindowsCloudSyncAvailability.NotConfigured;
+        var signIn = !signingIn && availability == WindowsCloudSyncAvailability.SignedOut;
+        var signOut = !signingIn && availability == WindowsCloudSyncAvailability.Available;
+        if (_cloudRing.IsActive != signingIn)
         {
-            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
-            row.Children.Add(new ProgressRing { IsActive = true, Width = 18, Height = 18 });
-            row.Children.Add(Typography.Text(LocalizedText.Get("windows.cloud.signing_in"), "SecondaryCaptionTextStyle"));
-            trailing = row;
-        }
-        else if (availability == WindowsCloudSyncAvailability.NotConfigured)
-        {
-            // Coming Soon の間は、入口があることだけを示す押せないボタンを出す（機能フラグ AppleSignIn:Enabled で有効になる）。
-            var comingSoon = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
-            comingSoon.Children.Add(StatusPill.Create(null, LocalizedText.Get("windows.login.apple_coming_soon"), Tone.Accent));
-            comingSoon.Children.Add(new Button
-            {
-                Content = LocalizedText.Get("windows.cloud.sign_in"),
-                IsEnabled = false,
-            });
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(comingSoon, "windows-settings-cloud-coming-soon");
-            trailing = comingSoon;
-        }
-        else if (availability == WindowsCloudSyncAvailability.SignedOut)
-        {
-            var signIn = new Button
-            {
-                Content = LocalizedText.Get("windows.cloud.sign_in"),
-                Style = DesignTokens.Style("AccentButtonStyle"),
-            };
-            signIn.Click += (_, _) => _ = _cloudSync.SignIn();
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(signIn, "windows-settings-cloud-sign-in");
-            trailing = signIn;
-        }
-        else if (availability == WindowsCloudSyncAvailability.Available)
-        {
-            var signOut = new Button { Content = LocalizedText.Get("windows.cloud.sign_out") };
-            signOut.Click += (_, _) => _cloudSync.SignOut();
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(signOut, "windows-settings-cloud-sign-out");
-            trailing = signOut;
+            _cloudRing.IsActive = signingIn;
         }
 
-        return SettingsRow.Create(
-            FluentSymbol.Cloud,
-            LocalizedText.Get("settings.windows_cloud.title"),
-            description,
-            trailing,
-            availability == WindowsCloudSyncAvailability.Available ? Tone.Accent : Tone.Neutral);
+        Retained.SetVisible(_cloudSigningIn, signingIn);
+        Retained.SetVisible(_cloudComingSoon, comingSoon);
+        Retained.SetVisible(_cloudSignIn, signIn);
+        Retained.SetVisible(_cloudSignOut, signOut);
+        Retained.SetVisible(_cloudTrailing, signingIn || comingSoon || signIn || signOut);
     }
 
     /// <summary>アカウント削除の行を作ります。</summary>
     /// <returns>行。</returns>
-    private Border AccountDeletionRow()
+    private SettingsItem AccountDeletionRow()
     {
         var button = new Button
         {
             Content = LocalizedText.Get("account.delete.start"),
             Style = DesignTokens.Style("DangerButtonStyle"),
         };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-account-delete-start");
+        AutomationProperties.SetAutomationId(button, "windows-account-delete-start");
         button.Click += (_, _) => _authentication.Send(AuthenticationAction.AccountDeletionRequested);
-        return SettingsRow.Create(
+        return new SettingsItem(
             FluentSymbol.Shield,
             LocalizedText.Get("account.delete.card.title"),
             LocalizedText.Get("account.delete.card.description"),
@@ -551,13 +660,9 @@ public sealed partial class WindowsSettingsView : UserControl
         DispatcherQueue.TryEnqueue(() =>
         {
             _settings.Send(new WindowsSettingsAction.AdapterAttentionConsumed(sequence));
-            if (_adapterCard is not { } card)
-            {
-                return;
-            }
-
+            var card = _adapterGroup;
             card.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0.5 });
-            if (new global::Windows.UI.ViewManagement.UISettings().AnimationsEnabled && card.RenderTransform is TranslateTransform transform)
+            if (Motion.IsEnabled && card.RenderTransform is TranslateTransform transform)
             {
                 Shake(transform);
             }
@@ -565,7 +670,7 @@ public sealed partial class WindowsSettingsView : UserControl
     }
 
     /// <summary>カードを左右に小さく揺らします。</summary>
-    /// <remarks>責務: 0.56 秒で減衰する左右の揺れを再生します（iOS 版の <c>AttentionShakeEffect</c>）。</remarks>
+    /// <remarks>責務: 0.56 秒で減衰する左右の揺れを 1 回だけ再生します（iOS 版の <c>AttentionShakeEffect</c>）。</remarks>
     /// <param name="transform">カードの移動。</param>
     private static void Shake(TranslateTransform transform)
     {
@@ -593,7 +698,7 @@ public sealed partial class WindowsSettingsView : UserControl
     /// <param name="items">一覧。</param>
     /// <param name="value">値。</param>
     /// <returns>位置。なければ -1。</returns>
-    private static int IndexOf<T>(System.Collections.Generic.IReadOnlyList<T> items, T value)
+    private static int IndexOf<T>(IReadOnlyList<T> items, T value)
     {
         for (var index = 0; index < items.Count; index++)
         {

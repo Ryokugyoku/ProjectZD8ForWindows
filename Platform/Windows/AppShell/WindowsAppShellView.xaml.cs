@@ -1,9 +1,13 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using Microsoft.UI.Input;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 using ProjectZD8.Application.LiveTelemetry.Actions;
 using ProjectZD8.Application.LiveTelemetry.State;
 using ProjectZD8.Application.VehicleManagement.State;
@@ -20,6 +24,7 @@ using ProjectZD8ForWindows.Platform.Windows.Features.VehicleManagement.Views;
 using ProjectZD8ForWindows.Platform.Windows.Features.Settings.Presentation;
 using ProjectZD8ForWindows.Platform.Windows.Localization;
 using ProjectZD8ForWindows.Platform.Windows.Logging;
+using Windows.Graphics;
 using Windows.System;
 
 namespace ProjectZD8ForWindows.Platform.Windows.AppShell;
@@ -29,7 +34,7 @@ namespace ProjectZD8ForWindows.Platform.Windows.AppShell;
 /// </summary>
 /// <remarks>
 /// 行き先の選択と「接続の結果を待っているか」だけを画面の一時的な状態として持ちます。
-/// どの画面からでも接続・切断できるように、上に接続バーを置きます（ホームを除く）。
+/// どの画面からでも接続・切断できるように、タイトルバーに接続コンソールを置きます（ホームでは状態だけ）。ナビの形は幅クラスで決めます。
 /// </remarks>
 public sealed partial class WindowsAppShellView : UserControl
 {
@@ -54,17 +59,44 @@ public sealed partial class WindowsAppShellView : UserControl
     /// <summary>前回の異常終了の知らせを出したことを、ログに書いたかです。</summary>
     private bool _loggedPreviousRunNotice;
 
+    /// <summary>タイトルバーの押せる領域を OS へ伝えるための、ウインドウです（なければ伝えない）。</summary>
+    private readonly AppWindow? _appWindow;
+
+    /// <summary>最後に OS へ伝えた、タイトルバーの押せる領域です。</summary>
+    private RectInt32[] _passthroughRects = [];
+
+    /// <summary>今の幅クラスです。</summary>
+    private WidthClass _widthClass = ResponsiveLayout.Current;
+
     /// <summary>アプリの流れと最初の行き先を指定して作ります。</summary>
     /// <param name="flow">アプリの流れ。</param>
     /// <param name="initialDestination">最初に開く行き先。</param>
-    public WindowsAppShellView(WindowsApplicationFlow flow, WindowsSidebarDestination initialDestination)
+    /// <param name="appWindow">シェルを置くウインドウ（タイトルバーの押せる領域とキャプションボタンの幅に使う）。</param>
+    public WindowsAppShellView(WindowsApplicationFlow flow, WindowsSidebarDestination initialDestination, AppWindow? appWindow = null)
     {
         _flow = flow;
+        _appWindow = appWindow;
         _diagnostics = new WindowsDiagnosticsModel(flow.Root.Diagnostics, DiagnosticsEnvironment);
         InitializeComponent();
-        BrandTagline.Text = LocalizedText.Get("sidebar.brand.tagline");
+        BrandTagline.Text = LocalizedText.Get("sidebar.brand.tagline").ToUpperInvariant();
         OpenLiveText.Text = LocalizedText.Get("windows.shell.open_live");
         ToolTipService.SetToolTip(OpenLiveButton, LocalizedText.Get("sidebar.live_log"));
+        var backLabel = LocalizedText.Get("windows.shell.back") + " (Alt+←)";
+        ToolTipService.SetToolTip(BackButton, backLabel);
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(BackButton, LocalizedText.Get("windows.shell.back"));
+        ToolTipService.SetToolTip(PaneToggleButton, LocalizedText.Get("windows.shell.navigation"));
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(PaneToggleButton, LocalizedText.Get("windows.shell.navigation"));
+        if (Motion.IsEnabled)
+        {
+            // ページの切り替えは、GPU で動く ThemeTransition（少し下から現れる）だけにする。
+            DestinationHost.ChildTransitions = [new EntranceThemeTransition { FromVerticalOffset = 16, IsStaggeringEnabled = false }];
+        }
+
+        // 押せる領域は、位置や大きさが変わりうるときだけ数え直す（LayoutUpdated は毎回の配置で起きるので使わない）。
+        TitleBar.SizeChanged += (_, _) => UpdateTitleBarRegions();
+        ConnectionConsole.SizeChanged += (_, _) => UpdateTitleBarRegions();
+        BackButton.SizeChanged += (_, _) => UpdateTitleBarRegions();
+        ResponsiveLayout.Bind(this, ApplyWidthClass);
         foreach (var destination in WindowsSidebarDestinationPresentation.AllCases)
         {
             var item = MakeItem(destination);
@@ -89,6 +121,9 @@ public sealed partial class WindowsAppShellView : UserControl
     /// <summary>選択中の行き先です。</summary>
     public WindowsSidebarDestination SelectedDestination { get; private set; } = WindowsSidebarDestination.Home;
 
+    /// <summary>タイトルバーの要素です（MainWindow が Window.SetTitleBar に渡す。押せる部分はシェルが OS へ伝える）。</summary>
+    public UIElement TitleBarElement => TitleBar;
+
     /// <summary>
     /// 行き先を選びます。
     /// </summary>
@@ -103,7 +138,7 @@ public sealed partial class WindowsAppShellView : UserControl
     }
 
     /// <summary>表示されたときの処理です。</summary>
-    /// <remarks>責務: モデルの監視を始め、履歴の警告の数と接続バーを出します。</remarks>
+    /// <remarks>責務: モデルの監視を始め、履歴の警告の数と接続コンソールを出します。</remarks>
     /// <param name="sender">送り元。</param>
     /// <param name="e">イベントの情報。</param>
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -261,7 +296,7 @@ public sealed partial class WindowsAppShellView : UserControl
     private void OnConnectionChanged(object? sender, PropertyChangedEventArgs e) => UpdateConnectionBar();
 
     /// <summary>車両管理の段階が変わったときの処理です（iOS 版の <c>handleVehicleManagementPhase</c>）。</summary>
-    /// <remarks>責務: ホームや接続バーから接続したあと、確認・登録・失敗になったらガレージへ移ります。</remarks>
+    /// <remarks>責務: ホームや接続コンソールから接続したあと、確認・登録・失敗になったらガレージへ移ります。</remarks>
     /// <param name="sender">送り元。</param>
     /// <param name="e">変更の内容。</param>
     private void OnVehicleManagementChanged(object? sender, PropertyChangedEventArgs e)
@@ -292,7 +327,7 @@ public sealed partial class WindowsAppShellView : UserControl
     }
 
     /// <summary>
-    /// ホーム画面（と接続バー）の操作を処理します（iOS 版の <c>handleHomeAction</c>）。
+    /// ホーム画面（と接続コンソール）の操作を処理します（iOS 版の <c>handleHomeAction</c>）。
     /// </summary>
     /// <remarks>責務: ホームの操作を、設定画面への移動・車両接続の開始・切断へ変換します。</remarks>
     /// <param name="action">ホームの操作。</param>
@@ -322,7 +357,7 @@ public sealed partial class WindowsAppShellView : UserControl
     private WindowsHomeState ConnectionState() => new(_flow.SettingsModel.State, _flow.Root.LiveTelemetry.State);
 
     /// <summary>
-    /// 接続バーを描きます。
+    /// 接続コンソールを描きます。
     /// </summary>
     /// <remarks>責務: 既定のアダプターと接続の状態を、点の色・名前・状態の文字・ボタンへ写します。作り直さずに値だけを変えるので、押している最中のボタンが消えません。</remarks>
     private void UpdateConnectionBar()
@@ -330,8 +365,8 @@ public sealed partial class WindowsAppShellView : UserControl
         var state = ConnectionState();
         var live = _flow.Root.LiveTelemetry.State;
         var availability = state.DefaultAdapterAvailability;
-        ConnectionBar.Visibility = SelectedDestination == WindowsSidebarDestination.Home ? Visibility.Collapsed : Visibility.Visible;
-        ConnectionName.Text = availability.DisplayName ?? LocalizedText.Get("home.adapter.not_configured");
+        var onHome = SelectedDestination == WindowsSidebarDestination.Home;
+        Retained.SetText(ConnectionName, availability.DisplayName ?? LocalizedText.Get("home.adapter.not_configured"));
         string statusKey;
         Tone dotTone;
         if (state.IsConnectionActive)
@@ -349,12 +384,16 @@ public sealed partial class WindowsAppShellView : UserControl
                 : availability.HasDefaultAdapter ? "home.adapter.not_detected" : "home.adapter.setup_required";
         }
 
-        ConnectionDot.Fill = DesignTokens.Foreground(dotTone);
-        ConnectionStatus.Text = LocalizedText.Get(statusKey);
-        ToolTipService.SetToolTip(ConnectionStatus, ConnectionStatus.Text);
-        OpenLiveButton.Visibility = state.IsConnectionActive && SelectedDestination != WindowsSidebarDestination.LiveLog
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        var dotBrush = DesignTokens.Foreground(dotTone);
+        ConnectionDot.Fill = dotBrush;
+        ConnectionHalo.Fill = dotBrush;
+        Retained.SetText(ConnectionStatus, LocalizedText.Get(statusKey));
+        ToolTipService.SetToolTip(ConnectionConsole, $"{ConnectionName.Text}\n{ConnectionStatus.Text}");
+
+        // ホームには大きな操作のカードがあるので、ここでは状態だけを出す。
+        Retained.SetVisible(OpenLiveButton, state.IsConnectionActive && SelectedDestination != WindowsSidebarDestination.LiveLog);
+        Retained.SetVisible(ConnectionButton, !onHome);
+        ConnectionConsole.Padding = new Thickness(12, 0, onHome && !state.IsConnectionActive ? 14 : 3, 0);
 
         string buttonKey;
         string glyph;
@@ -373,19 +412,100 @@ public sealed partial class WindowsAppShellView : UserControl
             (buttonKey, glyph, styleKey, enabled) = ("home.action.setup_adapter", FluentSymbol.Sliders, "DefaultButtonStyle", true);
         }
 
-        ConnectionButtonText.Text = LocalizedText.Get(buttonKey);
-        ConnectionButtonIcon.Glyph = glyph;
-        var style = DesignTokens.Style(styleKey);
-        if (!ReferenceEquals(ConnectionButton.Style, style))
-        {
-            ConnectionButton.Style = style;
-        }
-
-        ConnectionButton.IsEnabled = enabled;
+        Retained.SetText(ConnectionButtonText, LocalizedText.Get(buttonKey));
+        Retained.SetGlyph(ConnectionButtonIcon, glyph);
+        Retained.SetStyle(ConnectionButton, styleKey);
+        Retained.SetEnabled(ConnectionButton, enabled);
+        ToolTipService.SetToolTip(ConnectionButton, ConnectionButtonText.Text);
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(ConnectionButton, ConnectionButtonText.Text);
     }
 
-    /// <summary>接続バーのボタンを押したときの処理です。</summary>
+    /// <summary>
+    /// 幅クラスに合わせて、ナビの形とタイトルバーの中身を切り替えます。
+    /// </summary>
+    /// <remarks>
+    /// 責務: Wide/Expanded は題つきのペイン、Medium は記号だけのレール、Compact はハンバーガーで重ねて開く形にします。
+    /// 狭いほど、タイトルバーのブランドの文字・接続の状態の文字・ボタンの文字を省きます（ツールチップには残す）。
+    /// </remarks>
+    /// <param name="widthClass">幅クラス。</param>
+    private void ApplyWidthClass(WidthClass widthClass)
+    {
+        _widthClass = widthClass;
+        (Navigation.PaneDisplayMode, Navigation.OpenPaneLength) = widthClass switch
+        {
+            WidthClass.Compact => (NavigationViewPaneDisplayMode.LeftMinimal, 280d),
+            WidthClass.Medium => (NavigationViewPaneDisplayMode.LeftCompact, 248d),
+            WidthClass.Expanded => (NavigationViewPaneDisplayMode.Left, 232d),
+            _ => (NavigationViewPaneDisplayMode.Left, 264d),
+        };
+        Navigation.IsPaneOpen = widthClass >= WidthClass.Expanded;
+        var compact = widthClass == WidthClass.Compact;
+        Retained.SetVisible(BrandTexts, !compact);
+        Retained.SetVisible(BrandTagline, widthClass >= WidthClass.Expanded);
+        Retained.SetVisible(ConnectionStatus, !compact);
+        Retained.SetVisible(OpenLiveText, widthClass >= WidthClass.Expanded);
+        Retained.SetVisible(ConnectionButtonText, !compact);
+        ConnectionName.MaxWidth = compact ? 120 : widthClass == WidthClass.Medium ? 160 : 240;
+        var gutter = Space.PageGutter(widthClass);
+        NoticeArea.Padding = new Thickness(gutter, 0, gutter, 0);
+        NoticeArea.MaxWidth = Metrics.ContentMaxWidth + (gutter * 2);
+        NoticeArea.Spacing = Space.S;
+        foreach (var bar in new[] { AdapterArrivalBar, PreviousRunBar })
+        {
+            bar.Margin = new Thickness(0, Space.M, 0, 0);
+        }
+    }
+
+    /// <summary>
+    /// タイトルバーの押せる領域（戻る・ナビの開閉・接続コンソール）を OS へ伝えます。
+    /// </summary>
+    /// <remarks>責務: 押せる要素の位置を物理ピクセルの矩形にし、前回と違うときだけ伝えます。キャプションボタンの幅も合わせます。</remarks>
+    private void UpdateTitleBarRegions()
+    {
+        if (_appWindow is null || XamlRoot is null)
+        {
+            return;
+        }
+
+        var scale = XamlRoot.RasterizationScale;
+        var inset = _appWindow.TitleBar.RightInset / scale;
+        if (inset > 0 && Math.Abs(CaptionInsetColumn.Width.Value - inset) > 0.5)
+        {
+            CaptionInsetColumn.Width = new GridLength(inset);
+        }
+
+        var rects = new[] { BackButton, (FrameworkElement)PaneToggleButton, ConnectionConsole }
+            .Where(element => element.Visibility == Visibility.Visible && element.ActualWidth > 0)
+            .Select(element =>
+            {
+                var bounds = element.TransformToVisual(null).TransformBounds(new global::Windows.Foundation.Rect(0, 0, element.ActualWidth, element.ActualHeight));
+                return new RectInt32(
+                    (int)Math.Round(bounds.X * scale),
+                    (int)Math.Round(bounds.Y * scale),
+                    (int)Math.Round(bounds.Width * scale),
+                    (int)Math.Round(bounds.Height * scale));
+            })
+            .ToArray();
+        if (rects.SequenceEqual(_passthroughRects))
+        {
+            return;
+        }
+
+        _passthroughRects = rects;
+        InputNonClientPointerSource.GetForWindowId(_appWindow.Id).SetRegionRects(NonClientRegionKind.Passthrough, rects);
+    }
+
+    /// <summary>タイトルバーの戻るを押したときの処理です。</summary>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">イベントの情報。</param>
+    private void OnBackButtonClicked(object sender, RoutedEventArgs e) => TryGoBack();
+
+    /// <summary>タイトルバーのナビの開閉を押したときの処理です。</summary>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">イベントの情報。</param>
+    private void OnPaneToggleClicked(object sender, RoutedEventArgs e) => Navigation.IsPaneOpen = !Navigation.IsPaneOpen;
+
+    /// <summary>接続コンソールのボタンを押したときの処理です。</summary>
     /// <remarks>責務: 押した時点の状態で、切断・接続・アダプターの設定のどれかをホームと同じ操作として送ります。</remarks>
     /// <param name="sender">送り元。</param>
     /// <param name="e">イベントの情報。</param>
@@ -412,7 +532,7 @@ public sealed partial class WindowsAppShellView : UserControl
         }
     }
 
-    /// <summary>接続バーの「ライブを表示」を押したときの処理です。</summary>
+    /// <summary>接続コンソールの「ライブを表示」を押したときの処理です。</summary>
     /// <param name="sender">送り元。</param>
     /// <param name="e">イベントの情報。</param>
     private void OnOpenLiveClicked(object sender, RoutedEventArgs e) => Select(WindowsSidebarDestination.LiveLog);
@@ -465,18 +585,13 @@ public sealed partial class WindowsAppShellView : UserControl
     /// <param name="e">イベントの情報。</param>
     private void OnCanGoBackChanged(object? sender, EventArgs e) => UpdateBackButton();
 
-    /// <summary>ナビゲーションの戻るボタンを、戻れるときだけ出します。</summary>
+    /// <summary>タイトルバーの戻るボタンを、戻れるときだけ出します。</summary>
     private void UpdateBackButton()
     {
         var canGoBack = _backTarget?.CanGoBack == true;
-        Navigation.IsBackEnabled = canGoBack;
-        Navigation.IsBackButtonVisible = canGoBack ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
+        Retained.SetVisible(BackButton, canGoBack);
+        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, UpdateTitleBarRegions);
     }
-
-    /// <summary>ナビゲーションの戻るボタンを押したときの処理です。</summary>
-    /// <param name="sender">送り元。</param>
-    /// <param name="args">イベントの情報。</param>
-    private void OnBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args) => TryGoBack();
 
     /// <summary>マウスの戻るボタン（XButton1）を押したときの処理です。</summary>
     /// <param name="sender">送り元。</param>

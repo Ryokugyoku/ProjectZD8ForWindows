@@ -3826,6 +3826,10 @@ Own the drive.</value>
     <value>General</value>
     <comment>windows.settings.group.general</comment>
   </data>
+  <data name="windows_shell_back" xml:space="preserve">
+    <value>Back</value>
+    <comment>windows.shell.back</comment>
+  </data>
   <data name="windows_shell_connection_connected" xml:space="preserve">
     <value>Connected</value>
     <comment>windows.shell.connection.connected</comment>
@@ -3833,6 +3837,10 @@ Own the drive.</value>
   <data name="windows_shell_connection_disconnecting" xml:space="preserve">
     <value>Disconnecting…</value>
     <comment>windows.shell.connection.disconnecting</comment>
+  </data>
+  <data name="windows_shell_navigation" xml:space="preserve">
+    <value>Open or close navigation</value>
+    <comment>windows.shell.navigation</comment>
   </data>
   <data name="windows_shell_open_live" xml:space="preserve">
     <value>Open live view</value>

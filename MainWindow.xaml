@@ -11,12 +11,12 @@
 
     <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
-            <RowDefinition Height="40" />
+            <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- タイトルバー（ウインドウの内容を上まで広げ、アプリ名を置く） -->
-        <Grid x:Name="AppTitleBar" Padding="16,0,0,0" ColumnSpacing="10">
+        <!-- ログイン画面のタイトルバー（シェルを出している間は、シェルが自分のタイトルバーを持つので隠す） -->
+        <Grid x:Name="AppTitleBar" Padding="16,0,0,0" ColumnSpacing="10" Background="Transparent">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />

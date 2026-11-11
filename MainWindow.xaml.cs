@@ -1,7 +1,9 @@
 using System;
 using System.ComponentModel;
+using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using ProjectZD8.Application.Authentication.State;
 using ProjectZD8.Application.Settings.State;
 using ProjectZD8ForWindows.AppRoot.Flow;
@@ -33,6 +35,9 @@ public sealed partial class MainWindow : Window
     /// <summary>適用中の外観です。</summary>
     private SettingsAppearance? _appliedAppearance;
 
+    /// <summary>ハイコントラストの変化を知るための、このウインドウのテーマの設定です（イベントを受け続けるためにフィールドで持つ）。</summary>
+    private Microsoft.UI.System.ThemeSettings? _themeSettings;
+
     /// <summary>アプリの流れを受け取ってウインドウを作ります。</summary>
     /// <param name="flow">アプリの流れ。</param>
     public MainWindow(WindowsApplicationFlow flow)
@@ -40,7 +45,9 @@ public sealed partial class MainWindow : Window
         _flow = flow;
         InitializeComponent();
         ExtendsContentIntoTitleBar = true;
+        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         SetTitleBar(AppTitleBar);
+        ResponsiveLayout.Observe(RootGrid);
         AppWindow.Resize(new global::Windows.Graphics.SizeInt32(1280, 840));
         if (AppWindow.Presenter is OverlappedPresenter presenter)
         {
@@ -50,6 +57,9 @@ public sealed partial class MainWindow : Window
 
         ApplyEffectiveTheme();
         RootGrid.ActualThemeChanged += OnActualThemeChanged;
+        _themeSettings = Microsoft.UI.System.ThemeSettings.CreateForWindowId(AppWindow.Id);
+        DesignTokens.IsHighContrast = _themeSettings.HighContrast;
+        _themeSettings.Changed += OnThemeSettingsChanged;
         flow.Root.Authentication.PropertyChanged += OnAuthenticationChanged;
         flow.Root.AccountSettings.PropertyChanged += OnAccountSettingsChanged;
         flow.SettingsModelReplaced += OnSettingsModelReplaced;
@@ -169,7 +179,20 @@ public sealed partial class MainWindow : Window
     private void ApplyEffectiveTheme()
     {
         DesignTokens.EffectiveTheme = RootGrid.ActualTheme;
-        AppWindow.TitleBar.PreferredTheme = RootGrid.ActualTheme == ElementTheme.Dark ? TitleBarTheme.Dark : TitleBarTheme.Light;
+        var dark = RootGrid.ActualTheme == ElementTheme.Dark;
+        AppWindow.TitleBar.PreferredTheme = dark ? TitleBarTheme.Dark : TitleBarTheme.Light;
+
+        // 外観をアプリで OS と逆にしたとき、キャプションボタンの記号が背景に溶けないよう色を明示する。
+        var titleBar = AppWindow.TitleBar;
+        var ink = dark ? Microsoft.UI.Colors.White : Microsoft.UI.Colors.Black;
+        titleBar.ButtonBackgroundColor = Microsoft.UI.Colors.Transparent;
+        titleBar.ButtonInactiveBackgroundColor = Microsoft.UI.Colors.Transparent;
+        titleBar.ButtonForegroundColor = ink;
+        titleBar.ButtonHoverForegroundColor = ink;
+        titleBar.ButtonPressedForegroundColor = ink;
+        titleBar.ButtonInactiveForegroundColor = global::Windows.UI.Color.FromArgb(0x80, ink.R, ink.G, ink.B);
+        titleBar.ButtonHoverBackgroundColor = global::Windows.UI.Color.FromArgb(0x18, ink.R, ink.G, ink.B);
+        titleBar.ButtonPressedBackgroundColor = global::Windows.UI.Color.FromArgb(0x10, ink.R, ink.G, ink.B);
     }
 
     /// <summary>シェルを表示します。</summary>
@@ -178,8 +201,12 @@ public sealed partial class MainWindow : Window
     private void ShowShell(WindowsSidebarDestination destination)
     {
         var activates = _showsShell != true;
-        _shell = new WindowsAppShellView(_flow, destination);
+        _shell = new WindowsAppShellView(_flow, destination, AppWindow);
+        AppTitleBar.Visibility = Visibility.Collapsed;
+        Grid.SetRow(ContentHost, 0);
+        Grid.SetRowSpan(ContentHost, 2);
         ContentHost.Child = _shell;
+        SetTitleBar(_shell.TitleBarElement);
         _showsShell = true;
         if (activates)
         {
@@ -192,7 +219,26 @@ public sealed partial class MainWindow : Window
     private void ShowLogin()
     {
         _shell = null;
+        AppTitleBar.Visibility = Visibility.Visible;
+        Grid.SetRow(ContentHost, 1);
+        Grid.SetRowSpan(ContentHost, 1);
         ContentHost.Child = new WindowsLoginView(_flow.Root.Authentication, _flow.Root.IsLocalMode);
+        SetTitleBar(AppTitleBar);
+        InputNonClientPointerSource.GetForWindowId(AppWindow.Id).ClearRegionRects(NonClientRegionKind.Passthrough);
         _showsShell = false;
     }
+
+    /// <summary>ハイコントラストの有無が変わったときの処理です。</summary>
+    /// <remarks>責務: コードで組んだ画面の色を、UI スレッドで作り直します（テーマの変化と同じ扱い）。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="args">イベントの情報。</param>
+    private void OnThemeSettingsChanged(Microsoft.UI.System.ThemeSettings sender, object args) =>
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (DesignTokens.IsHighContrast != sender.HighContrast)
+            {
+                DesignTokens.IsHighContrast = sender.HighContrast;
+                OnActualThemeChanged(RootGrid, args);
+            }
+        });
 }

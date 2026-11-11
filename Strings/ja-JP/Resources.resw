@@ -3826,6 +3826,10 @@
     <value>全般</value>
     <comment>windows.settings.group.general</comment>
   </data>
+  <data name="windows_shell_back" xml:space="preserve">
+    <value>戻る</value>
+    <comment>windows.shell.back</comment>
+  </data>
   <data name="windows_shell_connection_connected" xml:space="preserve">
     <value>接続中</value>
     <comment>windows.shell.connection.connected</comment>
@@ -3833,6 +3837,10 @@
   <data name="windows_shell_connection_disconnecting" xml:space="preserve">
     <value>切断しています…</value>
     <comment>windows.shell.connection.disconnecting</comment>
+  </data>
+  <data name="windows_shell_navigation" xml:space="preserve">
+    <value>ナビゲーションを開く／閉じる</value>
+    <comment>windows.shell.navigation</comment>
   </data>
   <data name="windows_shell_open_live" xml:space="preserve">
     <value>ライブを表示</value>

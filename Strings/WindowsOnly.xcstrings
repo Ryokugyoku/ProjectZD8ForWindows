@@ -156,6 +156,22 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "ライブを表示" } }
       }
     },
+    "windows.shell.back" : {
+      "comment" : "Windows 版だけ。タイトルバーの戻るボタンのツールチップと読み上げ名。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Back" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atrás" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "戻る" } }
+      }
+    },
+    "windows.shell.navigation" : {
+      "comment" : "Windows 版だけ。タイトルバーのナビゲーションを開閉するボタンのツールチップと読み上げ名。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open or close navigation" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrir o cerrar la navegación" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ナビゲーションを開く／閉じる" } }
+      }
+    },
     "windows.maintenance.new" : {
       "comment" : "Windows 版だけ。整備記録の一覧の上の「新規」ボタン（軽整備・重整備を選ぶメニューを開く）。",
       "localizations" : {

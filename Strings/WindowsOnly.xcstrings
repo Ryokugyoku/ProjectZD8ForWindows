@@ -419,6 +419,38 @@
         "es" : { "stringUnit" : { "state" : "translated", "value" : "Copiar el número de informe" } },
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "報告番号をコピー" } }
       }
+    },
+    "windows.nav.tab.live_log" : {
+      "comment" : "Windows 版だけ。狭い幅の画面の下のタブ帯に出す、リアルタイムログ出力の短い名前。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Live" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "En vivo" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ライブ" } }
+      }
+    },
+    "windows.nav.tab.connection_history" : {
+      "comment" : "Windows 版だけ。狭い幅の画面の下のタブ帯に出す、接続履歴の短い名前。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "History" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Historial" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "履歴" } }
+      }
+    },
+    "windows.toggle.on" : {
+      "comment" : "Windows 版だけ。設定のスイッチがオンのときの表示（アプリの言語に合わせるため、Windows の既定の文字を使わない）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "On" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Activado" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "オン" } }
+      }
+    },
+    "windows.toggle.off" : {
+      "comment" : "Windows 版だけ。設定のスイッチがオフのときの表示（アプリの言語に合わせるため、Windows の既定の文字を使わない）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Off" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Desactivado" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "オフ" } }
+      }
     }
   },
   "version" : "1.0"

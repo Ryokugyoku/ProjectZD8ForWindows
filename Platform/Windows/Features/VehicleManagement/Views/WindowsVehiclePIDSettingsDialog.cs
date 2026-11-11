@@ -316,6 +316,7 @@ public sealed class WindowsVehiclePIDSettingsDialog
                 Request = item.Id;
                 Retained.SetText(_name, name);
                 Retained.SetText(_code, code);
+                Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(this, $"{name} {code}");
                 if (_enabled != item.IsEnabled)
                 {
                     _enabled = item.IsEnabled;

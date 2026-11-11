@@ -93,7 +93,7 @@ public sealed partial class WindowsSettingsView : UserControl
     private readonly List<(AdapterConnectionRole Role, SettingsItem Item)> _adapterRows = [];
 
     /// <summary>自動アップロードのスイッチです。</summary>
-    private readonly ToggleSwitch _upload = new() { MinWidth = 0 };
+    private readonly ToggleSwitch _upload = new() { MinWidth = 0, OnContent = LocalizedText.Get("windows.toggle.on"), OffContent = LocalizedText.Get("windows.toggle.off") };
 
     /// <summary>iCloud の行です。</summary>
     private SettingsItem? _cloudRow;
@@ -117,7 +117,7 @@ public sealed partial class WindowsSettingsView : UserControl
     private readonly StackPanel _cloudTrailing = new() { Orientation = Orientation.Horizontal, Spacing = Space.M };
 
     /// <summary>詳細ログのスイッチです。</summary>
-    private readonly ToggleSwitch _verbose = new() { MinWidth = 0 };
+    private readonly ToggleSwitch _verbose = new() { MinWidth = 0, OnContent = LocalizedText.Get("windows.toggle.on"), OffContent = LocalizedText.Get("windows.toggle.off") };
 
     /// <summary>詳細ログの行です。</summary>
     private SettingsItem? _verboseRow;

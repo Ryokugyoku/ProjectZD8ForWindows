@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
@@ -28,5 +29,15 @@ public sealed partial class GlyphLabel : StackPanel
 
         Children.Add(icon);
         Children.Add(label);
+
+        // ボタンの中身に置いたとき、ボタンの読み上げ名が空になる（中身が文字列でないため）。
+        // 名前の付いていない入れ物（ボタンなど）へ文字を名前として渡す（ラベル自身には付けない。二重に読まれるため）。
+        Loaded += (_, _) =>
+        {
+            if (Parent is ContentControl host && string.IsNullOrEmpty(AutomationProperties.GetName(host)))
+            {
+                AutomationProperties.SetName(host, text);
+            }
+        };
     }
 }

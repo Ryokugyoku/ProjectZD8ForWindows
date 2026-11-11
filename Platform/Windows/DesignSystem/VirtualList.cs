@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 
@@ -134,7 +135,16 @@ public sealed class VirtualList<TItem>
             host.Children.Add(_create());
         }
 
-        _update((FrameworkElement)host.Children[0], item);
+        var row = (FrameworkElement)host.Children[0];
+        _update(row, item);
+
+        // 器の読み上げ名は、そのままだと項目の ToString（レコードの中身全部）になる。行が付けた名前を器へ写す。
+        var name = AutomationProperties.GetName(row);
+        if (!string.IsNullOrEmpty(name))
+        {
+            AutomationProperties.SetName(args.ItemContainer, name);
+        }
+
         args.Handled = true;
     }
 }

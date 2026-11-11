@@ -54,6 +54,17 @@ public static class WindowsSidebarDestinationPresentation
         _ => "sidebar.settings",
     };
 
+    /// <summary>画面の下のタブ帯（Compact）に出す、短い名前のキーを返します。</summary>
+    /// <remarks>責務: 長い名前の行き先だけ短いキーへ変換します（狭い幅で文字が切れないように）。ほかは <see cref="TitleKey"/> と同じです。</remarks>
+    /// <param name="destination">行き先。</param>
+    /// <returns>キー。</returns>
+    public static string TabTitleKey(this WindowsSidebarDestination destination) => destination switch
+    {
+        WindowsSidebarDestination.LiveLog => "windows.nav.tab.live_log",
+        WindowsSidebarDestination.History => "windows.nav.tab.connection_history",
+        _ => destination.TitleKey(),
+    };
+
     /// <summary>行き先の補足のキーを返します。</summary>
     /// <remarks>責務: 行き先を補足の xcstrings のキーへ変換します。</remarks>
     /// <param name="destination">行き先。</param>

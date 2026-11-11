@@ -129,7 +129,8 @@ internal sealed partial class SessionRowView : Grid
 
         _deviceRow.Children.Add(new FontIcon { Glyph = FluentSymbol.Person, FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
         _deviceRow.Children.Add(_device);
-        var badges = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.S };
+        // 印は細い一覧で切れないよう、収まらなければ次の行へ送る。
+        var badges = new FlowPanel();
         badges.Children.Add(_cloudPill);
         badges.Children.Add(_localPill);
         var texts = new StackPanel { Spacing = Space.XS, VerticalAlignment = VerticalAlignment.Center };
@@ -140,7 +141,8 @@ internal sealed partial class SessionRowView : Grid
         Grid.SetColumn(texts, 1);
         grid.Children.Add(texts);
 
-        var measures = new StackPanel { Spacing = Space.XS, VerticalAlignment = VerticalAlignment.Center };
+        // 時間・距離の列は幅をそろえ、行ごとに位置がずれないようにする。
+        var measures = new StackPanel { Spacing = Space.XS, VerticalAlignment = VerticalAlignment.Center, MinWidth = 84 };
         measures.Children.Add(Labeled(FluentSymbol.Clock, _duration));
         measures.Children.Add(Labeled(FluentSymbol.Road, _distance));
         Grid.SetColumn(measures, 2);
@@ -202,7 +204,7 @@ internal sealed partial class SessionRowView : Grid
         StatusPill.Set(_cloudPill, cloudGlyph, cloudText, cloudTone);
         var (localGlyph, localText, localTone) = LocalStatus(session.RawLogSummary.LocalState);
         StatusPill.Set(_localPill, localGlyph, localText, localTone);
-        AutomationProperties.SetName(this, DateText.DateAndMinute(session.StartedAt));
+        AutomationProperties.SetName(this, $"{DateText.DateAndMinute(session.StartedAt)} {_reason.Text}");
         Refresh(selected, wide);
     }
 

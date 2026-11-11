@@ -178,7 +178,7 @@ public sealed partial class WindowsGarageView : UserControl
         refresh.Click += (_, _) => _model.Send(new VehicleManagementAction.RefreshRequested());
         refresh.KeyboardAccelerators.Add(new Microsoft.UI.Xaml.Input.KeyboardAccelerator { Key = global::Windows.System.VirtualKey.F5 });
         page.Children.Add(new ScreenHeader(
-            null,
+            FluentSymbol.Car,
             LocalizedText.Get("garage.eyebrow"),
             LocalizedText.Get("garage.title"),
             LocalizedText.Get("garage.subtitle"),
@@ -201,6 +201,8 @@ public sealed partial class WindowsGarageView : UserControl
         else
         {
             var grid = AdaptiveGrid.Cards();
+            // 車両のカードは中身が多いので、Compact では 1 列にして文字が切れないようにする。
+            grid.SetMaxColumns(1, 0, 0, 0);
             grid.SetMaxColumns(1, 2, 3, 4);
             foreach (var vehicle in state.Vehicles)
             {

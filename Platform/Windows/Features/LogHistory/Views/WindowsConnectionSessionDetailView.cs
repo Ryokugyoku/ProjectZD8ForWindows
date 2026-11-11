@@ -20,12 +20,6 @@ namespace ProjectZD8ForWindows.Platform.Windows.Features.LogHistory.Views;
 /// </remarks>
 public sealed partial class WindowsConnectionSessionDetailView : UserControl
 {
-    /// <summary>操作のボタン 1 つの最小の幅です。</summary>
-    private const double ActionMinWidth = 148;
-
-    /// <summary>操作の行の最大の幅です（広い幅でボタンを伸ばしすぎない）。</summary>
-    private const double ActionsMaxWidth = 760;
-
     /// <summary>セッションと操作の送り先を受け取って詳細を作ります。</summary>
     /// <remarks>一覧へ戻るのは、画面の上のパンくずとシェルの戻る操作で行います。</remarks>
     /// <param name="session">セッション。</param>
@@ -69,18 +63,18 @@ public sealed partial class WindowsConnectionSessionDetailView : UserControl
     /// <summary>操作の行（コマンドバー）を作ります。</summary>
     /// <remarks>責務: 解析・アップロード・Raw の解放・終了済みのセッションの削除（削除中は進行表示）のボタンを、幅に合わせて折り返して並べます。狭い幅でも全部届きます。</remarks>
     /// <returns>行。</returns>
-    private static AdaptiveGrid DetailActions(ConnectionSession session, ConnectionHistoryState state, Action<ConnectionHistoryAction> send, Action<ConnectionSession> openAnalysis)
+    private static FlowPanel DetailActions(ConnectionSession session, ConnectionHistoryState state, Action<ConnectionHistoryAction> send, Action<ConnectionSession> openAnalysis)
     {
         var isDeleting = state.DeletingSessionID == session.Id;
-        var grid = new AdaptiveGrid { MinItemWidth = ActionMinWidth, Spacing = Space.S, MaxWidth = ActionsMaxWidth, HorizontalAlignment = HorizontalAlignment.Left };
-        var analysis = new Button { Content = new GlyphLabel(FluentSymbol.Chart, LocalizedText.Get("analysis.open")), MinHeight = Metrics.ControlHeight, HorizontalAlignment = HorizontalAlignment.Stretch };
+        // ボタンは文字の幅のまま並べ、収まらなければ次の行へ送る（等幅の枠に詰めて文字が切れるのを避ける）。
+        var grid = new FlowPanel();
+        var analysis = new Button { Content = new GlyphLabel(FluentSymbol.Chart, LocalizedText.Get("analysis.open")), MinHeight = Metrics.ControlHeight };
         analysis.Click += (_, _) => openAnalysis(session);
         grid.Children.Add(analysis);
         if (WindowsConnectionHistoryView.CanUpload(state, session))
         {
             var upload = WindowsConnectionHistoryView.MakeUploadButton(state, session, send);
             upload.MinHeight = Metrics.ControlHeight;
-            upload.HorizontalAlignment = HorizontalAlignment.Stretch;
             grid.Children.Add(upload);
         }
 
@@ -88,7 +82,6 @@ public sealed partial class WindowsConnectionSessionDetailView : UserControl
         {
             var release = WindowsConnectionHistoryView.ReleaseRawButton(session, send);
             release.MinHeight = Metrics.ControlHeight;
-            release.HorizontalAlignment = HorizontalAlignment.Stretch;
             grid.Children.Add(release);
         }
 
@@ -99,7 +92,6 @@ public sealed partial class WindowsConnectionSessionDetailView : UserControl
                 Style = DesignTokens.Style("DangerButtonStyle"),
                 IsEnabled = !isDeleting,
                 MinHeight = Metrics.ControlHeight,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
                 Content = isDeleting
                     ? new ProgressRing { IsActive = true, Width = 16, Height = 16 }
                     : new GlyphLabel(FluentSymbol.Delete, LocalizedText.Get("history.delete.button")),
@@ -117,11 +109,11 @@ public sealed partial class WindowsConnectionSessionDetailView : UserControl
     /// <returns>カード。</returns>
     private static Border Hero(ConnectionSession session)
     {
-        var trailing = new StackPanel { Spacing = Space.S };
+        // 詳細は一覧の横の細い欄にも出るので、状態・車種・ID は見出しの右ではなく下の行に並べる（題が何行にも折れないように）。
+        var trailing = new FlowPanel();
         if (session.DistanceSourceModelCode is { } modelCode)
         {
-            var badge = new VehicleModelBadge(modelCode) { HorizontalAlignment = HorizontalAlignment.Left };
-            trailing.Children.Add(badge);
+            trailing.Children.Add(new VehicleModelBadge(modelCode));
         }
 
         var statusKey = session.Status switch
@@ -135,15 +127,20 @@ public sealed partial class WindowsConnectionSessionDetailView : UserControl
             LocalizedText.Get(statusKey),
             session.Status == ConnectionSessionStatus.Completed ? Tone.Success : Tone.Caution);
         trailing.Children.Add(pill);
-        trailing.Children.Add(Typography.Text(session.Id.RawValue.ToString().ToUpperInvariant(), TextStyles.Monospace, wraps: false));
+        var id = Typography.Text(session.Id.RawValue.ToString().ToUpperInvariant(), TextStyles.Monospace, wraps: false);
+        id.VerticalAlignment = VerticalAlignment.Center;
+        id.TextTrimming = TextTrimming.CharacterEllipsis;
+        trailing.Children.Add(id);
 
         var subtitle = DateText.DateAndMinute(session.StartedAt) + "  ·  " + WindowsConnectionHistoryView.AcquisitionDeviceText(session);
-        return SurfaceCard.Create(new ScreenHeader(
+        var stack = new StackPanel { Spacing = Space.M };
+        stack.Children.Add(new ScreenHeader(
             FluentSymbol.Pulse,
             LocalizedText.Get("history.training.badge"),
             session.Vehicle?.Name ?? LocalizedText.Get("history.vehicle.pending"),
-            subtitle,
-            trailing));
+            subtitle));
+        stack.Children.Add(trailing);
+        return SurfaceCard.Create(stack);
     }
 
     /// <summary>停止の確認のカードを作ります。</summary>

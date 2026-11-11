@@ -657,7 +657,9 @@ public sealed partial class WindowsAppShellView : UserControl
         var item = new NavigationViewItem
         {
             Tag = destination,
-            Content = title,
+
+            // 長い訳（スペイン語など）がペインの幅で途中から切れて見えないよう、末尾を「…」にする（全文はツールチップ）。
+            Content = new TextBlock { Text = title, TextTrimming = TextTrimming.CharacterEllipsis, TextWrapping = TextWrapping.NoWrap },
             Icon = new FontIcon { Glyph = destination.Glyph() },
         };
         var shortcut = "Ctrl+" + (WindowsSidebarDestinationPresentation.AllCases.ToList().IndexOf(destination) + 1);
@@ -752,7 +754,8 @@ public sealed partial class WindowsAppShellView : UserControl
             var iconHost = new Grid { HorizontalAlignment = HorizontalAlignment.Center, Children = { glyph, badge } };
             var label = new TextBlock
             {
-                Text = title,
+                // 見える文字は短い名前（狭い幅で切れないように）。読み上げとツールチップは正式な名前のまま。
+                Text = LocalizedText.Get(destination.TabTitleKey()),
                 FontSize = 11,
                 TextAlignment = TextAlignment.Center,
                 TextTrimming = TextTrimming.CharacterEllipsis,

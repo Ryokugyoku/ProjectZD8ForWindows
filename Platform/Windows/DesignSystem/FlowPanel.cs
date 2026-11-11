@@ -1,19 +1,18 @@
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using Windows.Foundation;
 
-namespace ProjectZD8ForWindows.Platform.Windows.Features.LiveTelemetry.Views;
+namespace ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 
 /// <summary>
-/// 分類のチップを並べる板です。折り返さないときは 1 行（横スクロールの中に置く）、折り返すときは幅に収めて次の行へ送ります。
+/// 小さな部品（チップ・状態の印）を左から並べ、幅に収まらなければ次の行へ送る板です。折り返さない設定では 1 行に並べます。
 /// </summary>
-/// <remarks>幅クラスが変わったとき（<see cref="Wraps"/> の切り替え）にだけ並べ直します。子は作り直しません。</remarks>
-internal sealed class ChipFlowPanel : Panel
+/// <remarks>既定は折り返す。子は作り直さず、並べ方だけを変えます。</remarks>
+public sealed class FlowPanel : Panel
 {
     /// <summary>折り返すかどうかです。</summary>
-    private bool _wraps;
+    private bool _wraps = true;
 
     /// <summary>折り返すなら true、1 行に並べるなら false。</summary>
     public bool Wraps

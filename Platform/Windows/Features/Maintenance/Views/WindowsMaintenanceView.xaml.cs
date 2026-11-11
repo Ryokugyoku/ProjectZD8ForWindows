@@ -66,6 +66,13 @@ public sealed partial class WindowsMaintenanceView : UserControl
             ShowsSecondary = true,
         };
         Root.Children.Add(_split);
+
+        // ほかの画面（PageScaffold）と同じ外周の余白にそろえる。一覧の面がナビの縁や窓の縁に貼り付かないように。
+        ResponsiveLayout.Bind(this, widthClass =>
+        {
+            var gutter = Space.PageGutter(widthClass);
+            Root.Padding = new Thickness(gutter, gutter * 0.75, gutter, gutter);
+        });
         Loaded += (_, _) =>
         {
             _model.PropertyChanged += OnModelChanged;

@@ -58,6 +58,12 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
     /// <summary>最後に反映した取得の段階と失敗の鍵です。</summary>
     private (LiveTelemetryStatePhase Phase, string? FailureKey)? _shownStatus;
 
+    /// <summary>今の幅クラスが Expanded 以上か（副の欄が出ているか）です。</summary>
+    private bool _wide;
+
+    /// <summary>状態の帯に出す文言があるかです。</summary>
+    private bool _bannerHasMessage;
+
     /// <summary>見出しの応答数です。</summary>
     private readonly MetricBlock _headerCount;
 
@@ -110,10 +116,7 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
     private readonly StackPanel _categorySection = new() { Spacing = Space.M };
 
     /// <summary>分類のボタンの並びです。</summary>
-    private readonly ChipFlowPanel _chips = new();
-
-    /// <summary>分類のボタンの横スクロールです（折り返す幅クラスでは無効）。</summary>
-    private readonly ScrollViewer _chipScroller;
+    private readonly FlowPanel _chips = new();
 
     private readonly KeyedChildren<OBDPIDCategory, OBDPIDCategory, CategoryChip> _chipItems;
 
@@ -168,14 +171,9 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
         vehicleStack.Children.Add(_vehicleGrid);
         _vehicleSection = SurfaceCard.Create(vehicleStack, Tone.Accent, Space.XL);
 
-        _chipScroller = new ScrollViewer
-        {
-            Content = _chips,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
-            VerticalScrollMode = ScrollMode.Disabled,
-        };
+        // 分類のボタンはどの幅でも折り返す（横スクロールで端が切れて見えるのを避ける）。
         _categorySection.Children.Add(new GlyphLabel(FluentSymbol.Filter, LocalizedText.Get("telemetry.section.all"), TextStyles.SectionTitle));
-        _categorySection.Children.Add(_chipScroller);
+        _categorySection.Children.Add(_chips);
         _categorySection.Children.Add(_categoryGrid);
 
         var page = new PageScaffold();
@@ -217,12 +215,22 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
     private void ApplyLayout(WidthClass widthClass)
     {
         var wide = widthClass >= WidthClass.Expanded;
+        _wide = wide;
         Retained.SetVisible(_bandSide, wide);
         Retained.SetVisible(_headerCount, !wide);
         _band.ColumnSpacing = wide ? Space.XXL : 0;
-        _chips.Wraps = wide;
-        _chipScroller.HorizontalScrollMode = wide ? ScrollMode.Disabled : ScrollMode.Enabled;
-        _chipScroller.HorizontalScrollBarVisibility = wide ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Auto;
+        ApplyBannerVisibility();
+    }
+
+    /// <summary>状態の帯を開くかどうかを決めます。</summary>
+    /// <remarks>
+    /// 責務: 取得が落ち着いた（Loaded）ときは、副の欄の印が同じ文言を出す幅（Expanded 以上）では帯を閉じて重複をなくします。
+    /// 読み取り中・停止中・失敗は操作や注意が要るので、どの幅でも帯を出します。
+    /// </remarks>
+    private void ApplyBannerVisibility()
+    {
+        var steady = _shownStatus is { Phase: LiveTelemetryStatePhase.Loaded };
+        _banner.IsOpen = _bannerHasMessage && !(steady && _wide);
     }
 
     /// <summary>
@@ -250,6 +258,13 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
 
         SyncStructure(state);
         UpdateValues(state);
+
+        // 切断のあとも最後の値は残すが、いま読んでいる値と見分けられるよう薄くする。
+        var stale = state.Phase is not (LiveTelemetryStatePhase.Loaded or LiveTelemetryStatePhase.Reading);
+        var opacity = stale ? 0.55 : 1.0;
+        _band.Opacity = opacity;
+        _vehicleSection.Opacity = opacity;
+        _categoryGrid.Opacity = opacity;
     }
 
     /// <summary>取得の状態の帯と印を差し替えます。</summary>
@@ -284,6 +299,7 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
 
         if (key is null)
         {
+            _bannerHasMessage = false;
             _banner.IsOpen = false;
             _banner.Content = null;
             _bannerProgress.IsIndeterminate = false;
@@ -306,7 +322,8 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
             _banner.ActionButton = _retryButton;
         }
 
-        _banner.IsOpen = true;
+        _bannerHasMessage = true;
+        ApplyBannerVisibility();
     }
 
     /// <summary>

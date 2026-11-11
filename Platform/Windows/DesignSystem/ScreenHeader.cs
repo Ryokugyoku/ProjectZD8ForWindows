@@ -15,6 +15,9 @@ public sealed partial class ScreenHeader : Grid
     /// <summary>記号のタイルです。</summary>
     private readonly Border? _tile;
 
+    /// <summary>題の列の番号です（記号のタイルがあれば 1、なければ 0）。</summary>
+    private readonly int _textColumn;
+
     /// <summary>右側の要約です。</summary>
     private readonly FrameworkElement? _trailing;
 
@@ -33,7 +36,13 @@ public sealed partial class ScreenHeader : Grid
     /// <param name="tone">記号のタイルの色の役割。</param>
     public ScreenHeader(string? glyph, string? eyebrow, string title, string? subtitle, UIElement? trailing = null, Tone tone = Tone.Accent)
     {
-        ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        // 記号のタイルがないときは、空の列を作らない（列の間隔の分だけ題が右へずれるのを避ける）。
+        _textColumn = glyph is null ? 0 : 1;
+        if (glyph is not null)
+        {
+            ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        }
+
         ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -58,7 +67,7 @@ public sealed partial class ScreenHeader : Grid
         _subtitle.HorizontalAlignment = HorizontalAlignment.Left;
         _subtitle.Visibility = subtitle is null ? Visibility.Collapsed : Visibility.Visible;
         texts.Children.Add(_subtitle);
-        SetColumn(texts, 1);
+        SetColumn(texts, _textColumn);
         Children.Add(texts);
         if (trailing is FrameworkElement element)
         {
@@ -112,7 +121,7 @@ public sealed partial class ScreenHeader : Grid
         if (_trailing is not null)
         {
             SetRow(_trailing, compact ? 1 : 0);
-            SetColumn(_trailing, compact ? 1 : 2);
+            SetColumn(_trailing, compact ? _textColumn : _textColumn + 1);
             _trailing.HorizontalAlignment = compact ? HorizontalAlignment.Left : HorizontalAlignment.Right;
             _trailing.VerticalAlignment = VerticalAlignment.Center;
         }

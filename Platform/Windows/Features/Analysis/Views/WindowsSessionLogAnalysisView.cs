@@ -265,14 +265,13 @@ public sealed partial class WindowsSessionLogAnalysisView : UserControl
     };
 
     /// <summary>見出しのカードを作ります。</summary>
-    /// <remarks>責務: 車両名・開始日時・Raw の件数を並べます。</remarks>
+    /// <remarks>責務: 車両名・開始日時を並べます（件数はすぐ下の要約の列が出すので、見出しでは繰り返さない）。</remarks>
     /// <returns>カード。</returns>
     private Border Hero() => SurfaceCard.Create(new ScreenHeader(
         FluentSymbol.Chart,
         LocalizedText.Get("analysis.eyebrow"),
         _session.Vehicle?.Name ?? LocalizedText.Get("history.vehicle.pending"),
-        DateText.DateAndSecond(_session.StartedAt),
-        new MetricBlock(NumberText.Integer(_session.RawLogSummary.RecordCount), LocalizedText.Get("analysis.summary.samples"), HorizontalAlignment.Right, valueStyleKey: TextStyles.MetricLarge)));
+        DateText.DateAndSecond(_session.StartedAt)));
 
     /// <summary>読込みの進み具合の面を作ります（1 回だけ）。</summary>
     /// <returns>面。</returns>

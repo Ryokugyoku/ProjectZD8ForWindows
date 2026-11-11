@@ -581,6 +581,8 @@ public sealed partial class WindowsConnectionHistoryView : UserControl, IBackNav
         }
 
         var grid = AdaptiveGrid.Cards();
+        // 車両のカードは中身が多いので、Compact では 1 列にして文字が切れないようにする。
+        grid.SetMaxColumns(1, 0, 0, 0);
         foreach (var group in groups)
         {
             grid.Children.Add(VehicleGroupButton(group));

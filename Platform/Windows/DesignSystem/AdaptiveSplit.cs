@@ -22,6 +22,7 @@ public enum SplitCollapseMode
 /// 幅クラスが <see cref="CollapseBelow"/> より小さいと畳みます。面は作り直さず、Grid の行・列と Visibility だけを差し替えます。
 /// 一覧と詳細（マスター・詳細）なら、<see cref="Primary"/> に一覧、<see cref="Secondary"/> に詳細を入れ、
 /// <see cref="SecondaryFirst"/> を true にすると左が副（一覧）になります。
+/// 設定（左右・幅・畳み方）は入れた時点で並べ直すので、オブジェクト初期化子の順番に左右されません。
 /// </remarks>
 public sealed partial class AdaptiveSplit : Grid
 {
@@ -36,6 +37,18 @@ public sealed partial class AdaptiveSplit : Grid
 
     /// <summary>副を出すかどうか（<see cref="SplitCollapseMode.Single"/> で畳んだとき）です。</summary>
     private bool _showsSecondary;
+
+    /// <summary>副の面の幅です。</summary>
+    private double _secondaryWidth = 360;
+
+    /// <summary>副を左に置くかどうかです。</summary>
+    private bool _secondaryFirst;
+
+    /// <summary>畳む境の幅クラスです。</summary>
+    private WidthClass _collapseBelow = WidthClass.Expanded;
+
+    /// <summary>畳んだときの見せ方です。</summary>
+    private SplitCollapseMode _collapseMode = SplitCollapseMode.Stack;
 
     /// <summary>空の格子を作ります。</summary>
     public AdaptiveSplit()
@@ -62,16 +75,48 @@ public sealed partial class AdaptiveSplit : Grid
     }
 
     /// <summary>副の面の幅（px）です。既定 360。</summary>
-    public double SecondaryWidth { get; set; } = 360;
+    public double SecondaryWidth
+    {
+        get => _secondaryWidth;
+        set
+        {
+            _secondaryWidth = value;
+            Apply();
+        }
+    }
 
     /// <summary>副を左に置くなら true（一覧を左に置くマスター・詳細）。</summary>
-    public bool SecondaryFirst { get; set; }
+    public bool SecondaryFirst
+    {
+        get => _secondaryFirst;
+        set
+        {
+            _secondaryFirst = value;
+            Apply();
+        }
+    }
 
     /// <summary>この幅クラスより小さいと畳みます。既定は Expanded（Compact と Medium で畳む）。</summary>
-    public WidthClass CollapseBelow { get; set; } = WidthClass.Expanded;
+    public WidthClass CollapseBelow
+    {
+        get => _collapseBelow;
+        set
+        {
+            _collapseBelow = value;
+            Apply();
+        }
+    }
 
     /// <summary>畳んだときの見せ方です。</summary>
-    public SplitCollapseMode CollapseMode { get; set; } = SplitCollapseMode.Stack;
+    public SplitCollapseMode CollapseMode
+    {
+        get => _collapseMode;
+        set
+        {
+            _collapseMode = value;
+            Apply();
+        }
+    }
 
     /// <summary>畳んで片方だけを出すとき、副を出すかどうかです（一覧と詳細なら、詳細を開いたら true）。</summary>
     public bool ShowsSecondary

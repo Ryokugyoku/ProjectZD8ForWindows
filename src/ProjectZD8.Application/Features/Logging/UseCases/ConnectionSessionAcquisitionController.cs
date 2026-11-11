@@ -91,6 +91,14 @@ public sealed class ConnectionSessionAcquisitionController : ILiveTelemetryAcqui
         }
     }
 
+    /// <summary>
+    /// 今の接続セッションの ID（診断ログの <c>sid</c>）を返します。セッションがなければ null。
+    /// </summary>
+    /// <remarks>責務: 取得を始めたことを書く時点（証拠の保存より前）で、その取得の <c>sid</c> を得ます。</remarks>
+    /// <returns><c>sid</c>。接続セッションがなければ null。</returns>
+    internal async Task<string?> ResolveDiagnosticSessionId() =>
+        await _activeSessionID() is { } sessionID ? AcquisitionLog.SessionId(sessionID) : null;
+
     /// <summary>manifestと開始境界を保存し、成功した世代だけを取得可能にします。</summary>
     /// <remarks>責務: 1世代の確定済み取得入力を保存済みRaw取得許可へ変換します。</remarks>
     /// <param name="input">定義、capability、policy順を含む取得開始入力。</param>
@@ -217,6 +225,15 @@ public sealed class ConnectionSessionAcquisitionController : ILiveTelemetryAcqui
         var interval = _performanceEvents.Begin(
             AcquisitionPerformanceOperation.GenerationCancellation,
             new AcquisitionPerformanceContext(generation: generation));
+        string? diagnosticSessionId;
+        lock (_gate)
+        {
+            diagnosticSessionId = _permission?.Generation == generation ? _diagnosticSessionId : null;
+        }
+        // たまっているバッチの合計と世代の取消に、この世代の sid を付ける（呼び出し元が付けていればそのまま使う）。
+        using var sessionScope = diagnosticSessionId is not null && DiagnosticLog.CurrentSessionId is null
+            ? DiagnosticLog.BeginConnectionSession(diagnosticSessionId)
+            : null;
         _createManifest.Cancel(generation);
         _persistBatch.Cancel(generation);
         lock (_gate)

@@ -134,6 +134,124 @@ public sealed class PersistAcquisitionBatchUseCase
     /// <summary>今の世代で数値化の失敗を診断ログに書いた PID です（同じ PID をバッチごとに書かないため。<see cref="_gate"/> で守る）。</summary>
     private readonly HashSet<OBDPIDRequest> _decodeFailureLogged = [];
 
+    /// <summary>今の世代の最初のバッチをまだ書いていないか（最初の 1 件は必ず 1 行書く。<see cref="_gate"/> で守る）。</summary>
+    private bool _firstBatchPending = true;
+
+    /// <summary>まだ書いていない正常なバッチの数です（<see cref="_gate"/> で守る。以下 <c>_pending*</c> も同じ）。</summary>
+    private int _pendingBatches;
+
+    /// <summary>まだ書いていない正常なバッチのうち、最初の番号です。</summary>
+    private long _pendingFirstBatch;
+
+    /// <summary>まだ書いていない正常なバッチのうち、最後の番号です。</summary>
+    private long _pendingLastBatch;
+
+    /// <summary>まだ書いていない正常なバッチの要求の合計です。</summary>
+    private long _pendingRequests;
+
+    /// <summary>まだ書いていない正常なバッチの応答の合計です。</summary>
+    private long _pendingResponded;
+
+    /// <summary>まだ書いていない正常なバッチの数値の合計です。</summary>
+    private long _pendingSamples;
+
+    /// <summary>まだ書いていない正常なバッチの所要時間の合計（ミリ秒）です。</summary>
+    private long _pendingElapsedTotalMs;
+
+    /// <summary>まだ書いていない正常なバッチの所要時間の最大（ミリ秒）です。</summary>
+    private long _pendingElapsedMaxMs;
+
+    /// <summary>
+    /// 完了したバッチを診断ログに書くか、正常なバッチならまとめに足します。
+    /// </summary>
+    /// <remarks>
+    /// 責務: 世代の最初のバッチと異常のあるバッチはその場で 1 行書き（その前にたまった正常分を先に書く）、
+    /// それ以外は <see cref="AcquisitionLog.NormalBatchSummaryInterval"/> 件ごとに 1 行へまとめます。
+    /// 呼び出し側は <see cref="_gate"/> を持っていること。割り当てはしません。
+    /// </remarks>
+    /// <param name="batch">バッチの番号。</param>
+    /// <param name="tick">周期の番号。</param>
+    /// <param name="requests">要求した件数。</param>
+    /// <param name="counts">結果の種類ごとの件数。</param>
+    /// <param name="samples">数値にできた件数。</param>
+    /// <param name="elapsedMs">バッチの所要時間（ミリ秒）。</param>
+    private void RecordCompletedBatch(
+        long batch,
+        ulong tick,
+        int requests,
+        in BatchOutcomeCounts counts,
+        int samples,
+        long elapsedMs)
+    {
+        var isNormal = counts.TimedOut == 0
+            && counts.TransportFailed == 0
+            && counts.Unclassified == 0
+            && counts.Cancelled == 0;
+        if (isNormal && !_firstBatchPending)
+        {
+            if (_pendingBatches == 0)
+            {
+                _pendingFirstBatch = batch;
+            }
+
+            _pendingBatches++;
+            _pendingLastBatch = batch;
+            _pendingRequests += requests;
+            _pendingResponded += counts.Responded;
+            _pendingSamples += samples;
+            _pendingElapsedTotalMs += elapsedMs;
+            _pendingElapsedMaxMs = Math.Max(_pendingElapsedMaxMs, elapsedMs);
+            if (_pendingBatches >= AcquisitionLog.NormalBatchSummaryInterval)
+            {
+                FlushBatchSummary();
+            }
+
+            return;
+        }
+
+        FlushBatchSummary();
+        _firstBatchPending = false;
+        AcquisitionLog.BatchCompleted(
+            AcquisitionLog.Logger,
+            batch,
+            tick,
+            requests,
+            counts.Responded,
+            counts.TimedOut,
+            counts.TransportFailed,
+            counts.Unclassified,
+            counts.Cancelled,
+            samples,
+            elapsedMs);
+    }
+
+    /// <summary>たまっている正常なバッチの合計を 1 行書いて、たまりを空にします（なければ何もしない）。</summary>
+    /// <remarks>責務: 呼び出し側は <see cref="_gate"/> を持っていること。</remarks>
+    private void FlushBatchSummary()
+    {
+        if (_pendingBatches == 0)
+        {
+            return;
+        }
+
+        AcquisitionLog.BatchSummary(
+            AcquisitionLog.Logger,
+            _pendingFirstBatch,
+            _pendingLastBatch,
+            _pendingBatches,
+            _pendingRequests,
+            _pendingResponded,
+            _pendingSamples,
+            _pendingElapsedTotalMs,
+            _pendingElapsedMaxMs);
+        _pendingBatches = 0;
+        _pendingRequests = 0;
+        _pendingResponded = 0;
+        _pendingSamples = 0;
+        _pendingElapsedTotalMs = 0;
+        _pendingElapsedMaxMs = 0;
+    }
+
     /// <summary>現在の取得workflowが有効としたpolling世代です。</summary>
     private ulong? _activeGeneration;
 
@@ -169,8 +287,10 @@ public sealed class PersistAcquisitionBatchUseCase
     {
         lock (_gate)
         {
+            FlushBatchSummary();
             _activeGeneration = generation;
             _decodeFailureLogged.Clear();
+            _firstBatchPending = true;
         }
     }
 
@@ -185,6 +305,8 @@ public sealed class PersistAcquisitionBatchUseCase
             {
                 return;
             }
+            // 止まる前に、たまっている正常なバッチの合計を書く（acq.stopped より前になる）。
+            FlushBatchSummary();
             _activeGeneration = null;
         }
     }
@@ -306,16 +428,11 @@ public sealed class PersistAcquisitionBatchUseCase
             {
                 var terminal = TerminalBatch(resumed, persistedRequests, _now());
                 _repository.FinishBatch(terminal, sessionID);
-                AcquisitionLog.BatchCompleted(
-                    AcquisitionLog.Logger,
+                RecordCompletedBatch(
                     input.BatchIdentity.Ordinal,
                     input.PolicyTick,
                     requests.Count,
-                    counts.Responded,
-                    counts.TimedOut,
-                    counts.TransportFailed,
-                    counts.Unclassified,
-                    counts.Cancelled,
+                    counts,
                     samples.Count,
                     (long)Stopwatch.GetElapsedTime(batchStarted).TotalMilliseconds);
                 return new PersistedAcquisitionBatchResult(terminal, samples);

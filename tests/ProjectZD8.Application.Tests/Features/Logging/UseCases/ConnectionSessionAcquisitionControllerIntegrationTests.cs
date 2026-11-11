@@ -163,7 +163,7 @@ public sealed partial class ConnectionSessionAcquisitionControllerIntegrationTes
                 repository: storage,
                 telemetry: telemetry,
                 monotonicNanoseconds: new ControllerIntegrationClock().Next,
-                now: () => DateTimeOffset.FromUnixTimeSeconds(20),
+                now: () => DateTimeOffset.FromUnixTimeSeconds(1000),
                 performanceEvents: performanceEvents),
             activeSessionID: () => Task.FromResult<ConnectionSessionID?>(exposesActiveSession ? session.Id : null),
             manifestVersion: 1,

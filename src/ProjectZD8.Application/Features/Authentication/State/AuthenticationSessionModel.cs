@@ -187,8 +187,9 @@ public sealed class AuthenticationSessionModel : INotifyPropertyChanged
                 Phase = AuthenticationPhase.SignedOut,
             };
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            AuthenticationSessionLog.Failed(exception, "account.delete");
             State = State with
             {
                 AccountDeletionFailure = AccountDeletionFailure.DeletionFailed,
@@ -226,8 +227,9 @@ public sealed class AuthenticationSessionModel : INotifyPropertyChanged
                 StartObservingSessionRevocation(userIdentifier);
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            AuthenticationSessionLog.Failed(exception, "session.restore");
             State = State with
             {
                 Session = null,
@@ -282,10 +284,12 @@ public sealed class AuthenticationSessionModel : INotifyPropertyChanged
         }
         catch (AppleAccountAuthorizationException error) when (error.Reason == AppleAccountAuthorizationError.Cancelled)
         {
+            AuthenticationSessionLog.Canceled("sign-in.apple");
             State = State with { Session = null, Phase = AuthenticationPhase.SignedOut };
         }
         catch (AppleAccountAuthorizationException error) when (error.Reason == AppleAccountAuthorizationError.Unavailable)
         {
+            AuthenticationSessionLog.Failed(error, "sign-in.apple.unavailable");
             State = State with
             {
                 Session = null,
@@ -293,8 +297,9 @@ public sealed class AuthenticationSessionModel : INotifyPropertyChanged
                 Failure = AuthenticationFailure.ServiceUnavailable,
             };
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            AuthenticationSessionLog.Failed(exception, "sign-in.apple");
             State = State with
             {
                 Session = null,
@@ -327,8 +332,9 @@ public sealed class AuthenticationSessionModel : INotifyPropertyChanged
         {
             _remoteAccountLogout.Execute(userIdentifier);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            AuthenticationSessionLog.Failed(exception, "sign-out.remote-logout");
             State = State with { Failure = AuthenticationFailure.RemoteLogoutPersistenceFailed };
         }
         _sessionRevocation.StopObserving();

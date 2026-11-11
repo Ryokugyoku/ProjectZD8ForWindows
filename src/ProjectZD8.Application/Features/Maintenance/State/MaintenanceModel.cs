@@ -358,8 +358,9 @@ public sealed class MaintenanceModel : INotifyPropertyChanged
             UpdateDraft(draft => draft with { Photos = [.. draft.Photos, photo] });
             State = State with { FailureKey = null };
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            MaintenanceLog.Failed(exception, "photo.attach");
             State = State with { FailureKey = "maintenance.error.photo" };
         }
     }
@@ -402,8 +403,9 @@ public sealed class MaintenanceModel : INotifyPropertyChanged
             State = State with { Draft = null };
             await SynchronizeRecords();
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            MaintenanceLog.Failed(exception, "record.save");
             State = State with { Phase = MaintenanceStatePhase.Failed, FailureKey = "maintenance.error.save" };
         }
     }
@@ -433,8 +435,9 @@ public sealed class MaintenanceModel : INotifyPropertyChanged
             State = State with { Draft = null };
             await SynchronizeRecords();
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            MaintenanceLog.Failed(exception, "record.delete");
             State = State with { Phase = MaintenanceStatePhase.Failed, FailureKey = "maintenance.error.delete" };
         }
     }
@@ -462,8 +465,9 @@ public sealed class MaintenanceModel : INotifyPropertyChanged
             var records = await repository.Records(currentAccountIdentifier);
             State = State with { Records = VisibleSorted(records) };
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            MaintenanceLog.Failed(exception, "records.load");
             State = State with { Phase = MaintenanceStatePhase.Failed, FailureKey = "maintenance.error.load" };
             return;
         }
@@ -493,15 +497,17 @@ public sealed class MaintenanceModel : INotifyPropertyChanged
                 FailureKey = null,
             };
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            MaintenanceLog.Failed(exception, "records.synchronize");
             IReadOnlyList<MaintenanceRecord> fallback;
             try
             {
                 fallback = await repository.Records(currentAccountIdentifier);
             }
-            catch (Exception)
+            catch (Exception fallbackError)
             {
+                MaintenanceLog.Degraded(fallbackError, "records.reload-after-sync-failure");
                 fallback = [];
             }
 

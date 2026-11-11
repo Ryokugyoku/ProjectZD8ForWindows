@@ -62,8 +62,9 @@ public sealed class SqliteConnectionSessionRepository :
         {
             ProjectZD8DatabaseMigrator.Migrate(database);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            SqliteStoreLog.OperationFailed(SqliteStoreLog.Logger, exception, "ConnectionSession", "Initialize");
             throw new ConnectionSessionAcquisitionRepositoryException(ConnectionSessionAcquisitionRepositoryError.Unavailable);
         }
         _context = new ConnectionSessionStorageContext(database, logStore, performanceEvents ?? new NoOpAcquisitionPerformanceEventPort());

@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using ProjectZD8.Data.Configuration;
 
@@ -170,7 +172,7 @@ public sealed class CloudKitWebServicesClient : ICloudKitDatabase
             {
                 body["continuationMarker"] = marker;
             }
-            var root = await Send(HttpMethod.Post, "private", "records/query", body).ConfigureAwait(false);
+            var root = await Send(HttpMethod.Post, "private", "records/query", body, recordType).ConfigureAwait(false);
             foreach (var item in Records(root))
             {
                 if (RecordError(item) is { } error)
@@ -208,7 +210,7 @@ public sealed class CloudKitWebServicesClient : ICloudKitDatabase
                 ["record"] = CloudKitRecordJson.ToJson(record, includeChangeTag: operation == CloudKitSaveOperation.Update),
             }),
         };
-        var root = await Send(HttpMethod.Post, "private", "records/modify", body).ConfigureAwait(false);
+        var root = await Send(HttpMethod.Post, "private", "records/modify", body, record.RecordType).ConfigureAwait(false);
         foreach (var item in Records(root))
         {
             if (RecordError(item) is { } error)
@@ -262,7 +264,7 @@ public sealed class CloudKitWebServicesClient : ICloudKitDatabase
                 ["fieldName"] = fieldName,
             }),
         };
-        var root = await Send(HttpMethod.Post, "private", "assets/upload", body).ConfigureAwait(false);
+        var root = await Send(HttpMethod.Post, "private", "assets/upload", body, recordType).ConfigureAwait(false);
         string? url = null;
         if (root.TryGetProperty("tokens", out var tokens) && tokens.ValueKind == JsonValueKind.Array)
         {
@@ -284,25 +286,62 @@ public sealed class CloudKitWebServicesClient : ICloudKitDatabase
         {
             Content = new CloudKitProgressContent(data, progress),
         };
-        using var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
-        var text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-        var uploaded = ParseJson(text);
-        if (!response.IsSuccessStatusCode)
+        var uploadStarted = Stopwatch.GetTimestamp();
+        var uploadStatus = 0;
+        try
         {
-            throw ErrorFrom(response.StatusCode, uploaded);
+            using var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
+            uploadStatus = (int)response.StatusCode;
+            var text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var uploaded = ParseJson(text);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw ErrorFrom(response.StatusCode, uploaded);
+            }
+            if (uploaded is { } json && json.TryGetProperty("singleFile", out var singleFile)
+                && singleFile.ValueKind == JsonValueKind.Object)
+            {
+                SyncLog.AssetTransferred(SyncLog.Logger, "asset/upload", data.Length, uploadStatus, SyncLog.ElapsedMs(uploadStarted));
+                return new CloudKitFieldValue.AssetUploadValue(singleFile);
+            }
+            throw new CloudKitException(response.StatusCode, null, "アップロードの応答に singleFile がありません。");
         }
-        if (uploaded is { } json && json.TryGetProperty("singleFile", out var singleFile)
-            && singleFile.ValueKind == JsonValueKind.Object)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            return new CloudKitFieldValue.AssetUploadValue(singleFile);
+            SyncLog.AssetFailed(SyncLog.Logger, exception, "asset/upload", uploadStatus, SyncLog.ElapsedMs(uploadStarted));
+            throw;
         }
-        throw new CloudKitException(response.StatusCode, null, "アップロードの応答に singleFile がありません。");
     }
 
     /// <inheritdoc />
     public async Task<byte[]> DownloadAsset(CloudKitFieldValue.AssetValue asset, Action<double>? progress = null)
     {
         EnsureAvailable();
+        var started = Stopwatch.GetTimestamp();
+        var status = new StrongBox<int>();
+        try
+        {
+            var data = await DownloadAssetCore(asset, progress, status).ConfigureAwait(false);
+            SyncLog.AssetTransferred(SyncLog.Logger, "asset/download", data.Length, status.Value, SyncLog.ElapsedMs(started));
+            return data;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            SyncLog.AssetFailed(SyncLog.Logger, exception, "asset/download", status.Value, SyncLog.ElapsedMs(started));
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 資産を 1 件ダウンロードします。
+    /// </summary>
+    /// <remarks>責務: ダウンロード URL から本体を読み、HTTP の状態を診断ログ用に <paramref name="status"/> へ残します。</remarks>
+    /// <param name="asset">ダウンロードする資産。</param>
+    /// <param name="progress">進み具合（0〜1）の通知先。</param>
+    /// <param name="status">HTTP の状態の受け渡し先。</param>
+    /// <returns>資産の本体。</returns>
+    private async Task<byte[]> DownloadAssetCore(CloudKitFieldValue.AssetValue asset, Action<double>? progress, StrongBox<int> status)
+    {
         if (asset.DownloadUrl is null
             || !Uri.TryCreate(asset.DownloadUrl.Replace("${f}", "asset.bin", StringComparison.Ordinal), UriKind.Absolute, out var uri))
         {
@@ -311,6 +350,7 @@ public sealed class CloudKitWebServicesClient : ICloudKitDatabase
         using var response = await _httpClient
             .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead)
             .ConfigureAwait(false);
+        status.Value = (int)response.StatusCode;
         if (!response.IsSuccessStatusCode)
         {
             throw new CloudKitException(response.StatusCode, null, "資産をダウンロードできません。");
@@ -353,8 +393,62 @@ public sealed class CloudKitWebServicesClient : ICloudKitDatabase
     /// <param name="database"><c>private</c> または <c>public</c>。</param>
     /// <param name="subpath">操作のパス（<c>records/query</c> など）。</param>
     /// <param name="body">送る JSON。<c>null</c> なら本文なし。</param>
+    /// <param name="recordType">診断ログに書くレコード種別。ない操作は <c>null</c>。</param>
     /// <returns>応答の JSON のルート。</returns>
-    private async Task<JsonElement> Send(HttpMethod method, string database, string subpath, JsonNode? body)
+    private async Task<JsonElement> Send(HttpMethod method, string database, string subpath, JsonNode? body, string? recordType = null)
+    {
+        var started = Stopwatch.GetTimestamp();
+        var operation = database + "/" + subpath;
+        var status = new StrongBox<int>();
+        try
+        {
+            var root = await SendCore(method, database, subpath, body, status).ConfigureAwait(false);
+            if (SyncLog.Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Debug))
+            {
+                var count = root.ValueKind == JsonValueKind.Object && root.TryGetProperty("records", out var records)
+                    && records.ValueKind == JsonValueKind.Array
+                        ? records.GetArrayLength()
+                        : 0;
+                SyncLog.RequestCompleted(SyncLog.Logger, operation, recordType ?? string.Empty, count, status.Value, SyncLog.ElapsedMs(started));
+            }
+            return root;
+        }
+        catch (CloudKitAuthenticationRequiredException exception)
+        {
+            SyncLog.AuthenticationRequired(SyncLog.Logger, operation, exception.RedirectUrl is not null, SyncLog.ElapsedMs(started));
+            throw;
+        }
+        catch (OperationCanceledException)
+        {
+            SyncLog.RequestCanceled(SyncLog.Logger, operation, SyncLog.ElapsedMs(started));
+            throw;
+        }
+        catch (Exception exception)
+        {
+            var cloudKit = exception as CloudKitException;
+            SyncLog.RequestFailed(
+                SyncLog.Logger,
+                exception,
+                operation,
+                recordType ?? string.Empty,
+                status.Value != 0 ? status.Value : (int?)cloudKit?.StatusCode ?? 0,
+                cloudKit?.ServerErrorCode ?? string.Empty,
+                SyncLog.ElapsedMs(started));
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 要求を 1 件送ります（診断ログを書かない本体）。
+    /// </summary>
+    /// <remarks>責務: <see cref="Send"/> の本体です。HTTP の状態を診断ログ用に <paramref name="status"/> へ残します。</remarks>
+    /// <param name="method">HTTP メソッド。</param>
+    /// <param name="database"><c>private</c> または <c>public</c>。</param>
+    /// <param name="subpath">操作のパス。</param>
+    /// <param name="body">送る JSON。</param>
+    /// <param name="status">HTTP の状態の受け渡し先。</param>
+    /// <returns>応答の JSON のルート。</returns>
+    private async Task<JsonElement> SendCore(HttpMethod method, string database, string subpath, JsonNode? body, StrongBox<int> status)
     {
         await _gate.WaitAsync().ConfigureAwait(false);
         try
@@ -366,6 +460,7 @@ public sealed class CloudKitWebServicesClient : ICloudKitDatabase
                 request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
             }
             using var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
+            status.Value = (int)response.StatusCode;
             var text = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var json = ParseJson(text);
             RotateToken(token, response, json);

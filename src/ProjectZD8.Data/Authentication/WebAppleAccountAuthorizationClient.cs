@@ -94,6 +94,7 @@ public sealed class WebAppleAccountAuthorizationClient : IAppleAccountAuthorizat
             {
                 _broker.Cancel(AuthorizationCallbackBroker.AppleRoute);
                 await IgnoreCancellation(callback).ConfigureAwait(false);
+                AuthLog.AppleBrowserLaunchFailed(AuthLog.Logger);
                 throw new AppleAccountAuthorizationException(AppleAccountAuthorizationError.Unavailable);
             }
 
@@ -104,6 +105,7 @@ public sealed class WebAppleAccountAuthorizationClient : IAppleAccountAuthorizat
             }
             catch (Exception exception) when (exception is TimeoutException or OperationCanceledException)
             {
+                AuthLog.AppleSignInCancelled(AuthLog.Logger, exception is TimeoutException);
                 throw new AppleAccountAuthorizationException(AppleAccountAuthorizationError.Cancelled);
             }
             return await SessionFrom(uri, request).ConfigureAwait(false);
@@ -141,6 +143,7 @@ public sealed class WebAppleAccountAuthorizationClient : IAppleAccountAuthorizat
         var parameters = AuthorizationCallbackBroker.Parameters(uri);
         if (parameters.TryGetValue("error", out var error))
         {
+            AuthLog.AppleCallbackRejected(AuthLog.Logger, string.Equals(error, "user_cancelled_authorize", StringComparison.Ordinal) ? "user-cancelled" : "apple-error");
             throw new AppleAccountAuthorizationException(
                 string.Equals(error, "user_cancelled_authorize", StringComparison.Ordinal)
                     ? AppleAccountAuthorizationError.Cancelled
@@ -149,6 +152,7 @@ public sealed class WebAppleAccountAuthorizationClient : IAppleAccountAuthorizat
         if (!parameters.TryGetValue("state", out var state) || !string.Equals(state, request.State, StringComparison.Ordinal)
             || !parameters.TryGetValue("id_token", out var idToken) || idToken.Length == 0)
         {
+            AuthLog.AppleCallbackRejected(AuthLog.Logger, "state-mismatch-or-missing-token");
             throw new AppleAccountAuthorizationException(AppleAccountAuthorizationError.Failed);
         }
         try
@@ -158,6 +162,7 @@ public sealed class WebAppleAccountAuthorizationClient : IAppleAccountAuthorizat
         }
         catch (Exception exception) when (exception is AppleIdentityTokenException or HttpRequestException or TaskCanceledException)
         {
+            AuthLog.AppleIdTokenFailed(AuthLog.Logger, exception);
             throw new AppleAccountAuthorizationException(AppleAccountAuthorizationError.Failed);
         }
     }

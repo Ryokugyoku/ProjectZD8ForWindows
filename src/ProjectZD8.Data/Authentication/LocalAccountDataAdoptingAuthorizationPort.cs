@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using ProjectZD8.Diagnostics;
 using ProjectZD8.Application.Authentication.Ports;
 using ProjectZD8.Application.Authentication.State;
 using ProjectZD8.Application.Settings.Ports;
@@ -102,11 +102,12 @@ public sealed class LocalAccountDataAdoptingAuthorizationPort : IAppleAccountAut
             }
 
             _defaults.SetString(AdoptedByKey, appleAccountIdentifier);
+            AuthLog.LocalDataAdopted(AuthLog.Logger, Redact.AccountId(localAccountIdentifier), Redact.AccountId(appleAccountIdentifier));
             return true;
         }
         catch (Exception exception)
         {
-            Debug.WriteLine($"ローカルモードのデータを引き継げませんでした（次のサインインでやり直します）: {exception}");
+            AuthLog.LocalDataAdoptFailed(AuthLog.Logger, exception, Redact.AccountId(localAccountIdentifier), Redact.AccountId(appleAccountIdentifier));
             return false;
         }
     }

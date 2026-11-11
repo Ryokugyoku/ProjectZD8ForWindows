@@ -168,6 +168,7 @@ public sealed class CloudKitSynchronizedKeyValueStore : ISynchronizedKeyValueSto
         catch (Exception exception) when (exception is CloudKitException or CloudKitUnavailableException
             or HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
         {
+            SyncLog.KeyValueDeferred(SyncLog.Logger, exception);
             // 通信の失敗は保留のまま次回に送り直します（iCloud KV と同じく、呼び出し側には知らせません）。
         }
         finally

@@ -109,6 +109,9 @@ internal sealed class SessionLog
         set => Volatile.Write(ref _fault, value);
     }
 
+    /// <summary>診断ログに書くセッション名（フォルダー名）です。</summary>
+    internal string SessionName => LogStoreLog.SessionName(_sessionDirectory);
+
     /// <summary>計測中のセッションとして、メモリから追い出さない印です。</summary>
     internal bool IsPinned { get; set; }
 
@@ -207,8 +210,9 @@ internal sealed class SessionLog
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
+                    LogStoreLog.EvidenceRebuildFailed(LogStoreLog.Logger, exception, LogStoreLog.SessionName(_sessionDirectory));
                     throw new ConnectionSessionAcquisitionRepositoryException(ConnectionSessionAcquisitionRepositoryError.Unavailable);
                 }
                 finally
@@ -267,9 +271,11 @@ internal sealed class SessionLog
         RemoveDuplicateSegments(directory);
         if (TryLoadSidecar(directory, options, out var loadedIndex, out var loadedCursor))
         {
+            LogStoreLog.OpenedWithIndex(LogStoreLog.Logger, LogStoreLog.SessionName(sessionDirectory), generation);
             return new SessionLog(sessionDirectory, options, writer, generation, loadedIndex, null, loadedCursor, sidecarPresent: true);
         }
         var (index, evidence, cursor) = Scan(directory, options);
+        LogStoreLog.OpenedByScan(LogStoreLog.Logger, LogStoreLog.SessionName(sessionDirectory), generation, SegmentFileFormat.ListSegments(directory).Count);
         return new SessionLog(sessionDirectory, options, writer, generation, index, evidence, cursor, sidecarPresent: false);
     }
 
@@ -560,6 +566,7 @@ internal sealed class SessionLog
                 _writerStream.Flush(flushToDisk: true);
                 _writerStream.Dispose();
                 _writerStream = null;
+                LogStoreLog.SegmentSealed(LogStoreLog.Logger, LogStoreLog.SessionName(_sessionDirectory), sealedSegment);
                 ScheduleCompression(sealedSegment);
             }
             var path = SegmentFileFormat.PlainPath(_generationDirectory, segment);
@@ -837,8 +844,9 @@ internal sealed class SessionLog
             {
                 (validEnd, corrupt) = ScanSegment(directory, segment, index, evidence);
             }
-            catch (Exception) when (!isPlain)
+            catch (Exception exception) when (!isPlain)
             {
+                LogStoreLog.SegmentUnreadable(LogStoreLog.Logger, exception, LogStoreLog.SessionNameOfGeneration(directory), segment);
                 (validEnd, corrupt) = (SegmentFileFormat.HeaderSize, true);
             }
             if (isPlain)
@@ -846,6 +854,7 @@ internal sealed class SessionLog
                 if (corrupt || new FileInfo(plainPath).Length != validEnd)
                 {
                     using var file = new FileStream(plainPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                    var lengthBeforeTruncation = file.Length;
                     if (validEnd <= SegmentFileFormat.HeaderSize && !HasValidHeader(file, segment))
                     {
                         file.SetLength(0);
@@ -854,6 +863,7 @@ internal sealed class SessionLog
                     }
                     file.SetLength(validEnd);
                     file.Flush(flushToDisk: true);
+                    LogStoreLog.TailTruncated(LogStoreLog.Logger, LogStoreLog.SessionNameOfGeneration(directory), segment, lengthBeforeTruncation, validEnd);
                 }
                 cursor = new SessionLogPosition(segment, validEnd);
             }
@@ -863,6 +873,7 @@ internal sealed class SessionLog
             }
             if (corrupt)
             {
+                LogStoreLog.SegmentsDiscarded(LogStoreLog.Logger, LogStoreLog.SessionNameOfGeneration(directory), segments.Count - position - 1);
                 foreach (var later in segments.Skip(position + 1))
                 {
                     File.Delete(SegmentFileFormat.PlainPath(directory, later));
@@ -967,6 +978,7 @@ internal sealed class SessionLog
             var data = File.ReadAllBytes(path);
             if (data.Length < 8 || Crc32.Compute(data.AsSpan(0, data.Length - 4)) != BinaryPrimitives.ReadUInt32LittleEndian(data.AsSpan(data.Length - 4)))
             {
+                LogStoreLog.IndexDiscarded(LogStoreLog.Logger, LogStoreLog.SessionNameOfGeneration(directory), "crc-mismatch");
                 File.Delete(path);
                 return false;
             }
@@ -974,6 +986,7 @@ internal sealed class SessionLog
             var actual = SegmentFileFormat.ListSegments(directory);
             if (segmentCount != actual.Count)
             {
+                LogStoreLog.IndexDiscarded(LogStoreLog.Logger, LogStoreLog.SessionNameOfGeneration(directory), "segment-count-mismatch");
                 File.Delete(path);
                 return false;
             }
@@ -986,6 +999,7 @@ internal sealed class SessionLog
                 offset += 12;
                 if (actual[item] != segment || SegmentFileFormat.LogicalLength(directory, segment) != length)
                 {
+                    LogStoreLog.IndexDiscarded(LogStoreLog.Logger, LogStoreLog.SessionNameOfGeneration(directory), "segment-length-mismatch");
                     File.Delete(path);
                     return false;
                 }
@@ -995,6 +1009,7 @@ internal sealed class SessionLog
             }
             if (SessionLogIndex.ReadFrom(data.AsSpan(offset, data.Length - 4 - offset)) is not { } loaded || loaded.Stride != Math.Max(1, options.IndexStride))
             {
+                LogStoreLog.IndexDiscarded(LogStoreLog.Logger, LogStoreLog.SessionNameOfGeneration(directory), "index-format-mismatch");
                 File.Delete(path);
                 return false;
             }
@@ -1002,8 +1017,9 @@ internal sealed class SessionLog
             cursor = last;
             return true;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            LogStoreLog.IndexUnreadable(LogStoreLog.Logger, exception, LogStoreLog.SessionNameOfGeneration(directory));
             File.Delete(path);
             return false;
         }
@@ -1093,8 +1109,9 @@ internal sealed class SessionLog
                 _fileLock.ExitWriteLock();
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            LogStoreLog.CompressionFailed(LogStoreLog.Logger, exception, LogStoreLog.SessionNameOfGeneration(directory), segment);
             // 圧縮は任意の最適化です。失敗しても非圧縮のセグメントが正しく残ります。
         }
         finally

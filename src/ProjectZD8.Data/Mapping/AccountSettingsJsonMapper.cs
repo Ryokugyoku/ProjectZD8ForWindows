@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using ProjectZD8.Application.Settings.State;
+using ProjectZD8.Data.Persistence.Preferences;
 using static ProjectZD8.Data.Mapping.SwiftJsonReader;
 
 namespace ProjectZD8.Data.Mapping;
@@ -36,8 +37,9 @@ public static class AccountSettingsJsonMapper
         {
             return Parse(data, FromJson);
         }
-        catch (JsonException)
+        catch (JsonException exception)
         {
+            PreferencesLog.AccountSettingsUndecodable(PreferencesLog.Logger, exception);
             return null;
         }
     }

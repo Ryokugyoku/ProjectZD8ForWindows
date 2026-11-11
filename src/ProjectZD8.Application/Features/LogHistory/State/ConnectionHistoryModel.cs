@@ -172,8 +172,9 @@ public sealed class ConnectionHistoryModel : INotifyPropertyChanged
             State = State with { StopReviewPrompt = null };
             LoadSessions();
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            ConnectionHistoryLog.Failed(exception, "stop-review.save");
             State = State with { StopReviewPrompt = null };
             State = State with { StopReviewFailureKey = "history.stop_review.error" };
         }
@@ -290,10 +291,12 @@ public sealed class ConnectionHistoryModel : INotifyPropertyChanged
             }
             catch (OperationCanceledException)
             {
+                ConnectionHistoryLog.Canceled("session.delete");
                 return;
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                ConnectionHistoryLog.Failed(exception, "session.delete");
                 State = State with { DeletingSessionID = null };
                 State = State with { SessionDeletionFailureKey = "history.delete.error" };
             }
@@ -338,10 +341,12 @@ public sealed class ConnectionHistoryModel : INotifyPropertyChanged
             }
             catch (OperationCanceledException)
             {
+                ConnectionHistoryLog.Canceled("sessions.synchronize");
                 return;
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                ConnectionHistoryLog.Failed(exception, "sessions.synchronize");
                 if (syncGeneration != generation || !string.Equals(accountIdentifier, account, StringComparison.Ordinal))
                 {
                     return;
@@ -405,10 +410,12 @@ public sealed class ConnectionHistoryModel : INotifyPropertyChanged
             }
             catch (OperationCanceledException)
             {
+                ConnectionHistoryLog.Canceled("session.upload");
                 return;
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                ConnectionHistoryLog.Failed(exception, "session.upload");
                 if (uploadGeneration != generation || !string.Equals(accountIdentifier, account, StringComparison.Ordinal))
                 {
                     return;
@@ -470,8 +477,9 @@ public sealed class ConnectionHistoryModel : INotifyPropertyChanged
             State = State with { RawRemovalPrompt = null };
             LoadSessions();
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            ConnectionHistoryLog.Failed(exception, "raw-cache.release");
             State = State with { FailureKey = "history.error.local_removal" };
         }
     }
@@ -492,8 +500,9 @@ public sealed class ConnectionHistoryModel : INotifyPropertyChanged
             State = State with { Phase = ConnectionHistoryStatePhase.Loaded };
             State = State with { FailureKey = null };
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            ConnectionHistoryLog.Failed(exception, "sessions.load");
             State = State with { Phase = ConnectionHistoryStatePhase.Failed };
             State = State with { FailureKey = "history.error.storage" };
         }

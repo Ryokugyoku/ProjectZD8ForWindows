@@ -36,13 +36,25 @@ public static class ProjectZD8DatabaseMigrator
     /// <param name="upTo">最後に適用するMigration識別子。<see langword="null"/>なら全件。</param>
     internal static void Migrate(SqliteDatabase database, string? upTo)
     {
-        database.Write((connection, transaction) =>
-            SqliteDatabase.Execute(
-                connection,
-                transaction,
-                $"CREATE TABLE IF NOT EXISTS {MigrationTableName} (identifier TEXT NOT NULL PRIMARY KEY);"));
+        try
+        {
+            database.Write((connection, transaction) =>
+                SqliteDatabase.Execute(
+                    connection,
+                    transaction,
+                    $"CREATE TABLE IF NOT EXISTS {MigrationTableName} (identifier TEXT NOT NULL PRIMARY KEY);"));
+        }
+        catch (Exception exception)
+        {
+            SqliteStoreLog.MigrationFailed(SqliteStoreLog.Logger, exception, "(table)");
+            throw;
+        }
+
         foreach (var (identifier, apply) in RegisteredMigrations)
         {
+            var newlyApplied = false;
+            try
+            {
             database.Write((connection, transaction) =>
             {
                 var applied = SqliteDatabase.Scalar(
@@ -60,7 +72,19 @@ public static class ProjectZD8DatabaseMigrator
                     transaction,
                     $"INSERT INTO {MigrationTableName} (identifier) VALUES ($1)",
                     identifier);
+                newlyApplied = true;
             });
+            }
+            catch (Exception exception)
+            {
+                SqliteStoreLog.MigrationFailed(SqliteStoreLog.Logger, exception, identifier);
+                throw;
+            }
+
+            if (newlyApplied)
+            {
+                SqliteStoreLog.MigrationApplied(SqliteStoreLog.Logger, identifier);
+            }
             if (string.Equals(identifier, upTo, StringComparison.Ordinal))
             {
                 return;

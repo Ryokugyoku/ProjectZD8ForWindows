@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Microsoft.Data.Sqlite;
+using ProjectZD8.Diagnostics;
 
 namespace ProjectZD8.Data.Persistence.Sqlite.Database;
 
@@ -32,16 +33,27 @@ public sealed class SqliteDatabase : IDisposable
     private SqliteDatabase(string connectionString, bool isFile)
     {
         _connection = new SqliteConnection(connectionString);
-        _connection.Open();
-        Execute(_connection, null, "PRAGMA foreign_keys = ON;");
-        Execute(_connection, null, "PRAGMA busy_timeout = 5000;");
-        if (isFile)
+        try
         {
-            using var command = _connection.CreateCommand();
-            command.CommandText = "PRAGMA journal_mode = WAL;";
-            command.ExecuteScalar();
-            Execute(_connection, null, "PRAGMA synchronous = NORMAL;");
+            _connection.Open();
+            Execute(_connection, null, "PRAGMA foreign_keys = ON;");
+            Execute(_connection, null, "PRAGMA busy_timeout = 5000;");
+            if (isFile)
+            {
+                using var command = _connection.CreateCommand();
+                command.CommandText = "PRAGMA journal_mode = WAL;";
+                command.ExecuteScalar();
+                Execute(_connection, null, "PRAGMA synchronous = NORMAL;");
+            }
         }
+        catch (Exception exception)
+        {
+            SqliteStoreLog.DatabaseOpenFailed(SqliteStoreLog.Logger, exception, isFile ? Redact.Path(_connection.DataSource) : ":memory:");
+            _connection.Dispose();
+            throw;
+        }
+
+        SqliteStoreLog.DatabaseOpened(SqliteStoreLog.Logger, isFile ? Redact.Path(_connection.DataSource) : ":memory:");
     }
 
     /// <summary>メモリ上の新しいDBを開きます。</summary>

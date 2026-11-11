@@ -24,14 +24,22 @@ public static class WindowsSecretStoreFactory
             vault.Delete(probe);
             if (readable)
             {
+                WindowsAuthLog.Selected(WindowsAuthLog.Logger, "password-vault");
                 return vault;
             }
+
+            WindowsAuthLog.FellBackToDpapi(WindowsAuthLog.Logger, null);
+            WindowsAuthLog.Selected(WindowsAuthLog.Logger, "dpapi-file");
+            return new DpapiFileSecretStore(fallbackDirectory);
         }
         catch (Exception exception) when (exception is SecretStoreException or TypeInitializationException
             or System.Runtime.InteropServices.COMException or InvalidCastException)
         {
             // 資格情報マネージャーを使えない環境では、DPAPI のファイルへ切り替えます。
+            WindowsAuthLog.FellBackToDpapi(WindowsAuthLog.Logger, exception);
         }
+
+        WindowsAuthLog.Selected(WindowsAuthLog.Logger, "dpapi-file");
         return new DpapiFileSecretStore(fallbackDirectory);
     }
 }

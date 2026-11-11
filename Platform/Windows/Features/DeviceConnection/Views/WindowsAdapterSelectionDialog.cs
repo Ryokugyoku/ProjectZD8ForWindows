@@ -18,6 +18,12 @@ namespace ProjectZD8ForWindows.Platform.Windows.Features.DeviceConnection.Views;
 /// </remarks>
 public sealed class WindowsAdapterSelectionDialog
 {
+    /// <summary>ダイアログの中身の最大の幅です（狭いウインドウではダイアログに合わせて縮む）。</summary>
+    private const double ContentMaxWidth = 520;
+
+    /// <summary>候補の一覧の最大の高さです（超えたらスクロール）。</summary>
+    private const double ListMaxHeight = 320;
+
     /// <summary>ダイアログの表示の窓口です。</summary>
     private readonly StateBoundDialog _dialog = new();
 
@@ -133,8 +139,8 @@ public sealed class WindowsAdapterSelectionDialog
         dialog.CloseButtonText = LocalizedText.Get("settings.adapter.selector.cancel");
         dialog.DefaultButton = ContentDialogButton.Close;
 
-        var body = new StackPanel { Spacing = 16, Width = 520 };
-        body.Children.Add(Typography.Text(LocalizedText.Get("settings.adapter.selector.description"), "SecondaryBodyTextStyle"));
+        var body = new StackPanel { Spacing = Space.L, MaxWidth = ContentMaxWidth, HorizontalAlignment = HorizontalAlignment.Stretch };
+        body.Children.Add(Typography.Text(LocalizedText.Get("settings.adapter.selector.description"), TextStyles.SecondaryBody));
         var modes = new RadioButtons { MaxColumns = 2, Header = LocalizedText.Get("settings.adapter.selector.mode") };
         foreach (var mode in AdapterTransportModeRawValue.AllCases)
         {
@@ -164,9 +170,9 @@ public sealed class WindowsAdapterSelectionDialog
         {
             case WindowsAdapterDiscoveryStatus.Idle:
             case WindowsAdapterDiscoveryStatus.Searching:
-                var searching = new StackPanel { Spacing = 14, Padding = new Thickness(0, 40, 0, 40), HorizontalAlignment = HorizontalAlignment.Center };
-                searching.Children.Add(new ProgressRing { IsActive = true, Width = 36, Height = 36 });
-                searching.Children.Add(Typography.Text(LocalizedText.Get("settings.adapter.selector.searching"), "SecondaryBodyTextStyle"));
+                var searching = new StackPanel { Spacing = Space.M, Padding = new Thickness(0, Space.XXXL, 0, Space.XXXL), HorizontalAlignment = HorizontalAlignment.Center };
+                searching.Children.Add(new ProgressRing { IsActive = true, Width = Metrics.IconTileMedium, Height = Metrics.IconTileMedium });
+                searching.Children.Add(Typography.Text(LocalizedText.Get("settings.adapter.selector.searching"), TextStyles.SecondaryBody));
                 return searching;
             case WindowsAdapterDiscoveryStatus.Failed:
                 return new ContentUnavailablePanel(
@@ -182,13 +188,13 @@ public sealed class WindowsAdapterSelectionDialog
                         LocalizedText.Get("settings.adapter.selector.empty.description"));
                 }
 
-                var list = new StackPanel { Spacing = 10 };
+                var list = new StackPanel { Spacing = Space.S + 2 };
                 foreach (var adapter in state.DiscoveredAdapters)
                 {
                     list.Children.Add(CandidateButton(adapter));
                 }
 
-                return new ScrollViewer { Content = list, MaxHeight = 320 };
+                return new ScrollViewer { Content = list, MaxHeight = ListMaxHeight };
         }
     }
 
@@ -198,14 +204,14 @@ public sealed class WindowsAdapterSelectionDialog
     /// <returns>ボタン。</returns>
     private Button CandidateButton(DiscoveredAdapter adapter)
     {
-        var row = new Grid { ColumnSpacing = 14 };
+        var row = new Grid { ColumnSpacing = Space.M };
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        row.Children.Add(IconTile.Create(adapter.TransportMode.Glyph(), Tone.Accent, 38));
-        var texts = new StackPanel { Spacing = 3, VerticalAlignment = VerticalAlignment.Center };
-        texts.Children.Add(Typography.Text(adapter.DisplayName, "BodyStrongTextBlockStyle", wraps: false));
-        texts.Children.Add(Typography.Text(adapter.SystemIdentifier, "MonospaceCaptionTextStyle", wraps: false));
+        row.Children.Add(IconTile.Create(adapter.TransportMode.Glyph(), Tone.Accent, Metrics.IconTileMedium));
+        var texts = new StackPanel { Spacing = Space.XXS, VerticalAlignment = VerticalAlignment.Center };
+        texts.Children.Add(Typography.Text(adapter.DisplayName, TextStyles.BodyStrong, wraps: false));
+        texts.Children.Add(Typography.Text(adapter.SystemIdentifier, TextStyles.Monospace, wraps: false));
         Grid.SetColumn(texts, 1);
         row.Children.Add(texts);
         var info = new FontIcon { Glyph = FluentSymbol.Info, FontSize = 15, VerticalAlignment = VerticalAlignment.Center };
@@ -216,7 +222,7 @@ public sealed class WindowsAdapterSelectionDialog
             Content = row,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             HorizontalContentAlignment = HorizontalAlignment.Stretch,
-            Padding = new Thickness(12),
+            Padding = new Thickness(Space.M),
         };
         Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, adapter.DisplayName);
         button.Click += (_, _) => _send(new WindowsSettingsAction.AdapterCandidateSelected(adapter));
@@ -238,8 +244,8 @@ public sealed class WindowsAdapterSelectionDialog
         dialog.DefaultButton = ContentDialogButton.Primary;
 
         var unknown = LocalizedText.Get("settings.adapter.details.unknown");
-        var body = new StackPanel { Spacing = 14, Width = 520 };
-        body.Children.Add(Typography.Text(adapter.DisplayName, "SecondaryBodyTextStyle"));
+        var body = new StackPanel { Spacing = Space.M, MaxWidth = ContentMaxWidth, HorizontalAlignment = HorizontalAlignment.Stretch };
+        body.Children.Add(Typography.Text(adapter.DisplayName, TextStyles.SecondaryBody));
         var rows = new StackPanel();
         AddRow(rows, "settings.adapter.details.transport", LocalizedText.Get(adapter.TransportMode.TitleKey()), false);
         AddRow(rows, "settings.adapter.details.manufacturer", adapter.ManufacturerName ?? unknown, false);
@@ -261,7 +267,7 @@ public sealed class WindowsAdapterSelectionDialog
         }
 
         body.Children.Add(new Border { Style = DesignTokens.Style("QuietSurfaceStyle"), Padding = new Thickness(0), Child = rows });
-        body.Children.Add(Typography.Text(LocalizedText.Get("settings.adapter.details.notice"), "SecondaryCaptionTextStyle"));
+        body.Children.Add(Typography.Text(LocalizedText.Get("settings.adapter.details.notice"), TextStyles.SecondaryCaption));
         if (hasConflict)
         {
             body.Children.Add(new InfoBar
@@ -284,13 +290,26 @@ public sealed class WindowsAdapterSelectionDialog
     /// <param name="monospaced">等幅で出すなら true。</param>
     private static void AddRow(StackPanel rows, string titleKey, string value, bool monospaced)
     {
-        var row = new Grid { ColumnSpacing = 16, Padding = new Thickness(14, 10, 14, 10) };
-        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(130) });
-        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        row.Children.Add(Typography.Text(LocalizedText.Get(titleKey), "SecondaryCaptionTextStyle"));
-        var valueText = Typography.Text(value, monospaced ? "MonospaceCaptionTextStyle" : "BodyTextBlockStyle");
+        // 狭い幅（Compact）では、項目名の下に値を置く（値が切れない）。
+        var stacked = ResponsiveLayout.Current == WidthClass.Compact;
+        var row = new Grid { ColumnSpacing = Space.L, RowSpacing = Space.XXS, Padding = new Thickness(Space.M + 2, Space.S + 2, Space.M + 2, Space.S + 2) };
+        if (stacked)
+        {
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            row.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            row.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        }
+        else
+        {
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(130) });
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        }
+
+        row.Children.Add(Typography.Text(LocalizedText.Get(titleKey), TextStyles.SecondaryCaption));
+        var valueText = Typography.Text(value, monospaced ? TextStyles.Monospace : TextStyles.Body);
         valueText.IsTextSelectionEnabled = true;
-        Grid.SetColumn(valueText, 1);
+        Grid.SetColumn(valueText, stacked ? 0 : 1);
+        Grid.SetRow(valueText, stacked ? 1 : 0);
         row.Children.Add(valueText);
         rows.Children.Add(row);
     }

@@ -15,5 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProjectZD8.Data\ProjectZD8.Data.csproj" />
+    <ProjectReference Include="..\ProjectZD8.Diagnostics\ProjectZD8.Diagnostics.csproj" />
   </ItemGroup>
 </Project>

@@ -20,5 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ProjectZD8.Domain\ProjectZD8.Domain.csproj" />
     <ProjectReference Include="..\ProjectZD8.Application\ProjectZD8.Application.csproj" />
+    <ProjectReference Include="..\ProjectZD8.Diagnostics\ProjectZD8.Diagnostics.csproj" />
   </ItemGroup>
 </Project>

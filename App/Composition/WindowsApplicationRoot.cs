@@ -10,6 +10,7 @@ using ProjectZD8.Application.LogHistory.State;
 using ProjectZD8.Application.Maintenance.State;
 using ProjectZD8.Application.Settings.State;
 using ProjectZD8.Application.VehicleManagement.State;
+using ProjectZD8.Diagnostics;
 using ProjectZD8ForWindows.Platform.Windows.Features.DeviceConnection.Presentation;
 using ProjectZD8ForWindows.Platform.Windows.Features.Settings.Presentation;
 
@@ -35,7 +36,11 @@ namespace ProjectZD8ForWindows.AppRoot.Composition;
 /// <param name="AdapterArrivalPrompt">到来したアダプターについて尋ねる InfoBar の表示モデル。</param>
 /// <param name="DeliverProtocolActivation">プロトコル起動の URI をサインインの戻り受け口へ渡す処理。</param>
 /// <param name="SynchronizeAccountState">CloudKit の AccountSettings・AccountSessionRevocation を読み直す処理（前面に来たとき）。</param>
-/// <param name="Shutdown">終了時に保存先を閉じる処理（生ログの確定と索引の書出し）。</param>
+/// <param name="Shutdown">終了時に保存先を閉じる処理（生ログの確定と索引の書出し）と、診断ログの <c>app.exit</c>。</param>
+/// <param name="Diagnostics">
+/// 今の実行の診断ログ。始められなかったら null。<see cref="DiagnosticSession.PreviousRunCrashed"/> で前回の異常終了を、
+/// <see cref="DiagnosticSession.SetVerboseLogging"/> で「詳細ログ」スイッチを扱う（画面は後続の作業）。
+/// </param>
 public sealed record WindowsApplicationRoot(
     AuthenticationSessionModel Authentication,
     AccountSettingsModel AccountSettings,
@@ -54,4 +59,5 @@ public sealed record WindowsApplicationRoot(
     WindowsAdapterArrivalPromptModel AdapterArrivalPrompt,
     Action<Uri> DeliverProtocolActivation,
     Func<Task> SynchronizeAccountState,
-    Action Shutdown);
+    Action Shutdown,
+    DiagnosticSession? Diagnostics);

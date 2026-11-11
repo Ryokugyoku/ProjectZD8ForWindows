@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    診断ログ（docs/LOGGING_STRATEGY.md）。アプリの動きと不具合を調べるための JSON Lines のログを書きます。
+    OBD の生ログ（ログストア）とは別物です。Application・Data・Data.Windows・アプリ本体から参照し、Domain からは参照しません。
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>ProjectZD8.Diagnostics</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="ProjectZD8.Diagnostics.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      追加する NuGet はこれだけ。PrivateAssets="none" で、[LoggerMessage] のソース生成器（analyzers）を
+      このプロジェクトを参照するプロジェクトへも流す（参照元ごとにパッケージを足さずに済む）。
+    -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.14" PrivateAssets="none" />
+  </ItemGroup>
+</Project>

@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media.Animation;
 using ProjectZD8.Application.Authentication.Actions;
 using ProjectZD8.Application.Authentication.State;
@@ -252,6 +253,46 @@ public sealed partial class WindowsSettingsView : UserControl
             LocalizedText.Get("settings.subtitle")));
         page.Body.Children.Add(_layout);
         Content = page;
+        PinTableOfContents(page.Scroller);
+    }
+
+    /// <summary>
+    /// 目次をスクロールに合わせて画面の上に留めます。
+    /// </summary>
+    /// <remarks>
+    /// 責務: 目次の見かけの位置を、スクロールの量から GPU（Composition の式）で決めます。スクロールのたびに UI のスレッドで動かさない。
+    /// 目次の上端（見出しの下）を過ぎたら上に留まり、グループの並びの下端を越えないところで止まります。
+    /// 目次の元の位置と動ける幅は、配置が変わったとき（幅・見出しの高さが変わったとき）だけ数え直します。
+    /// </remarks>
+    /// <param name="scroller">ページのスクロール。</param>
+    private void PinTableOfContents(ScrollViewer scroller)
+    {
+        ElementCompositionPreview.SetIsTranslationEnabled(_tableOfContents, true);
+        var visual = ElementCompositionPreview.GetElementVisual(_tableOfContents);
+        var scroll = ElementCompositionPreview.GetScrollViewerManipulationPropertySet(scroller);
+        var bounds = visual.Compositor.CreatePropertySet();
+        bounds.InsertScalar("Top", 0);
+        bounds.InsertScalar("Max", 0);
+        var pin = visual.Compositor.CreateExpressionAnimation("Clamp(-scroll.Translation.Y - bounds.Top + gap, 0, bounds.Max)");
+        pin.SetReferenceParameter("scroll", scroll);
+        pin.SetReferenceParameter("bounds", bounds);
+        pin.SetScalarParameter("gap", (float)Space.L);
+        visual.StartAnimation("Translation.Y", pin);
+
+        void Measure()
+        {
+            if (scroller.Content is not UIElement content || _tableOfContents.ActualHeight <= 0)
+            {
+                return;
+            }
+
+            var top = _tableOfContents.TransformToVisual(content).TransformPoint(default).Y;
+            bounds.InsertScalar("Top", (float)top);
+            bounds.InsertScalar("Max", (float)Math.Max(0, _layout.ActualHeight - _tableOfContents.ActualHeight));
+        }
+
+        _layout.SizeChanged += (_, _) => Measure();
+        _tableOfContents.SizeChanged += (_, _) => Measure();
     }
 
     /// <summary>グループを 1 つ足します。</summary>

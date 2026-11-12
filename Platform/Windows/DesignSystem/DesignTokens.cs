@@ -227,6 +227,9 @@ public static class Metrics
     /// <summary>本文の最大の幅（これ以上広い行を作らない）。</summary>
     public const double ReadingMaxWidth = 720;
 
+    /// <summary>画面の高さがこれより低いと「低い画面」として扱う（見出しを畳む・一覧と詳細を片方ずつにする）。ウインドウの高さ 420〜560 前後。</summary>
+    public const double ShortViewHeight = 480;
+
     /// <summary>ページの中身の最大の幅（4K で最大化しても、これより広げず中央に置く）。</summary>
     public const double ContentMaxWidth = 1360;
 

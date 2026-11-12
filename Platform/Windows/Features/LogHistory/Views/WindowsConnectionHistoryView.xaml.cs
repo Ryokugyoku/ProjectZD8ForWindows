@@ -713,6 +713,10 @@ public sealed partial class WindowsConnectionHistoryView : UserControl, IBackNav
         header.Children.Add(_listMetrics);
         _listPane.Children.Add(header);
 
+        // 低い画面（ウインドウの高さ 420〜560 前後）では、車両の見出しを畳んで一覧に高さを譲る。
+        // 車両の名前はパンくずに、合計はアーカイブのカードにあるので、畳んでも情報は失われない。
+        _listPane.SizeChanged += (_, args) => Retained.SetVisible(header, args.NewSize.Height >= Metrics.ShortViewHeight - Space.XXXL * 2);
+
         BuildFilter();
         Grid.SetRow(_filter, 1);
         _listPane.Children.Add(_filter);

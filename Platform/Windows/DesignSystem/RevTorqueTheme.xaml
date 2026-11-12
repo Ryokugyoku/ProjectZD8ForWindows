@@ -58,10 +58,8 @@
                 <GradientStop Color="#170B2533" Offset="1" />
             </LinearGradientBrush>
             <!-- 主役のカード（ヒーロー）の塗り：白から、ごく薄いシアンへ -->
-            <LinearGradientBrush x:Key="RevTorqueHeroBrush" StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#FAFFFFFF" Offset="0" />
-                <GradientStop Color="#EEF2FBFD" Offset="1" />
-            </LinearGradientBrush>
+            <!-- 主役のカードの面は単色（グラデーションは大きな面の伸び縮みで描き直しが重いので、縁の発光だけを残す）。 -->
+            <SolidColorBrush x:Key="RevTorqueHeroBrush" Color="#F4F8FCFE" />
             <!-- 計器の弧・強調の線：シアン → オレンジ（ピーク） -->
             <LinearGradientBrush x:Key="RevTorqueSignalBrush" StartPoint="0,0.5" EndPoint="1,0.5">
                 <GradientStop Color="#FF007DA6" Offset="0" />
@@ -126,10 +124,8 @@
                 <GradientStop Color="#1AFFFFFF" Offset="0.45" />
                 <GradientStop Color="#1AFFFFFF" Offset="1" />
             </LinearGradientBrush>
-            <LinearGradientBrush x:Key="RevTorqueHeroBrush" StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#E6082033" Offset="0" />
-                <GradientStop Color="#CC0C1822" Offset="1" />
-            </LinearGradientBrush>
+            <!-- 主役のカードの面は単色（グラデーションは大きな面の伸び縮みで描き直しが重いので、縁の発光だけを残す）。 -->
+            <SolidColorBrush x:Key="RevTorqueHeroBrush" Color="#DB0A1C2B" />
             <LinearGradientBrush x:Key="RevTorqueSignalBrush" StartPoint="0,0.5" EndPoint="1,0.5">
                 <GradientStop Color="#FF038AA0" Offset="0" />
                 <GradientStop Color="#FF05C7E6" Offset="0.7" />

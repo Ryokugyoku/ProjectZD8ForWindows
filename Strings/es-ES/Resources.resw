@@ -3802,9 +3802,17 @@ Domina la conducción.</value>
     <value>¿Eliminar este registro de mantenimiento?</value>
     <comment>windows.maintenance.delete.title</comment>
   </data>
+  <data name="windows_maintenance_eyebrow" xml:space="preserve">
+    <value>REGISTRO DE MANTENIMIENTO</value>
+    <comment>windows.maintenance.eyebrow</comment>
+  </data>
   <data name="windows_maintenance_new" xml:space="preserve">
     <value>Nuevo registro</value>
     <comment>windows.maintenance.new</comment>
+  </data>
+  <data name="windows_maintenance_records" xml:space="preserve">
+    <value>Registros</value>
+    <comment>windows.maintenance.records</comment>
   </data>
   <data name="windows_nav_tab_connection_history" xml:space="preserve">
     <value>Historial</value>

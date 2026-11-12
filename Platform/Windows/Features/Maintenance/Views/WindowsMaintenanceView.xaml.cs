@@ -65,14 +65,27 @@ public sealed partial class WindowsMaintenanceView : UserControl
             CollapseMode = SplitCollapseMode.Single,
             ShowsSecondary = true,
         };
+        // ほかの画面と同じ見出し（記号・Eyebrow・題・副題）を上に置き、その下に一覧と詳細を並べる。
+        var header = new ScreenHeader(
+            FluentSymbol.Repair,
+            LocalizedText.Get("windows.maintenance.eyebrow"),
+            LocalizedText.Get("sidebar.maintenance"),
+            LocalizedText.Get("maintenance.subtitle"));
+        Root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        Root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        Root.Children.Add(header);
+        Grid.SetRow(_split, 1);
         Root.Children.Add(_split);
 
         // ほかの画面（PageScaffold）と同じ外周の余白にそろえる。一覧の面がナビの縁や窓の縁に貼り付かないように。
+        // 高さが低い（420 前後）ときは見出しを畳んで、一覧に高さを譲る。
         ResponsiveLayout.Bind(this, widthClass =>
         {
             var gutter = Space.PageGutter(widthClass);
             Root.Padding = new Thickness(gutter, gutter * 0.75, gutter, gutter);
+            header.Margin = new Thickness(0, 0, 0, Space.Section(widthClass));
         });
+        SizeChanged += (_, args) => Retained.SetVisible(header, args.NewSize.Height >= Metrics.ShortViewHeight);
         Loaded += (_, _) =>
         {
             _model.PropertyChanged += OnModelChanged;
@@ -194,9 +207,9 @@ public sealed partial class WindowsMaintenanceView : UserControl
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var titles = new StackPanel { Spacing = Space.XXS };
-        titles.Children.Add(Typography.Text(LocalizedText.Get("sidebar.maintenance"), TextStyles.CardTitle));
-        titles.Children.Add(Typography.Text(LocalizedText.Get("maintenance.subtitle"), TextStyles.SecondaryCaption));
+        // 題はページの見出しに出すので、一覧の頭は「記録」の小見出しと操作だけにする。
+        var titles = Typography.Text(LocalizedText.Get("windows.maintenance.records"), TextStyles.CardTitle);
+        titles.VerticalAlignment = VerticalAlignment.Center;
         head.Children.Add(titles);
         var create = NewRecordButton(state);
         Grid.SetColumn(create, 1);

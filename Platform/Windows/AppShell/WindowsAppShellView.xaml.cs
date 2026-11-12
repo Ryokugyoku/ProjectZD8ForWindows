@@ -74,8 +74,8 @@ public sealed partial class WindowsAppShellView : UserControl
     /// <summary>下のタブ帯のタブです（行き先ごとに 1 回だけ作って使い回す）。</summary>
     private readonly Dictionary<WindowsSidebarDestination, BottomTab> _tabs = [];
 
-    /// <summary>タイトルバーの押せる領域の数え直しを頼んでいるかです。</summary>
-    private bool _titleBarRegionsPending;
+    /// <summary>タイトルバーの押せる領域の登録を、配置が落ち着くまで待つ時計です。</summary>
+    private Microsoft.UI.Dispatching.DispatcherQueueTimer? _titleBarRegionsTimer;
 
     /// <summary>下のタブ帯の 1 つ分の要素です。</summary>
     /// <param name="Button">押せる面。</param>
@@ -470,7 +470,7 @@ public sealed partial class WindowsAppShellView : UserControl
         // Compact のナビは下のタブ帯。タイトルバーの ≡ は出さず、重ねて開くペインは使わない。
         Retained.SetVisible(BottomBar, compact);
         Retained.SetVisible(PaneToggleButton, !compact);
-        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, UpdateTitleBarRegions);
+        ScheduleTitleBarRegions();
         Retained.SetVisible(BrandTexts, !compact);
         Retained.SetVisible(BrandTagline, widthClass >= WidthClass.Expanded);
         Retained.SetVisible(ConnectionStatus, !compact);
@@ -491,20 +491,21 @@ public sealed partial class WindowsAppShellView : UserControl
     /// タイトルバーの押せる領域（戻る・ナビの開閉・接続コンソール）を OS へ伝えます。
     /// </summary>
     /// <remarks>責務: 押せる要素の位置を物理ピクセルの矩形にし、前回と違うときだけ伝えます。キャプションボタンの幅も合わせます。</remarks>
-    /// <summary>タイトルバーの押せる領域の数え直しを、次の配置のあと 1 回にまとめて頼みます。</summary>
+    /// <summary>タイトルバーの押せる領域の数え直しを、配置が落ち着いたあと 1 回にまとめて頼みます。</summary>
     private void ScheduleTitleBarRegions()
     {
-        if (_titleBarRegionsPending)
+        // 押せる領域の登録は OS（DWM）への呼び出しで重い。幅を変えている間や起動直後の配置が続く間は待ち、
+        // 配置が落ち着いてから 1 回だけ登録する（待つ間はタイトルバーのボタンが押せないが、幅を変えている最中だけ）。
+        if (_titleBarRegionsTimer is null)
         {
-            return;
+            _titleBarRegionsTimer = DispatcherQueue.CreateTimer();
+            _titleBarRegionsTimer.Interval = TimeSpan.FromMilliseconds(250);
+            _titleBarRegionsTimer.IsRepeating = false;
+            _titleBarRegionsTimer.Tick += (_, _) => UpdateTitleBarRegions();
         }
 
-        _titleBarRegionsPending = true;
-        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-        {
-            _titleBarRegionsPending = false;
-            UpdateTitleBarRegions();
-        });
+        _titleBarRegionsTimer.Stop();
+        _titleBarRegionsTimer.Start();
     }
 
     private void UpdateTitleBarRegions()
@@ -638,7 +639,7 @@ public sealed partial class WindowsAppShellView : UserControl
     {
         var canGoBack = _backTarget?.CanGoBack == true;
         Retained.SetVisible(BackButton, canGoBack);
-        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, UpdateTitleBarRegions);
+        ScheduleTitleBarRegions();
     }
 
     /// <summary>マウスの戻るボタン（XButton1）を押したときの処理です。</summary>

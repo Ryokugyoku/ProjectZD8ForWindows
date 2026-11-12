@@ -3802,9 +3802,17 @@
     <value>この整備記録を削除しますか？</value>
     <comment>windows.maintenance.delete.title</comment>
   </data>
+  <data name="windows_maintenance_eyebrow" xml:space="preserve">
+    <value>MAINTENANCE LOG</value>
+    <comment>windows.maintenance.eyebrow</comment>
+  </data>
   <data name="windows_maintenance_new" xml:space="preserve">
     <value>新しい記録</value>
     <comment>windows.maintenance.new</comment>
+  </data>
+  <data name="windows_maintenance_records" xml:space="preserve">
+    <value>記録</value>
+    <comment>windows.maintenance.records</comment>
   </data>
   <data name="windows_nav_tab_connection_history" xml:space="preserve">
     <value>履歴</value>

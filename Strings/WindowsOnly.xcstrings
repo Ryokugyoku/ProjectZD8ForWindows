@@ -451,6 +451,22 @@
         "es" : { "stringUnit" : { "state" : "translated", "value" : "Desactivado" } },
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "オフ" } }
       }
+    },
+    "windows.maintenance.eyebrow" : {
+      "comment" : "Windows 版だけ。整備の画面の見出しの上の小さな英字（ほかの画面の VEHICLE COLLECTION などと同じ役割）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "MAINTENANCE LOG" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "REGISTRO DE MANTENIMIENTO" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "MAINTENANCE LOG" } }
+      }
+    },
+    "windows.maintenance.records" : {
+      "comment" : "Windows 版だけ。整備の画面の、記録の一覧の小見出し。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Records" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Registros" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "記録" } }
+      }
     }
   },
   "version" : "1.0"

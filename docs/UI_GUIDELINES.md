@@ -5,7 +5,7 @@
 
 ## 1. 方針
 
-- **先進的・計器的**。Mica の背景に、薄い層のカード（半透明の塗り＋細い線＋上辺だけの控えめな発光）。数値は大きく等幅。余白はゆったり。
+- **先進的・計器的**。Mica の背景に、薄い層のカード（半透明の単色の塗り＋1px の単色の線）。発光（グラデーションの縁）は各画面の主役のカード 1 枚だけで、面の塗りは単色（大きな面のグラデーションは伸び縮みのたびに描き直しが重い。実測で幅を変える間の CPU が約 4 ポイント増えた）。先進的な見た目は色・余白・文字・動きで出す。数値は大きく等幅。余白はゆったり。
 - **色**：アイコンの紺＋シアン（主）＋オレンジ（小さな強調）。シアンは選択・フォーカス・主の操作・分析の深さだけ。オレンジは注意や信号のピークだけ（接続・正常には使わない）。緑は「接続中・記録中・完了」をアプリの状態が裏付けるときだけ。
 - **明・暗・ハイコントラストの 3 つで成立させる**。色は必ずトークンから引く（ハイコントラストではシステムの色に置き換わる）。
 - **軽く**：要素は作り直さず値だけ差し替える。更新は 1 フレームに 1 回まで。動きは GPU（Composition）で動くものだけ。
@@ -94,6 +94,8 @@ void Update() { var state = ...; Retained.SetText(_name, state.Name); StatusPill
 ## 6. シェル
 
 - タイトルバーまで伸ばした 48 の行に：戻る（戻れるときだけ）・ナビの開閉（≡。Medium 以上のみ）・ブランド・**接続コンソール**（点・アダプター名・状態・「ライブを表示」・接続／切断。ホームでは状態だけ）。狭いほど文字を省く（ツールチップに残る）。
+- タイトルバーの押せる領域（`InputNonClientPointerSource` の Passthrough）は OS への重い呼び出し。配置が落ち着いてから 250ms 後に 1 回だけ登録する（`ScheduleTitleBarRegions`）。毎回の SizeChanged や起動直後に登録すると、起動が約 100ms、幅を変える間の CPU が数ポイント悪化した（実測）。
+- 最初に見えないもの（Compact の下のタブ帯）は、その幅になったときに初めて作る。
 - **ナビは幅クラスで形が変わる**（`ApplyWidthClass` が切り替わったときだけ値を差し替える。木は作り直さない）。Medium：記号だけのレール、Expanded / Wide：題つきのペイン、**Compact：画面の下のタブ帯**（`BottomBar`、高さ 48）。
   - タブ帯は行き先すべて（ホーム・ライブ・履歴・整備・ガレージ・設定）を等間隔に並べ、記号＋短い題（切れるときは `…`、ツールチップに Ctrl+n 付きの題）。1 回押すだけで移る。選択中はシアンの印（上辺の細い線が Composition で伸びて現れる。`Motion.IsEnabled` が false なら即時）と色。履歴の中断バッジも出す。
   - 選択中の行き先は 1 つ（`SelectedDestination`）。NavigationView の選択とタブの選択の両方を `Select` / `ShowDestination` が合わせるので、幅クラスが変わってもずれない。Compact では NavigationView のペインは使わない（開かない）。
@@ -108,6 +110,7 @@ void Update() { var state = ...; Retained.SetText(_name, state.Name); StatusPill
 - 色・余白・角丸・文字の大きさの直値（`new Thickness(26)`、`Color.FromArgb(...)`、`FontSize = 17`）。トークンを使う。足りなければトークンを足す。
 - 画面ごとの `SizeChanged` で木を作り直すこと。幅で分けたいときは `ResponsiveLayout.Bind`。
 - モデルの知らせのたびの `Children.Clear()`。1 秒に何度も来る知らせを束ねずに描くこと。
+- 大きな面の塗りにグラデーションを使うこと（縁の細い発光は主役のカード 1 枚まで）。幅を変えている間に毎回 OS へ何かを登録すること（タイトルバーの領域などは落ち着いてから 1 回）。
 - Acrylic を画面に使うこと（重ねて開くナビ・メニュー・フライアウトなど、システムが使う所だけ）。`ThemeShadow` / `DropShadow` をカードに付けること（影はダイアログ・フライアウトなどシステムの重なりだけ）。
 - `Storyboard` で常に動き続けるアニメーション（脈打つ点など）。動きは ThemeTransition・Composition の暗黙アニメーションで、出入りや配置の変化のときだけ。`Motion.IsEnabled` が false なら動かさない。
 - 文字を足すとき `Strings/WindowsOnly.xcstrings` に日・英・西をそろえずに足すこと（足したら `scripts/ConvertXcstrings.cs` で .resw を作り直す）。
@@ -118,7 +121,8 @@ void Update() { var state = ...; Retained.SetText(_name, state.Name); StatusPill
 2026-11-11 に統合して実機（640 / 900 / 1280 / 1920、高さ 420、明・暗、日・英・西）で確かめた形。作り直すときもこれに合わせる。
 
 **共通**
-- 画面の頭は `ScreenHeader`（記号のタイル＋Eyebrow＋題＋副題）。ホームだけは記号なしの Display の見出し。整備は一覧の面の頭が見出しを兼ねる。
+- 画面の頭は `ScreenHeader`（記号のタイル＋Eyebrow＋題＋副題）。ホームだけは記号なしの Display の見出し。整備・車両の登録の確認も同じ見出しを使う。
+- 低い画面（画面の高さ `Metrics.ShortViewHeight` 480 未満。ウインドウの高さ 420〜560 前後）では、一覧のある画面は見出し（整備のページ見出し・履歴の車両の見出し）を畳んで一覧に高さを譲る。畳んだ情報はパンくずや別のカードに残っているものに限る。
 - 外周の余白は `Space.PageGutter`（`PageScaffold` か、整備のように自前で付ける）。シェルの InfoBar（前回の異常終了など）も同じ余白で並ぶ。
 - 文字の短い名前：Compact の下のタブは「ライブ」「履歴」（`windows.nav.tab.*`）。ペインの題は長い訳で末尾を「…」に（全文はツールチップ）。スイッチのオン／オフはアプリの言語の文字（`windows.toggle.*`）。
 
@@ -143,11 +147,11 @@ void Update() { var state = ...; Retained.SetText(_name, state.Name); StatusPill
 - PID 設定のダイアログ：一覧は `VirtualList`、高さはウインドウに合わせて 220〜560。
 
 **整備**（`WindowsMaintenanceView`・`WindowsMaintenanceEditorView`）
-- タイムラインと詳細：`AdaptiveSplit`（タイムライン 340、`SecondaryFirst`、Expanded 以上で左右、Medium 以下は `Single`）。外周に `Space.PageGutter`。
+- 見出し（`ScreenHeader`：MAINTENANCE LOG・整備・副題。低い画面では畳む）→ タイムラインと詳細：`AdaptiveSplit`（タイムライン 340、`SecondaryFirst`、Expanded 以上で左右、Medium 以下は `Single`）。タイムラインの頭は「記録」の小見出しと新規・同期のボタン。外周に `Space.PageGutter`。
 - 編集：入力は `AdaptiveGrid`（最小 240）、写真は `Tiles()`。ツールバー（削除・取消・保存）は Compact で記号だけ。
 
 **設定**（`WindowsSettingsView`）
-- 中身の最大幅 1000。グループ（全般・接続・データと同期・診断・アカウント）ごとに見出し、Expanded 以上は左に目次（押すとそのグループへ移る）。行は作り直さず値だけ差し替える。Compact は行の操作を下の段へ。
+- 中身の最大幅 1000。グループ（全般・接続・データと同期・診断・アカウント）ごとに見出し、Expanded 以上は左に目次（押すとそのグループへ移る。スクロールしても上に留まる。留める位置は Composition の式で GPU が決め、スクロールのたびに UI のスレッドで動かさない）。行は作り直さず値だけ差し替える。Compact は行の操作を下の段へ。
 
 **ログイン**（`WindowsLoginView`）
 - 常に暗い外観。Expanded 以上（または Medium で高さが十分）は紹介とサインインのパネルを左右、それ以外は積む。

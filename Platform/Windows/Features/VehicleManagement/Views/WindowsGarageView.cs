@@ -406,9 +406,12 @@ public sealed partial class WindowsGarageView : UserControl
     {
         var scaffold = new PageScaffold(Metrics.ReadingMaxWidth + Space.XXXL * 4);
         var page = scaffold.Body;
-        page.Children.Add(new GlyphLabel(FluentSymbol.Car, LocalizedText.Get("garage.identification.eyebrow"), "BodyStrongTextBlockStyle", DesignTokens.Foreground(Tone.Accent)));
-        page.Children.Add(Typography.Text(LocalizedText.Get("garage.identification.title"), "TitleTextBlockStyle"));
-        page.Children.Add(Typography.Text(LocalizedText.Get("garage.identification.description"), "SecondaryBodyTextStyle"));
+        // ほかの画面と同じ見出し（記号のタイル・Eyebrow・題・副題）。
+        page.Children.Add(new ScreenHeader(
+            FluentSymbol.Car,
+            LocalizedText.Get("garage.identification.eyebrow"),
+            LocalizedText.Get("garage.identification.title"),
+            LocalizedText.Get("garage.identification.description")));
         var vin = Typography.Text(snapshot.Vin ?? snapshot.ObdIdentifier ?? "—", "SubtitleTextBlockStyle");
         vin.FontFamily = new FontFamily("Cascadia Mono, Consolas");
         vin.IsTextSelectionEnabled = true;
@@ -437,10 +440,10 @@ public sealed partial class WindowsGarageView : UserControl
 
         page.Children.Add(SurfaceCard.Create(fields));
         var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.M };
-        var cancel = new Button { Content = LocalizedText.Get("garage.cancel") };
+        var cancel = new Button { Content = LocalizedText.Get("garage.cancel"), MinHeight = Metrics.ControlHeight };
         cancel.Click += (_, _) => _model.Send(new VehicleManagementAction.RegistrationCancelled());
         actions.Children.Add(cancel);
-        var confirm = new Button { Content = LocalizedText.Get("garage.identification.confirm"), Style = DesignTokens.Style("AccentButtonStyle") };
+        var confirm = new Button { Content = LocalizedText.Get("garage.identification.confirm"), Style = DesignTokens.Style("AccentButtonStyle"), MinHeight = Metrics.ControlHeight };
         confirm.Click += (_, _) => _model.Send(new VehicleManagementAction.IdentificationConfirmed());
         actions.Children.Add(confirm);
         page.Children.Add(actions);

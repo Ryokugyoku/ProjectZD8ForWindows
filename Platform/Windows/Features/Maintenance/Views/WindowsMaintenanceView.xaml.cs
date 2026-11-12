@@ -263,7 +263,15 @@ public sealed partial class WindowsMaintenanceView : UserControl
                 DispatcherQueue.TryEnqueue(() => _model.Send(new MaintenanceAction.KindFilterChanged(kind)));
             }
         };
-        TimelineHeader.Children.Add(filter);
+        // 一覧の欄が狭いと（スペイン語の「Mantenimiento ligero」など）項目が切れるので、横にスクロールできるようにする。
+        TimelineHeader.Children.Add(new ScrollViewer
+        {
+            Content = filter,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollMode = ScrollMode.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollMode = ScrollMode.Disabled,
+        });
 
         if (state.Phase == MaintenanceStatePhase.Syncing)
         {

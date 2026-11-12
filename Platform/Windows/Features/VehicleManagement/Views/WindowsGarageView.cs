@@ -345,7 +345,8 @@ public sealed partial class WindowsGarageView : UserControl
         names.Children.Add(Typography.Text(vehicle.Manufacturer.Length == 0 ? LocalizedText.Get("garage.unknown_manufacturer") : vehicle.Manufacturer, "SecondaryBodyTextStyle"));
         names.Children.Add(Typography.Text(vehicle.DisplayIdentifier, "MonospaceCaptionTextStyle"));
         stack.Children.Add(names);
-        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.S };
+        // 幅の狭いカードで（スペイン語など）3 つ目のボタンが切れないよう、収まらなければ次の行へ送る。
+        var actions = new FlowPanel();
         var edit = new Button { Content = new GlyphLabel(FluentSymbol.Edit, LocalizedText.Get("garage.edit")), Style = DesignTokens.Style("AccentButtonStyle") };
         edit.Click += (_, _) => _model.Send(new VehicleManagementAction.EditRequested(vehicle.Id));
         actions.Children.Add(edit);

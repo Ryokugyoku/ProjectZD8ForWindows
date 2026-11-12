@@ -41,6 +41,9 @@ public sealed partial class WindowsMaintenanceView : UserControl
     /// <summary>最後に描いた時系列の鍵です（編集中の入力のたびに一覧を作り直さないため）。</summary>
     private string? _timelineKey;
 
+    /// <summary>一覧（副）と編集・概要（主）を左右または片方だけで出す面です。</summary>
+    private readonly AdaptiveSplit _split;
+
     /// <summary>削除を確かめている記録です。</summary>
     private MaintenanceRecord? _deletionCandidate;
 
@@ -51,6 +54,38 @@ public sealed partial class WindowsMaintenanceView : UserControl
         _model = model;
         InitializeComponent();
         _gate = new RenderGate(this);
+        Root.Children.Clear();
+        _split = new AdaptiveSplit
+        {
+            Primary = DetailHost,
+            Secondary = TimelinePane,
+            SecondaryFirst = true,
+            SecondaryWidth = 340,
+            CollapseBelow = WidthClass.Expanded,
+            CollapseMode = SplitCollapseMode.Single,
+            ShowsSecondary = true,
+        };
+        // ほかの画面と同じ見出し（記号・Eyebrow・題・副題）を上に置き、その下に一覧と詳細を並べる。
+        var header = new ScreenHeader(
+            FluentSymbol.Repair,
+            LocalizedText.Get("windows.maintenance.eyebrow"),
+            LocalizedText.Get("sidebar.maintenance"),
+            LocalizedText.Get("maintenance.subtitle"));
+        Root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        Root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        Root.Children.Add(header);
+        Grid.SetRow(_split, 1);
+        Root.Children.Add(_split);
+
+        // ほかの画面（PageScaffold）と同じ外周の余白にそろえる。一覧の面がナビの縁や窓の縁に貼り付かないように。
+        // 高さが低い（420 前後）ときは見出しを畳んで、一覧に高さを譲る。
+        ResponsiveLayout.Bind(this, widthClass =>
+        {
+            var gutter = Space.PageGutter(widthClass);
+            Root.Padding = new Thickness(gutter, gutter * 0.75, gutter, gutter);
+            header.Margin = new Thickness(0, 0, 0, Space.Section(widthClass));
+        });
+        SizeChanged += (_, args) => Retained.SetVisible(header, args.NewSize.Height >= Metrics.ShortViewHeight);
         Loaded += (_, _) =>
         {
             _model.PropertyChanged += OnModelChanged;
@@ -74,7 +109,7 @@ public sealed partial class WindowsMaintenanceView : UserControl
         dialog.Sync(key is not null, key, xamlRoot, () => new ContentDialog
         {
             Title = LocalizedText.Get("windows.maintenance.delete.title"),
-            Content = Typography.Text(LocalizedText.Format("windows.maintenance.delete.message", title ?? string.Empty), "BodyTextBlockStyle"),
+            Content = Typography.Text(LocalizedText.Format("windows.maintenance.delete.message", title ?? string.Empty), TextStyles.Body),
             PrimaryButtonText = LocalizedText.Get("maintenance.delete"),
             PrimaryButtonStyle = DesignTokens.Style("DangerButtonStyle"),
             CloseButtonText = LocalizedText.Get("maintenance.cancel"),
@@ -115,6 +150,7 @@ public sealed partial class WindowsMaintenanceView : UserControl
             DetailHost.Child = Overview(state);
         }
 
+        _split.ShowsSecondary = state.Draft is null;
         SelectCurrentRecord(state);
         _isRendering = false;
         SyncDeletionDialog(_deletionDialog, XamlRoot, _deletionCandidate?.Title, _deletionCandidate?.Id, confirmed =>
@@ -167,13 +203,13 @@ public sealed partial class WindowsMaintenanceView : UserControl
     private void RenderTimeline(MaintenanceState state)
     {
         TimelineHeader.Children.Clear();
-        var head = new Grid { ColumnSpacing = 6 };
+        var head = new Grid { ColumnSpacing = Space.S };
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var titles = new StackPanel { Spacing = 3 };
-        titles.Children.Add(Typography.Text(LocalizedText.Get("sidebar.maintenance"), "SubtitleTextBlockStyle"));
-        titles.Children.Add(Typography.Text(LocalizedText.Get("maintenance.subtitle"), "SecondaryCaptionTextStyle"));
+        // 題はページの見出しに出すので、一覧の頭は「記録」の小見出しと操作だけにする。
+        var titles = Typography.Text(LocalizedText.Get("windows.maintenance.records"), TextStyles.CardTitle);
+        titles.VerticalAlignment = VerticalAlignment.Center;
         head.Children.Add(titles);
         var create = NewRecordButton(state);
         Grid.SetColumn(create, 1);
@@ -190,7 +226,7 @@ public sealed partial class WindowsMaintenanceView : UserControl
 
         if (state.Vehicles.Count == 0)
         {
-            TimelineHeader.Children.Add(new GlyphLabel(FluentSymbol.Car, LocalizedText.Get("maintenance.vehicle.empty"), "SecondaryCaptionTextStyle"));
+            TimelineHeader.Children.Add(new GlyphLabel(FluentSymbol.Car, LocalizedText.Get("maintenance.vehicle.empty"), TextStyles.SecondaryCaption));
         }
         else
         {
@@ -231,14 +267,14 @@ public sealed partial class WindowsMaintenanceView : UserControl
 
         if (state.Phase == MaintenanceStatePhase.Syncing)
         {
-            var syncing = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
-            syncing.Children.Add(new ProgressRing { IsActive = true, Width = 16, Height = 16 });
-            syncing.Children.Add(Typography.Text(LocalizedText.Get("maintenance.syncing"), "SecondaryCaptionTextStyle"));
+            var syncing = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.S };
+            syncing.Children.Add(new ProgressRing { IsActive = true, Width = Space.L, Height = Space.L });
+            syncing.Children.Add(Typography.Text(LocalizedText.Get("maintenance.syncing"), TextStyles.SecondaryCaption));
             TimelineHeader.Children.Add(syncing);
         }
         else if (state.FailureKey is { } failureKey && state.Draft is null)
         {
-            TimelineHeader.Children.Add(new GlyphLabel(FluentSymbol.Cloud, LocalizedText.Get(failureKey), "CaptionTextBlockStyle", DesignTokens.Foreground(Tone.Caution)));
+            TimelineHeader.Children.Add(new GlyphLabel(FluentSymbol.Cloud, LocalizedText.Get(failureKey), TextStyles.Caption, DesignTokens.Foreground(Tone.Caution)));
         }
 
         RecordList.Items.Clear();
@@ -289,14 +325,14 @@ public sealed partial class WindowsMaintenanceView : UserControl
     /// <returns>一覧の項目。</returns>
     private ListViewItem RecordRow(MaintenanceRecord record)
     {
-        var grid = new Grid { ColumnSpacing = 11, Padding = new Thickness(0, 8, 0, 8) };
+        var grid = new Grid { ColumnSpacing = Space.M, Padding = new Thickness(0, Space.S, 0, Space.S) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.Children.Add(IconTile.Create(KindGlyph(record.Kind), KindTone(record.Kind), 32));
-        var texts = new StackPanel { Spacing = 2 };
-        texts.Children.Add(Typography.Text(record.Title, "BodyStrongTextBlockStyle", wraps: false));
-        texts.Children.Add(Typography.Text(DateText.DateOnly(record.PerformedAt), "SecondaryCaptionTextStyle"));
-        texts.Children.Add(Typography.Text(LocalizedText.Format("%lld · %lld", record.WorkItems.Count, record.Photos.Count), "SecondaryCaptionTextStyle"));
+        grid.Children.Add(IconTile.Create(KindGlyph(record.Kind), KindTone(record.Kind), Metrics.IconTileSmall));
+        var texts = new StackPanel { Spacing = Space.XXS };
+        texts.Children.Add(Typography.Text(record.Title, TextStyles.BodyStrong, wraps: false));
+        texts.Children.Add(Typography.Text(DateText.DateOnly(record.PerformedAt), TextStyles.SecondaryCaption));
+        texts.Children.Add(Typography.Text(LocalizedText.Format("%lld · %lld", record.WorkItems.Count, record.Photos.Count), TextStyles.SecondaryCaption));
         Grid.SetColumn(texts, 1);
         grid.Children.Add(texts);
         var id = record.Id;
@@ -353,22 +389,23 @@ public sealed partial class WindowsMaintenanceView : UserControl
     /// <summary>右側の概要（記録を選んでいないとき）を作ります。</summary>
     /// <param name="state">整備記録の状態。</param>
     /// <returns>概要。</returns>
-    private ScrollViewer Overview(MaintenanceState state)
+    private PageScaffold Overview(MaintenanceState state)
     {
-        var stack = new StackPanel { Spacing = 24, Padding = new Thickness(42), VerticalAlignment = VerticalAlignment.Center, MaxWidth = 720, HorizontalAlignment = HorizontalAlignment.Left };
-        stack.Children.Add(IconTile.Create(FluentSymbol.Repair, Tone.Accent, 72));
-        stack.Children.Add(Typography.Text(LocalizedText.Get("maintenance.overview.title"), "TitleTextBlockStyle"));
-        stack.Children.Add(Typography.Text(LocalizedText.Get("maintenance.overview.message"), "SecondaryBodyTextStyle"));
-        var buttons = new AdaptiveGrid { MinItemWidth = 240, Spacing = 14 };
+        var scaffold = new PageScaffold(Metrics.ReadingMaxWidth);
+        var stack = scaffold.Body;
+        stack.Children.Add(IconTile.Create(FluentSymbol.Repair, Tone.Accent, Metrics.IconTileHero));
+        stack.Children.Add(Typography.Text(LocalizedText.Get("maintenance.overview.title"), TextStyles.PageTitle));
+        stack.Children.Add(Typography.Text(LocalizedText.Get("maintenance.overview.message"), TextStyles.SecondaryBody));
+        var buttons = new AdaptiveGrid { MinItemWidth = 240 };
         foreach (var kind in MaintenanceKindRawValue.AllCases)
         {
-            var content = new Grid { ColumnSpacing = 14 };
+            var content = new Grid { ColumnSpacing = Space.M };
             content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            content.Children.Add(IconTile.Create(KindGlyph(kind), KindTone(kind), 40));
-            var texts = new StackPanel { Spacing = 4 };
-            texts.Children.Add(Typography.Text(LocalizedText.Get(kind.LocalizationKey()), "BodyStrongTextBlockStyle"));
-            texts.Children.Add(Typography.Text(LocalizedText.Get(kind == MaintenanceKind.Light ? "maintenance.kind.light.hint" : "maintenance.kind.heavy.hint"), "SecondaryCaptionTextStyle"));
+            content.Children.Add(IconTile.Create(KindGlyph(kind), KindTone(kind), Metrics.IconTileMedium));
+            var texts = new StackPanel { Spacing = Space.XS };
+            texts.Children.Add(Typography.Text(LocalizedText.Get(kind.LocalizationKey()), TextStyles.BodyStrong));
+            texts.Children.Add(Typography.Text(LocalizedText.Get(kind == MaintenanceKind.Light ? "maintenance.kind.light.hint" : "maintenance.kind.heavy.hint"), TextStyles.SecondaryCaption));
             Grid.SetColumn(texts, 1);
             content.Children.Add(texts);
             var button = new Button
@@ -376,7 +413,7 @@ public sealed partial class WindowsMaintenanceView : UserControl
                 Content = content,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                Padding = new Thickness(18),
+                Padding = new Thickness(Space.L),
                 IsEnabled = state.SelectedVehicleID is not null,
             };
             var selected = kind;
@@ -389,10 +426,10 @@ public sealed partial class WindowsMaintenanceView : UserControl
         stack.Children.Add(buttons);
         if (state.LastSynchronizedAt is { } date)
         {
-            stack.Children.Add(new GlyphLabel(FluentSymbol.Cloud, DateText.DateAndMinute(date), "SecondaryCaptionTextStyle"));
+            stack.Children.Add(new GlyphLabel(FluentSymbol.Cloud, DateText.DateAndMinute(date), TextStyles.SecondaryCaption));
         }
 
-        return new ScrollViewer { Content = stack, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        return scaffold;
     }
 
     /// <summary>整備の種類の記号です。</summary>

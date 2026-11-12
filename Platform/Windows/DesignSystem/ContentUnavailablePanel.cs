@@ -14,16 +14,14 @@ public sealed partial class ContentUnavailablePanel : StackPanel
     /// <param name="description">説明。null なら省く。</param>
     public ContentUnavailablePanel(string glyph, string title, string? description = null)
     {
-        Spacing = 10;
-        Padding = new Thickness(24, 36, 24, 36);
+        Spacing = Space.M;
+        Padding = new Thickness(Space.XXL, 36, Space.XXL, 36);
         HorizontalAlignment = HorizontalAlignment.Stretch;
-        Children.Add(new FontIcon
-        {
-            Glyph = glyph,
-            FontSize = 40,
-            Foreground = DesignTokens.Foreground(Tone.Neutral),
-            HorizontalAlignment = HorizontalAlignment.Center,
-        });
+        var tile = IconTile.Create(glyph, Tone.Neutral, 64);
+        tile.CornerRadius = new CornerRadius(32);
+        tile.HorizontalAlignment = HorizontalAlignment.Center;
+        tile.Margin = new Thickness(0, 0, 0, Space.XS);
+        Children.Add(tile);
         var titleText = Typography.Text(title, "SubtitleTextBlockStyle");
         titleText.HorizontalAlignment = HorizontalAlignment.Center;
         titleText.HorizontalTextAlignment = TextAlignment.Center;
@@ -33,7 +31,7 @@ public sealed partial class ContentUnavailablePanel : StackPanel
             var body = Typography.Text(description, "SecondaryBodyTextStyle");
             body.HorizontalAlignment = HorizontalAlignment.Center;
             body.HorizontalTextAlignment = TextAlignment.Center;
-            body.MaxWidth = 520;
+            body.MaxWidth = Metrics.ReadingMaxWidth * 0.75;
             Children.Add(body);
         }
     }

@@ -5,117 +5,158 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-      iOS 版の macOS サイドバーの代わりに、Windows 標準の NavigationView（左のペイン）を使う。
-      - 項目は 1 行（補足はツールチップ）。設定は Windows の慣習どおりペインの下（フッター）に置く。
-      - 画面の中の階層（履歴の一覧 → 詳細 → 分析）は、ペインの戻るボタン・Alt+←・マウスの戻るボタンで戻れる。
+      サインイン後のシェル（docs/UI_GUIDELINES.md の「シェル」）。
+      - 1 行目はタイトルバーまで伸ばしたカスタムのタイトルバー：戻る・ナビの開閉・ブランド・接続コンソール（全画面共通の接続・切断・ライブ表示）。
+      - 2 行目は NavigationView。表示の形は幅クラスで決める（Wide/Expanded：題つきのペイン、Medium：記号だけのレール、Compact：ナビは画面の下のタブ帯）。
+      - 画面の中の階層（履歴の一覧 → 詳細 → 分析）は、タイトルバーの戻る・Alt+←・マウスの戻るボタンで 1 段戻れる。
     -->
-    <NavigationView
-        x:Name="Navigation"
-        PaneDisplayMode="Left"
-        IsBackButtonVisible="Collapsed"
-        IsBackEnabled="False"
-        IsSettingsVisible="False"
-        IsPaneToggleButtonVisible="True"
-        IsTitleBarAutoPaddingEnabled="False"
-        OpenPaneLength="248"
-        CompactModeThresholdWidth="720"
-        ExpandedModeThresholdWidth="1080"
-        SelectionChanged="OnSelectionChanged"
-        BackRequested="OnBackRequested">
+    <Grid x:Name="ShellRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <NavigationView.PaneHeader>
-            <Grid Padding="10,2,8,6" ColumnSpacing="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid Width="32" Height="32">
-                    <Border CornerRadius="9" BorderThickness="1" BorderBrush="{ThemeResource RevTorqueAccentStrokeBrush}">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#FF04131F" Offset="0" />
-                                <GradientStop Color="#FF06263B" Offset="1" />
-                            </LinearGradientBrush>
-                        </Border.Background>
-                    </Border>
-                    <FontIcon Glyph="&#xEC4A;" FontSize="15" Foreground="#FF05C7E6" />
-                    <Ellipse Width="4" Height="4" Fill="#FFFF9F2E" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,7,7,0" />
+        <!-- タイトルバー（ドラッグできる領域。ボタンとコンソールだけは押せるように外す） -->
+        <Grid x:Name="TitleBar" Background="Transparent" Padding="4,0,0,0" ColumnSpacing="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition x:Name="CaptionInsetColumn" Width="138" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                <Button
+                    x:Name="BackButton"
+                    Style="{StaticResource ChromeButtonStyle}"
+                    Visibility="Collapsed"
+                    Click="OnBackButtonClicked"
+                    AutomationProperties.AutomationId="windows-shell-back">
+                    <FontIcon Glyph="&#xE72B;" FontSize="14" />
+                </Button>
+                <Button
+                    x:Name="PaneToggleButton"
+                    Style="{StaticResource ChromeButtonStyle}"
+                    Click="OnPaneToggleClicked"
+                    AutomationProperties.AutomationId="windows-shell-pane-toggle">
+                    <FontIcon Glyph="&#xE700;" FontSize="14" />
+                </Button>
+            </StackPanel>
+
+            <!-- ブランド：紺のタイルにシアンの記号とオレンジの点（アプリアイコンと同じ色の組） -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" Margin="6,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                <Grid Width="24" Height="24">
+                    <Border CornerRadius="7" BorderThickness="1" BorderBrush="{ThemeResource RevTorqueAccentStrokeBrush}" Background="{ThemeResource RevTorqueBrandTileBrush}" />
+                    <FontIcon Glyph="&#xEC4A;" FontSize="12" Foreground="{ThemeResource RevTorqueBrandGlyphBrush}" />
+                    <Ellipse Width="3" Height="3" Fill="{ThemeResource RevTorqueBrandDotBrush}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,5,0" />
                 </Grid>
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="0">
-                    <TextBlock Text="RevTorque Insight" Style="{StaticResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
-                    <TextBlock x:Name="BrandTagline" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" CharacterSpacing="60" TextTrimming="CharacterEllipsis" />
+                <StackPanel x:Name="BrandTexts" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="RevTorque Insight" Style="{StaticResource BodyStrongTextBlockStyle}" FontSize="13" VerticalAlignment="Center" />
+                    <TextBlock x:Name="BrandTagline" Style="{StaticResource CaptionTextBlockStyle}" FontSize="11" CharacterSpacing="120" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" />
                 </StackPanel>
-            </Grid>
-        </NavigationView.PaneHeader>
+            </StackPanel>
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <!-- 接続バー：どの画面からでも、接続・切断・ライブ表示ができる（ホームでは大きなカードがあるので出さない）。 -->
+            <!-- 接続コンソール：どの画面からでも接続・切断・ライブ表示ができる（ホームでは状態だけを出す） -->
             <Border
-                x:Name="ConnectionBar"
-                Padding="20,8,16,8"
-                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                BorderThickness="0,0,0,1">
-                <Grid ColumnSpacing="12">
+                x:Name="ConnectionConsole"
+                Grid.Column="3"
+                Height="36"
+                Margin="8,0,8,0"
+                Padding="12,0,2,0"
+                CornerRadius="18"
+                BorderThickness="1"
+                Background="{ThemeResource RevTorqueCardBrush}"
+                BorderBrush="{ThemeResource RevTorqueCardStrokeBrush}"
+                VerticalAlignment="Center">
+                <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Ellipse x:Name="ConnectionDot" Width="10" Height="10" VerticalAlignment="Center" />
-                    <TextBlock x:Name="ConnectionName" Grid.Column="1" Style="{StaticResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" MaxWidth="320" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
-                    <TextBlock x:Name="ConnectionStatus" Grid.Column="2" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
-                    <Button x:Name="OpenLiveButton" Grid.Column="3" Click="OnOpenLiveClicked" AutomationProperties.AutomationId="windows-shell-open-live">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE9D9;" FontSize="14" />
-                            <TextBlock x:Name="OpenLiveText" VerticalAlignment="Center" />
+                    <Grid Width="14" Height="14" VerticalAlignment="Center">
+                        <Ellipse x:Name="ConnectionHalo" Width="14" Height="14" Opacity="0.28" />
+                        <Ellipse x:Name="ConnectionDot" Width="8" Height="8" />
+                    </Grid>
+                    <TextBlock x:Name="ConnectionName" Grid.Column="1" Style="{StaticResource BodyStrongTextBlockStyle}" FontSize="13" VerticalAlignment="Center" MaxWidth="220" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+                    <TextBlock x:Name="ConnectionStatus" Grid.Column="2" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" MaxWidth="220" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+                    <Button x:Name="OpenLiveButton" Grid.Column="3" Height="30" Padding="10,0,10,0" CornerRadius="15" Click="OnOpenLiveClicked" AutomationProperties.AutomationId="windows-shell-open-live">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE9D9;" FontSize="13" />
+                            <TextBlock x:Name="OpenLiveText" VerticalAlignment="Center" FontSize="13" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="ConnectionButton" Grid.Column="4" MinWidth="128" Click="OnConnectionButtonClicked" AutomationProperties.AutomationId="windows-shell-connection-action">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon x:Name="ConnectionButtonIcon" FontSize="14" />
-                            <TextBlock x:Name="ConnectionButtonText" VerticalAlignment="Center" />
+                    <Button x:Name="ConnectionButton" Grid.Column="4" Height="30" Padding="12,0,12,0" CornerRadius="15" Click="OnConnectionButtonClicked" AutomationProperties.AutomationId="windows-shell-connection-action">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon x:Name="ConnectionButtonIcon" FontSize="13" />
+                            <TextBlock x:Name="ConnectionButtonText" VerticalAlignment="Center" FontSize="13" />
                         </StackPanel>
                     </Button>
                 </Grid>
             </Border>
-
-            <!-- 既定のアダプターが近くに来たときに接続を尋ねる（iOS 版のローカル通知の代わり）。 -->
-            <StackPanel Grid.Row="1">
-                <InfoBar
-                    x:Name="AdapterArrivalBar"
-                    Severity="Informational"
-                    IsClosable="True"
-                    IsOpen="False"
-                    Margin="24,12,24,0"
-                    CloseButtonClick="OnAdapterArrivalDismissed">
-                    <InfoBar.ActionButton>
-                        <Button x:Name="AdapterArrivalConnectButton" Style="{StaticResource AccentButtonStyle}" Click="OnAdapterArrivalAccepted" />
-                    </InfoBar.ActionButton>
-                </InfoBar>
-
-                <!-- 前回の実行が正常に終了しなかったとき、不具合レポートの書き出しを尋ねる（閉じたらこの実行では出さない）。 -->
-                <InfoBar
-                    x:Name="PreviousRunBar"
-                    Severity="Warning"
-                    IsClosable="True"
-                    IsOpen="False"
-                    Margin="24,12,24,0"
-                    CloseButtonClick="OnPreviousRunDismissed">
-                    <InfoBar.ActionButton>
-                        <Button x:Name="PreviousRunExportButton" Style="{StaticResource AccentButtonStyle}" Click="OnPreviousRunExportClicked" />
-                    </InfoBar.ActionButton>
-                </InfoBar>
-            </StackPanel>
-            <Border x:Name="DestinationHost" Grid.Row="2" />
         </Grid>
-    </NavigationView>
+
+        <NavigationView
+            x:Name="Navigation"
+            Grid.Row="1"
+            PaneDisplayMode="Left"
+            IsBackButtonVisible="Collapsed"
+            IsBackEnabled="False"
+            IsSettingsVisible="False"
+            IsPaneToggleButtonVisible="False"
+            IsTitleBarAutoPaddingEnabled="False"
+            OpenPaneLength="248"
+            SelectionChanged="OnSelectionChanged">
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel x:Name="NoticeArea">
+                    <!-- 既定のアダプターが近くに来たときに接続を尋ねる（iOS 版のローカル通知の代わり）。 -->
+                    <InfoBar
+                        x:Name="AdapterArrivalBar"
+                        Severity="Informational"
+                        IsClosable="True"
+                        IsOpen="False"
+                        CloseButtonClick="OnAdapterArrivalDismissed">
+                        <InfoBar.ActionButton>
+                            <Button x:Name="AdapterArrivalConnectButton" Style="{StaticResource AccentButtonStyle}" Click="OnAdapterArrivalAccepted" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
+                    <!-- 前回の実行が正常に終了しなかったとき、不具合レポートの書き出しを尋ねる（閉じたらこの実行では出さない）。 -->
+                    <InfoBar
+                        x:Name="PreviousRunBar"
+                        Severity="Warning"
+                        IsClosable="True"
+                        IsOpen="False"
+                        CloseButtonClick="OnPreviousRunDismissed">
+                        <InfoBar.ActionButton>
+                            <Button x:Name="PreviousRunExportButton" Style="{StaticResource AccentButtonStyle}" Click="OnPreviousRunExportClicked" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+                </StackPanel>
+                <Border x:Name="DestinationHost" Grid.Row="1" />
+            </Grid>
+        </NavigationView>
+
+        <!-- Compact だけ出す、画面の下のタブ帯（行き先を等間隔に並べ、1 回押すだけで移る。タブは WindowsAppShellView.xaml.cs で 1 回だけ作る） -->
+        <Border
+            x:Name="BottomBar"
+            Grid.Row="2"
+            Height="48"
+            Visibility="Collapsed"
+            BorderThickness="0,1,0,0"
+            Background="{ThemeResource RevTorqueCardBrush}"
+            BorderBrush="{ThemeResource RevTorqueDividerBrush}">
+            <Grid x:Name="BottomTabs" />
+        </Border>
+    </Grid>
 </UserControl>

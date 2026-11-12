@@ -1,7 +1,9 @@
 using System;
 using System.ComponentModel;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Shapes;
 using ProjectZD8.Application.LiveTelemetry.State;
 using ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 using ProjectZD8ForWindows.Platform.Windows.Features.DeviceConnection.Presentation;
@@ -12,7 +14,14 @@ namespace ProjectZD8ForWindows.Platform.Windows.Features.DeviceConnection.Views;
 /// <summary>
 /// ホーム画面です。既定アダプターの状態と、接続・切断・アダプター設定への操作を出します（iOS 版の <c>MacOSHomeView</c>）。
 /// </summary>
-/// <remarks>「検出済み」は探索の結果（設定画面の状態）が裏付けるときだけ出します。</remarks>
+/// <remarks>
+/// 新しい画面の作り方の見本です（docs/UI_GUIDELINES.md）：
+/// - 要素はコンストラクターで 1 回だけ組み、フィールドに持つ。モデルが変わったら <see cref="Update"/> で値だけを差し替える（木を作り直さない）。
+/// - モデルの知らせは <see cref="UiUpdateThrottle"/> で束ね、1 フレームに 1 回まで更新する（ライブ取得は 1 秒に何度もモデルを変える）。
+/// - 幅は <see cref="ResponsiveLayout"/> の幅クラスで決める（<see cref="PageScaffold"/>・<see cref="AdaptiveSplit"/> が追従する）。
+/// - ボタンは作り直さないので、押している最中に消えない（RenderGate は不要）。押したときは、その時点の状態を読み直して操作を送る。
+/// 「検出済み」は探索の結果（設定画面の状態）が裏付けるときだけ出します。
+/// </remarks>
 public sealed partial class WindowsHomeView : UserControl
 {
     /// <summary>設定画面の表示モデル（既定アダプターの検出状態）です。</summary>
@@ -24,11 +33,40 @@ public sealed partial class WindowsHomeView : UserControl
     /// <summary>ホームの操作の送り先です。</summary>
     private readonly Action<WindowsHomeAction> _send;
 
-    /// <summary>操作中の作り直しを待たせる仕組みです。</summary>
-    private readonly RenderGate _gate;
+    /// <summary>更新を 1 フレームに 1 回へ束ねる仕組みです。</summary>
+    private readonly UiUpdateThrottle _throttle;
 
-    /// <summary>最後に描いた内容の鍵です。同じなら描き直しません（ライブ取得の値が変わるたびにボタンを作り直さないため）。</summary>
-    private string? _renderKey;
+    /// <summary>アダプターの状態の輪（計器の外周）です。</summary>
+    private readonly Ellipse _ring = new() { StrokeThickness = 3 };
+
+    /// <summary>輪の内側の記号のタイルです。</summary>
+    private readonly Border _gaugeTile;
+
+    /// <summary>輪と記号をまとめた計器です。</summary>
+    private readonly Grid _gauge = new();
+
+    /// <summary>アダプターの名前です。</summary>
+    private readonly TextBlock _adapterName = Typography.Text(string.Empty, TextStyles.PageTitle);
+
+    /// <summary>検出状態の印です。</summary>
+    private readonly Border _statusPill = StatusPill.Create(null, string.Empty, Tone.Neutral);
+
+    /// <summary>主の操作のボタンです。</summary>
+    private readonly Button _primaryButton = new()
+    {
+        MinWidth = Metrics.PrimaryControlMinWidth,
+        MinHeight = Metrics.PrimaryControlHeight,
+        HorizontalAlignment = HorizontalAlignment.Stretch,
+    };
+
+    /// <summary>主の操作のボタンの記号です。</summary>
+    private readonly FontIcon _primaryIcon = new() { FontSize = 14 };
+
+    /// <summary>主の操作のボタンの文字です。</summary>
+    private readonly TextBlock _primaryText = new() { VerticalAlignment = VerticalAlignment.Center, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold };
+
+    /// <summary>アダプターを設定するときの補足です。</summary>
+    private readonly TextBlock _setupHint = Typography.Text(LocalizedText.Get("home.action.setup_hint"), TextStyles.SecondaryCaption);
 
     /// <summary>モデルと操作の送り先を受け取ってホーム画面を作ります。</summary>
     /// <param name="settings">設定画面の表示モデル。</param>
@@ -40,191 +78,217 @@ public sealed partial class WindowsHomeView : UserControl
         _liveTelemetry = liveTelemetry;
         _send = send;
         InitializeComponent();
-        _gate = new RenderGate(this);
+        _gaugeTile = IconTile.Create(FluentSymbol.Plug, Tone.Neutral, Metrics.IconTileLarge);
+        _gaugeTile.CornerRadius = new CornerRadius(Radius.Pill);
+        _gaugeTile.HorizontalAlignment = HorizontalAlignment.Center;
+        _gauge.Children.Add(_ring);
+        _gauge.Children.Add(_gaugeTile);
+        _gauge.VerticalAlignment = VerticalAlignment.Center;
+        _primaryButton.Content = PrimaryButtonContent();
+        _primaryButton.Click += OnPrimaryClicked;
+        _setupHint.MaxWidth = 260;
+
+        var page = new PageScaffold();
+        page.Body.Children.Add(Header());
+        page.Body.Children.Add(SurfaceCard.Hero(AdapterConsole()));
+        page.Body.Children.Add(FutureRail());
+        Content = page;
+
+        _throttle = new UiUpdateThrottle(this, Update);
+        ResponsiveLayout.Bind(this, ApplyLayout);
         Loaded += (_, _) =>
         {
             _settings.PropertyChanged += OnModelChanged;
             _liveTelemetry.PropertyChanged += OnModelChanged;
-            Render();
+            _throttle.FlushNow();
         };
         Unloaded += (_, _) =>
         {
             _settings.PropertyChanged -= OnModelChanged;
             _liveTelemetry.PropertyChanged -= OnModelChanged;
         };
-        SizeChanged += (_, args) =>
-        {
-            if ((args.PreviousSize.Width < 720) != (args.NewSize.Width < 720))
-            {
-                Render();
-            }
-        };
-    }
-
-    /// <summary>描く内容が変わったかを見分ける鍵を作ります。</summary>
-    /// <param name="state">ホームの状態。</param>
-    /// <returns>鍵。</returns>
-    private string RenderKey(WindowsHomeState state)
-    {
-        var availability = state.DefaultAdapterAvailability;
-        return string.Join(
-            "|",
-            availability.DisplayName,
-            availability.IsDetected,
-            availability.HasDefaultAdapter,
-            state.ConnectionEndpoint is null,
-            state.IsConnectionActive,
-            state.IsDisconnecting,
-            ActualWidth > 0 && ActualWidth < 720);
+        Update();
     }
 
     /// <summary>モデルが変わったときの処理です。</summary>
-    /// <remarks>責務: 画面を描き直します。</remarks>
+    /// <remarks>責務: 次のフレームでの更新を頼みます（何度来ても 1 回にまとまる）。</remarks>
     /// <param name="sender">送り元。</param>
     /// <param name="e">変更の内容。</param>
-    private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => Render();
+    private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => _throttle.Request();
 
-    /// <summary>ホーム画面を描きます。</summary>
-    /// <remarks>責務: 見出し、既定アダプターのカード、今後の機能の帯を作ります。</remarks>
-    private void Render()
+    /// <summary>今のホームの状態です。</summary>
+    /// <returns>ホームの表示状態。</returns>
+    private WindowsHomeState State() => new(_settings.State, _liveTelemetry.State);
+
+    /// <summary>
+    /// 画面の値を今の状態に合わせます。
+    /// </summary>
+    /// <remarks>責務: アダプターの名前・検出状態の印・計器の色・主の操作の文字と色と押せるかを差し替えます。要素は作り直しません。</remarks>
+    private void Update()
     {
-        var state = new WindowsHomeState(_settings.State, _liveTelemetry.State);
-        var key = RenderKey(state);
-        if (key == _renderKey || _gate.TryDefer(Render))
+        var state = State();
+        var availability = state.DefaultAdapterAvailability;
+        Retained.SetText(_adapterName, availability.DisplayName ?? LocalizedText.Get("home.adapter.not_configured"));
+
+        Tone tone;
+        string statusKey;
+        if (state.IsConnectionActive)
         {
-            return;
+            (tone, statusKey) = (Tone.Success, state.IsDisconnecting ? "windows.shell.connection.disconnecting" : "windows.shell.connection.connected");
         }
-
-        _renderKey = key;
-        Page.Children.Clear();
-        var header = new StackPanel { Spacing = 7 };
-        header.Children.Add(Typography.Text(LocalizedText.Get("home.eyebrow"), "EyebrowTextStyle"));
-        header.Children.Add(Typography.Text(LocalizedText.Get("home.title"), "TitleLargeTextBlockStyle"));
-        header.Children.Add(Typography.Text(LocalizedText.Get("home.subtitle"), "SecondaryBodyTextStyle"));
-        Page.Children.Add(header);
-        Page.Children.Add(AdapterHero(state, ActualWidth > 0 && ActualWidth < 720));
-
-        var rail = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12 };
-        rail.Children.Add(new FontIcon { Glyph = FluentSymbol.Gauge, FontSize = 16, Foreground = DesignTokens.Foreground(Tone.Accent) });
-        rail.Children.Add(Typography.Text(LocalizedText.Get("home.future.caption"), "SecondaryCaptionTextStyle"));
-        Page.Children.Add(new Border { Style = DesignTokens.Style("QuietSurfaceStyle"), Padding = new Thickness(16), Child = rail });
-    }
-
-    /// <summary>既定アダプターのカードを作ります。</summary>
-    /// <remarks>責務: アダプターの名前・検出状態と、主の操作を、幅に合わせて横並びか縦積みにします。</remarks>
-    /// <param name="state">ホームの表示状態。</param>
-    /// <param name="isCompact">狭い幅なら true。</param>
-    /// <returns>カード。</returns>
-    private Border AdapterHero(WindowsHomeState state, bool isCompact)
-    {
-        var identity = AdapterIdentity(state);
-        var action = PrimaryAction(state);
-        var layout = new Grid { ColumnSpacing = 34, RowSpacing = 24 };
-        if (isCompact)
+        else if (availability.IsDetected)
         {
-            layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            Grid.SetRow(action, 1);
+            (tone, statusKey) = (Tone.Success, "home.adapter.detected");
         }
         else
         {
-            layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            layout.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            Grid.SetColumn(action, 1);
+            (tone, statusKey) = (Tone.Neutral, availability.HasDefaultAdapter ? "home.adapter.not_detected" : "home.adapter.setup_required");
         }
 
-        layout.Children.Add(identity);
-        layout.Children.Add(action);
-        layout.MinHeight = 170;
-        var card = SurfaceCard.Create(layout, padding: 28);
-        card.CornerRadius = new CornerRadius(20);
-        return card;
-    }
+        StatusPill.Set(_statusPill, availability.IsDetected || state.IsConnectionActive ? FluentSymbol.Completed : FluentSymbol.Info, LocalizedText.Get(statusKey), tone);
+        IconTile.SetTone(_gaugeTile, FluentSymbol.Plug, availability.IsDetected || state.IsConnectionActive ? Tone.Accent : Tone.Neutral);
+        _ring.Stroke = state.IsConnectionActive
+            ? DesignTokens.Brush("RevTorqueSignalBrush")
+            : availability.IsDetected ? DesignTokens.Brush("RevTorqueAccentStrokeBrush") : DesignTokens.Brush("RevTorqueDividerBrush");
 
-    /// <summary>アダプターの名前と状態の部分を作ります。</summary>
-    /// <remarks>責務: 記号、小見出し、アダプター名（未設定なら案内）、検出状態のラベルを並べます。</remarks>
-    /// <param name="state">ホームの表示状態。</param>
-    /// <returns>表示の要素。</returns>
-    private static Grid AdapterIdentity(WindowsHomeState state)
-    {
-        var availability = state.DefaultAdapterAvailability;
-        var grid = new Grid { ColumnSpacing = 20, VerticalAlignment = VerticalAlignment.Center };
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        var tile = IconTile.Create(FluentSymbol.Plug, availability.IsDetected ? Tone.Accent : Tone.Neutral, 82);
-        tile.CornerRadius = new CornerRadius(41);
-        grid.Children.Add(tile);
-        var texts = new StackPanel { Spacing = 8, VerticalAlignment = VerticalAlignment.Center };
-        texts.Children.Add(Typography.Text(LocalizedText.Get("home.adapter.eyebrow"), "EyebrowTextStyle"));
-        texts.Children.Add(Typography.Text(
-            availability.DisplayName ?? LocalizedText.Get("home.adapter.not_configured"),
-            "SubtitleTextBlockStyle"));
-        var statusKey = availability.IsDetected
-            ? "home.adapter.detected"
-            : availability.HasDefaultAdapter ? "home.adapter.not_detected" : "home.adapter.setup_required";
-        texts.Children.Add(StatusPill.Create(
-            availability.IsDetected ? FluentSymbol.Completed : FluentSymbol.Info,
-            LocalizedText.Get(statusKey),
-            availability.IsDetected ? Tone.Success : Tone.Neutral));
-        Grid.SetColumn(texts, 1);
-        grid.Children.Add(texts);
-        return grid;
-    }
-
-    /// <summary>主の操作を作ります。</summary>
-    /// <remarks>責務: 接続中なら切断、検出済みなら接続、それ以外はアダプター設定へのボタンを作ります。</remarks>
-    /// <param name="state">ホームの表示状態。</param>
-    /// <returns>表示の要素。</returns>
-    private StackPanel PrimaryAction(WindowsHomeState state)
-    {
-        var panel = new StackPanel { Spacing = 9, VerticalAlignment = VerticalAlignment.Center };
-        Button button;
+        string textKey;
+        string glyph;
+        string styleKey;
+        bool enabled;
+        string automationId = "windows-home-primary-action";
         if (state.IsConnectionActive)
         {
-            button = new Button
+            (textKey, glyph, styleKey, enabled) = ("home.action.disconnect", FluentSymbol.Disconnected, "DangerButtonStyle", !state.IsDisconnecting);
+        }
+        else if (availability.IsDetected)
+        {
+            (textKey, glyph, styleKey, enabled) = ("home.action.connect", FluentSymbol.Plug, "AccentButtonStyle", state.ConnectionEndpoint is not null);
+        }
+        else
+        {
+            (textKey, glyph, styleKey, enabled) = ("home.action.setup_adapter", FluentSymbol.ChevronRight, "AccentButtonStyle", true);
+            automationId = "windows-home-setup-adapter";
+        }
+
+        Retained.SetText(_primaryText, LocalizedText.Get(textKey));
+        Retained.SetGlyph(_primaryIcon, glyph);
+        Retained.SetStyle(_primaryButton, styleKey);
+        Retained.SetEnabled(_primaryButton, enabled);
+        Retained.SetVisible(_setupHint, !state.IsConnectionActive && !availability.IsDetected);
+        if (AutomationProperties.GetAutomationId(_primaryButton) != automationId)
+        {
+            AutomationProperties.SetAutomationId(_primaryButton, automationId);
+        }
+    }
+
+    /// <summary>主の操作を押したときの処理です。</summary>
+    /// <remarks>責務: 押した時点の状態を読み直し、切断・接続・アダプター設定のどれかを送ります。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">イベントの情報。</param>
+    private void OnPrimaryClicked(object sender, RoutedEventArgs e)
+    {
+        var state = State();
+        if (state.IsConnectionActive)
+        {
+            if (!state.IsDisconnecting)
             {
-                Content = LocalizedText.Get("home.action.disconnect"),
-                Style = DesignTokens.Style("DangerButtonStyle"),
-                IsEnabled = !state.IsDisconnecting,
-            };
-            button.Click += (_, _) => _send(new WindowsHomeAction.VehicleDisconnectionRequested());
+                _send(new WindowsHomeAction.VehicleDisconnectionRequested());
+            }
         }
         else if (state.DefaultAdapterAvailability.IsDetected)
         {
-            button = new Button
+            if (state.ConnectionEndpoint is { } endpoint)
             {
-                Content = LocalizedText.Get("home.action.connect"),
-                Style = DesignTokens.Style("AccentButtonStyle"),
-                IsEnabled = state.ConnectionEndpoint is not null,
-            };
-            button.Click += (_, _) =>
-            {
-                if (state.ConnectionEndpoint is { } endpoint)
-                {
-                    _send(new WindowsHomeAction.VehicleConnectionRequested(endpoint));
-                }
-            };
+                _send(new WindowsHomeAction.VehicleConnectionRequested(endpoint));
+            }
         }
         else
         {
-            button = new Button
-            {
-                Content = new GlyphLabel(FluentSymbol.ChevronRight, LocalizedText.Get("home.action.setup_adapter"), "BodyStrongTextBlockStyle"),
-                Style = DesignTokens.Style("AccentButtonStyle"),
-            };
-            button.Click += (_, _) => _send(new WindowsHomeAction.AdapterSetupRequested());
-            panel.Children.Add(button);
-            panel.Children.Add(Typography.Text(LocalizedText.Get("home.action.setup_hint"), "SecondaryCaptionTextStyle"));
-            button.MinWidth = 210;
-            button.MinHeight = 40;
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-home-setup-adapter");
-            return panel;
+            _send(new WindowsHomeAction.AdapterSetupRequested());
         }
+    }
 
-        button.MinWidth = 190;
-        button.MinHeight = 40;
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(button, "windows-home-primary-action");
-        panel.Children.Add(button);
-        return panel;
+    /// <summary>
+    /// 幅クラスに合わせて配置を切り替えます。
+    /// </summary>
+    /// <remarks>責務: 計器の大きさと、題の大きさを幅クラスに合わせます（積む・並べるは <see cref="AdaptiveSplit"/> が行う）。</remarks>
+    /// <param name="widthClass">幅クラス。</param>
+    private void ApplyLayout(WidthClass widthClass)
+    {
+        var size = widthClass == WidthClass.Compact ? 72 : widthClass >= WidthClass.Expanded ? 112 : 96;
+        _gauge.Width = size;
+        _gauge.Height = size;
+        var tile = size * 0.62;
+        _gaugeTile.Width = tile;
+        _gaugeTile.Height = tile;
+        if (_gaugeTile.Child is FontIcon icon)
+        {
+            icon.FontSize = tile * 0.42;
+        }
+    }
+
+    /// <summary>見出しを作ります。</summary>
+    /// <returns>見出し。</returns>
+    private static StackPanel Header()
+    {
+        var header = new StackPanel { Spacing = Space.S };
+        header.Children.Add(Typography.Text(LocalizedText.Get("home.eyebrow"), TextStyles.Eyebrow));
+        header.Children.Add(Typography.Text(LocalizedText.Get("home.title"), TextStyles.Display));
+        var subtitle = Typography.Text(LocalizedText.Get("home.subtitle"), TextStyles.SecondaryBody);
+        subtitle.MaxWidth = Metrics.ReadingMaxWidth;
+        subtitle.HorizontalAlignment = HorizontalAlignment.Left;
+        header.Children.Add(subtitle);
+        return header;
+    }
+
+    /// <summary>既定アダプターの操作盤（主役のカードの中身）を作ります。</summary>
+    /// <remarks>責務: 左に計器とアダプターの名前・状態、右に主の操作を置き、Compact では積みます。</remarks>
+    /// <returns>操作盤。</returns>
+    private AdaptiveSplit AdapterConsole()
+    {
+        var identity = new Grid { ColumnSpacing = Space.XL, VerticalAlignment = VerticalAlignment.Center };
+        identity.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        identity.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        identity.Children.Add(_gauge);
+        var texts = new StackPanel { Spacing = Space.S, VerticalAlignment = VerticalAlignment.Center };
+        texts.Children.Add(Typography.Text(LocalizedText.Get("home.adapter.eyebrow"), TextStyles.Eyebrow));
+        _adapterName.TextWrapping = TextWrapping.NoWrap;
+        _adapterName.TextTrimming = TextTrimming.CharacterEllipsis;
+        texts.Children.Add(_adapterName);
+        texts.Children.Add(_statusPill);
+        Grid.SetColumn(texts, 1);
+        identity.Children.Add(texts);
+
+        var action = new StackPanel { Spacing = Space.S, VerticalAlignment = VerticalAlignment.Center };
+        action.Children.Add(_primaryButton);
+        action.Children.Add(_setupHint);
+        return new AdaptiveSplit
+        {
+            Primary = identity,
+            Secondary = action,
+            SecondaryWidth = 240,
+            CollapseBelow = WidthClass.Medium,
+            MinHeight = 120,
+        };
+    }
+
+    /// <summary>主の操作のボタンの中身を作ります。</summary>
+    /// <returns>記号と文字の並び。</returns>
+    private StackPanel PrimaryButtonContent()
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.S, HorizontalAlignment = HorizontalAlignment.Center };
+        row.Children.Add(_primaryIcon);
+        row.Children.Add(_primaryText);
+        return row;
+    }
+
+    /// <summary>今後の機能の帯を作ります。</summary>
+    /// <returns>帯。</returns>
+    private static Border FutureRail()
+    {
+        var rail = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.M };
+        rail.Children.Add(new FontIcon { Glyph = FluentSymbol.Gauge, FontSize = 16, Foreground = DesignTokens.Foreground(Tone.Accent) });
+        rail.Children.Add(Typography.Text(LocalizedText.Get("home.future.caption"), TextStyles.SecondaryCaption));
+        return SurfaceCard.Create(rail, padding: Space.L, variant: CardVariant.Quiet);
     }
 }

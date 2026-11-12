@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using ProjectZD8.Application.LiveTelemetry.Actions;
@@ -19,33 +21,108 @@ namespace ProjectZD8ForWindows.Platform.Windows.Features.LiveTelemetry.Views;
 /// </summary>
 /// <remarks>
 /// 値はライブ取得の状態にある読み取り結果だけを出し、推測した値は出しません。
-/// ポーリングのたびに全体を作り直すと説明のポップアップが閉じるため、PID の組と分類が同じ間は値の文字だけを書き換えます。
+/// 要素はコンストラクターで 1 回だけ組み、モデルの知らせは <see cref="UiUpdateThrottle"/>（100ms 間隔・1 フレームに 1 回）で束ねて、
+/// 値の文字だけを差し替えます。PID の組や分類が変わったときだけ <see cref="KeyedChildren{TKey, TItem, TElement}"/> で差分を直します
+/// （分類のボタンは作り直さないので、取得中に連打してもクリックを取りこぼさない）。
+/// 説明のフライアウトを開いている間などは、タイルの出し入れだけを待たせます（<see cref="RenderGate"/>）。
 /// </remarks>
 public sealed partial class WindowsLiveTelemetryView : UserControl
 {
     /// <summary>主の 2 つの PID（回転数・車速）です。</summary>
     private static readonly OBDPIDRequest[] PrimaryRequests = [new(0x01, 0x0C), new(0x01, 0x0D)];
 
+    /// <summary>人が読む数値の更新の最短間隔です。</summary>
+    private static readonly TimeSpan ValueInterval = TimeSpan.FromMilliseconds(100);
+
     /// <summary>ライブ取得のモデルです。</summary>
     private readonly LiveTelemetryModel _model;
 
-    /// <summary>値の文字（セクションと PID ごと）です。</summary>
-    private readonly Dictionary<(string Section, OBDPIDRequest Request), TextBlock> _valueTexts = [];
+    /// <summary>更新を束ねる仕組みです。</summary>
+    private readonly UiUpdateThrottle _throttle;
 
-    /// <summary>分類のボタンの代表値の文字です。</summary>
-    private readonly Dictionary<OBDPIDCategory, TextBlock> _categoryValueTexts = [];
+    /// <summary>タイルの出し入れを操作中は待たせる仕組みです。</summary>
+    private readonly RenderGate _gate;
 
     /// <summary>画面の一時的な状態：選んでいる分類です。</summary>
     private OBDPIDCategory _selectedCategory = OBDPIDCategory.Engine;
 
-    /// <summary>今の画面の作りを表す鍵です（変わったら作り直す）。</summary>
-    private string? _structureKey;
+    /// <summary>分類のボタンを押した直後で、待たせずにタイルを入れ替えるなら true です。</summary>
+    private bool _forceStructure;
 
-    /// <summary>応答している PID の数の文字です。</summary>
-    private TextBlock? _supportedCountText;
+    /// <summary>最後に整えた PID の組です（変わったときだけ入れ替える）。</summary>
+    private (OBDPIDRequest Request, bool IsVehicleSpecific)[] _structure = [];
 
-    /// <summary>操作中の作り直しを待たせる仕組みです。</summary>
-    private readonly RenderGate _gate;
+    /// <summary>最後に整えた分類です。</summary>
+    private OBDPIDCategory? _structureCategory;
+
+    /// <summary>最後に反映した取得の段階と失敗の鍵です。</summary>
+    private (LiveTelemetryStatePhase Phase, string? FailureKey)? _shownStatus;
+
+    /// <summary>今の幅クラスが Expanded 以上か（副の欄が出ているか）です。</summary>
+    private bool _wide;
+
+    /// <summary>状態の帯に出す文言があるかです。</summary>
+    private bool _bannerHasMessage;
+
+    /// <summary>見出しの応答数です。</summary>
+    private readonly MetricBlock _headerCount;
+
+    /// <summary>見出しの右の束（応答数・車種のバッジ）です。</summary>
+    private readonly StackPanel _headerSummary = new() { Orientation = Orientation.Horizontal, Spacing = Space.M };
+
+    /// <summary>車種のバッジの置き場です。</summary>
+    private readonly ContentControl _headerBadge = new() { VerticalAlignment = VerticalAlignment.Center };
+
+    /// <summary>取得の状態の帯です。</summary>
+    private readonly InfoBar _banner = new() { IsClosable = false, IsOpen = false };
+
+    /// <summary>帯の中の進み具合です。</summary>
+    private readonly ProgressBar _bannerProgress = new() { Margin = new Thickness(0, 0, 0, Space.S) };
+
+    /// <summary>失敗の帯の再試行のボタンです。</summary>
+    private readonly Button _retryButton = new() { Style = DesignTokens.Style("AccentButtonStyle") };
+
+    /// <summary>待機中（読み取りなし）の表示です。</summary>
+    private readonly Border _waiting;
+
+    /// <summary>計器帯の主の値のタイルです。</summary>
+    private readonly AdaptiveGrid _heroGrid = new() { MinItemWidth = 280 };
+
+    private readonly KeyedChildren<OBDPIDRequest, OBDPIDSample, SampleTile> _heroTiles;
+
+    /// <summary>計器帯の右の副の欄（応答数・状態。Expanded 以上）です。</summary>
+    private readonly StackPanel _bandSide = new() { Spacing = Space.M, VerticalAlignment = VerticalAlignment.Center, MinWidth = 168 };
+
+    /// <summary>副の欄の応答数です。</summary>
+    private readonly MetricBlock _bandCount;
+
+    /// <summary>副の欄の状態の印です。</summary>
+    private readonly Border _bandStatus = StatusPill.Create(null, string.Empty, Tone.Neutral);
+
+    /// <summary>計器帯です。</summary>
+    private readonly Grid _band = new() { ColumnSpacing = Space.L };
+
+    /// <summary>車種専用の値の区画です。</summary>
+    private readonly Border _vehicleSection;
+
+    private readonly AdaptiveGrid _vehicleGrid = TileGrid();
+
+    private readonly KeyedChildren<OBDPIDRequest, OBDPIDSample, SampleTile> _vehicleTiles;
+
+    /// <summary>車種専用の区画の車種のバッジの置き場です。</summary>
+    private readonly ContentControl _vehicleBadge = new() { VerticalAlignment = VerticalAlignment.Center };
+
+    /// <summary>分類の区画です。</summary>
+    private readonly StackPanel _categorySection = new() { Spacing = Space.M };
+
+    /// <summary>分類のボタンの並びです。</summary>
+    private readonly FlowPanel _chips = new();
+
+    private readonly KeyedChildren<OBDPIDCategory, OBDPIDCategory, CategoryChip> _chipItems;
+
+    private readonly AdaptiveGrid _categoryGrid = TileGrid();
+
+    private readonly KeyedChildren<OBDPIDRequest, OBDPIDSample, SampleTile> _categoryTiles;
 
     /// <summary>ライブ取得のモデルを受け取って画面を作ります。</summary>
     /// <param name="model">ライブ取得のモデル。</param>
@@ -54,158 +131,154 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
         _model = model;
         InitializeComponent();
         _gate = new RenderGate(this);
-        Loaded += (_, _) =>
-        {
-            _model.PropertyChanged += OnModelChanged;
-            Render();
-        };
-        Unloaded += (_, _) => _model.PropertyChanged -= OnModelChanged;
-    }
 
-    /// <summary>モデルが変わったときの処理です。</summary>
-    /// <remarks>責務: 画面を更新します。</remarks>
-    /// <param name="sender">送り元。</param>
-    /// <param name="e">変更の内容。</param>
-    private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => Render();
+        _heroGrid.SetMaxColumns(1, 2, 2, 2);
+        _heroTiles = new(_heroGrid, sample => sample.Request, sample => new SampleTile(sample, hero: true, OnHeroGlyph(sample)), (tile, sample) => tile.Bind(sample));
+        _vehicleTiles = new(_vehicleGrid, sample => sample.Request, sample => new SampleTile(sample, hero: false, null), (tile, sample) => tile.Bind(sample));
+        _categoryTiles = new(_categoryGrid, sample => sample.Request, sample => new SampleTile(sample, hero: false, null), (tile, sample) => tile.Bind(sample));
+        _chipItems = new(_chips, category => category, category => NewChip(category), (chip, _) => chip.SetChecked(_selectedCategory));
 
-    /// <summary>
-    /// 画面を更新します。作りが同じなら値の文字だけを書き換えます。
-    /// </summary>
-    /// <remarks>責務: 状態の段階・PID の組・分類から作りの鍵を決め、作り直すか値だけ更新するかを選びます。</remarks>
-    private void Render()
-    {
-        var state = _model.State;
-        var categories = AvailableCategories(state);
-        if (!categories.Contains(_selectedCategory) && categories.Count > 0)
-        {
-            _selectedCategory = categories[0];
-        }
+        _headerCount = new MetricBlock(string.Empty, LocalizedText.Get("telemetry.status.responding_count"), HorizontalAlignment.Right);
+        _headerSummary.Children.Add(_headerCount);
+        _headerSummary.Children.Add(_headerBadge);
 
-        var key = string.Join(
-            ",",
-            new[] { state.Phase.ToString(), state.FailureKey ?? string.Empty, _selectedCategory.ToString() }
-                .Concat(state.Samples.Select(sample => $"{sample.Request.Service:X2}{sample.Request.Pid:X2}{sample.VehicleModelCode}")));
-        if (key == _structureKey || _gate.TryDefer(Render))
-        {
-            // 操作中（分類のボタンを押している最中や、説明のフライアウトを開いている間）は作り直さず、値だけを変える。
-            UpdateValues(state);
-            return;
-        }
+        _bandCount = new MetricBlock(string.Empty, LocalizedText.Get("telemetry.status.responding_count"), valueStyleKey: TextStyles.MetricLarge);
+        _bandSide.Children.Add(_bandCount);
+        _bandSide.Children.Add(_bandStatus);
+        _band.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        _band.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        _band.Children.Add(_heroGrid);
+        Grid.SetColumn(_bandSide, 1);
+        _band.Children.Add(_bandSide);
 
-        _structureKey = key;
-        Rebuild(state, categories);
-    }
+        _banner.Content = null;
+        _retryButton.Content = new GlyphLabel(FluentSymbol.Refresh, LocalizedText.Get("telemetry.retry"));
+        AutomationProperties.SetAutomationId(_retryButton, "windows-telemetry-retry");
+        _retryButton.Click += (_, _) => _model.Send(new LiveTelemetryAction.RetryRequested());
 
-    /// <summary>画面を作り直します。</summary>
-    /// <remarks>責務: 見出し、状態の帯、主の値、車種専用の値、分類ごとの値、待機・再試行の表示を作ります。</remarks>
-    /// <param name="state">ライブ取得の状態。</param>
-    /// <param name="categories">値がある分類。</param>
-    private void Rebuild(LiveTelemetryState state, IReadOnlyList<OBDPIDCategory> categories)
-    {
-        _valueTexts.Clear();
-        _categoryValueTexts.Clear();
-        Page.Children.Clear();
-        Page.Children.Add(Hero(state));
-        if (StatusBanner(state) is { } banner)
-        {
-            if (state.Phase == LiveTelemetryStatePhase.Failed)
-            {
-                // 再試行は失敗の知らせの中に置く（Windows の InfoBar の操作ボタン）。
-                var retry = new Button
-                {
-                    Content = new GlyphLabel(FluentSymbol.Refresh, LocalizedText.Get("telemetry.retry")),
-                    Style = DesignTokens.Style("AccentButtonStyle"),
-                };
-                Microsoft.UI.Xaml.Automation.AutomationProperties.SetAutomationId(retry, "windows-telemetry-retry");
-                retry.Click += (_, _) => _model.Send(new LiveTelemetryAction.RetryRequested());
-                banner.ActionButton = retry;
-            }
+        _waiting = SurfaceCard.Create(new ContentUnavailablePanel(
+            FluentSymbol.Plug,
+            LocalizedText.Get("telemetry.status.waiting_for_connection")));
 
-            Page.Children.Add(banner);
-        }
+        var vehicleHead = new Grid();
+        vehicleHead.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        vehicleHead.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        vehicleHead.Children.Add(new GlyphLabel(FluentSymbol.Car, LocalizedText.Get("telemetry.section.brz"), TextStyles.SectionTitle));
+        Grid.SetColumn(_vehicleBadge, 1);
+        vehicleHead.Children.Add(_vehicleBadge);
+        var vehicleStack = new StackPanel { Spacing = Space.M };
+        vehicleStack.Children.Add(vehicleHead);
+        vehicleStack.Children.Add(_vehicleGrid);
+        _vehicleSection = SurfaceCard.Create(vehicleStack, Tone.Accent, Space.XL);
 
-        if (state.Samples.Count > 0)
-        {
-            Page.Children.Add(PrimaryDashboard(state));
-            var vehicleSpecific = VehicleSpecificSamples(state);
-            if (vehicleSpecific.Count > 0)
-            {
-                Page.Children.Add(VehicleSpecificSection(vehicleSpecific));
-            }
+        // 分類のボタンはどの幅でも折り返す（横スクロールで端が切れて見えるのを避ける）。
+        _categorySection.Children.Add(new GlyphLabel(FluentSymbol.Filter, LocalizedText.Get("telemetry.section.all"), TextStyles.SectionTitle));
+        _categorySection.Children.Add(_chips);
+        _categorySection.Children.Add(_categoryGrid);
 
-            Page.Children.Add(CategoryWorkspace(state, categories));
-        }
-        else if (state.Phase == LiveTelemetryStatePhase.Idle)
-        {
-            Page.Children.Add(SurfaceCard.Create(new ContentUnavailablePanel(
-                FluentSymbol.Plug,
-                LocalizedText.Get("telemetry.status.waiting_for_connection"))));
-        }
-    }
-
-    /// <summary>値の文字だけを書き換えます。</summary>
-    /// <remarks>責務: 作りを変えずに、PID の値と応答数の文字を最新の読み取り結果にします。</remarks>
-    /// <param name="state">ライブ取得の状態。</param>
-    private void UpdateValues(LiveTelemetryState state)
-    {
-        if (_supportedCountText is not null)
-        {
-            _supportedCountText.Text = NumberText.Integer(state.SupportedPIDCount);
-        }
-
-        foreach (var sample in state.Samples)
-        {
-            foreach (var section in new[] { "primary", "vehicle", "category" })
-            {
-                if (_valueTexts.TryGetValue((section, sample.Request), out var text))
-                {
-                    text.Text = NumberText.Decimal(sample.Value, section == "primary" ? 1 : 2);
-                }
-            }
-        }
-
-        foreach (var (category, text) in _categoryValueTexts)
-        {
-            if (Representative(SamplesIn(state, category), category) is { } sample)
-            {
-                text.Text = Formatted(sample);
-            }
-        }
-    }
-
-    /// <summary>見出しのカードを作ります。</summary>
-    /// <remarks>責務: 題と、応答している PID の数（と車種専用のバッジ）を並べます。</remarks>
-    /// <param name="state">ライブ取得の状態。</param>
-    /// <returns>カード。</returns>
-    private Border Hero(LiveTelemetryState state)
-    {
-        var summary = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14 };
-        var count = new MetricBlock(
-            NumberText.Integer(state.SupportedPIDCount),
-            LocalizedText.Get("telemetry.status.responding_count"),
-            HorizontalAlignment.Right,
-            valueStyleKey: "TitleTextBlockStyle");
-        _supportedCountText = (TextBlock)count.Children[0];
-        summary.Children.Add(count);
-        if (VehicleSpecificSamples(state).FirstOrDefault()?.VehicleModelCode is { } modelCode)
-        {
-            summary.Children.Add(new VehicleModelBadge(modelCode));
-        }
-
-        return SurfaceCard.Create(new ScreenHeader(
+        var page = new PageScaffold();
+        page.Body.Children.Add(new ScreenHeader(
             FluentSymbol.Gauge,
             LocalizedText.Get("telemetry.eyebrow"),
             LocalizedText.Get("telemetry.title"),
             LocalizedText.Get("telemetry.subtitle"),
-            summary), padding: 24);
+            _headerSummary));
+        page.Body.Children.Add(_banner);
+        page.Body.Children.Add(_band);
+        page.Body.Children.Add(_vehicleSection);
+        page.Body.Children.Add(_categorySection);
+        page.Body.Children.Add(_waiting);
+        Content = page;
+
+        _throttle = new UiUpdateThrottle(this, Update, ValueInterval);
+        ResponsiveLayout.Bind(this, ApplyLayout);
+        Loaded += (_, _) =>
+        {
+            _model.PropertyChanged += OnModelChanged;
+            _throttle.FlushNow();
+        };
+        Unloaded += (_, _) => _model.PropertyChanged -= OnModelChanged;
+        Update();
     }
 
-    /// <summary>取得の状態の帯を作ります。</summary>
-    /// <remarks>責務: 読み取り中・停止中・取得中・失敗を InfoBar で出します（待機中は出さない）。</remarks>
-    /// <param name="state">ライブ取得の状態。</param>
-    /// <returns>帯。出さないなら null。</returns>
-    private static InfoBar? StatusBanner(LiveTelemetryState state)
+    /// <summary>モデルが変わったときの処理です。</summary>
+    /// <remarks>責務: 次のフレームでの更新を頼みます（何度来ても 1 回にまとまる）。</remarks>
+    /// <param name="sender">送り元。</param>
+    /// <param name="e">変更の内容。</param>
+    private void OnModelChanged(object? sender, PropertyChangedEventArgs e) => _throttle.Request();
+
+    /// <summary>
+    /// 幅クラスに合わせて配置を切り替えます。
+    /// </summary>
+    /// <remarks>責務: 副の欄・見出しの応答数の出し分けと、分類のボタンの折り返しを切り替えます（木は作り直さない）。</remarks>
+    /// <param name="widthClass">幅クラス。</param>
+    private void ApplyLayout(WidthClass widthClass)
     {
+        var wide = widthClass >= WidthClass.Expanded;
+        _wide = wide;
+        Retained.SetVisible(_bandSide, wide);
+        Retained.SetVisible(_headerCount, !wide);
+        _band.ColumnSpacing = wide ? Space.XXL : 0;
+        ApplyBannerVisibility();
+    }
+
+    /// <summary>状態の帯を開くかどうかを決めます。</summary>
+    /// <remarks>
+    /// 責務: 取得が落ち着いた（Loaded）ときは、副の欄の印が同じ文言を出す幅（Expanded 以上）では帯を閉じて重複をなくします。
+    /// 読み取り中・停止中・失敗は操作や注意が要るので、どの幅でも帯を出します。
+    /// </remarks>
+    private void ApplyBannerVisibility()
+    {
+        var steady = _shownStatus is { Phase: LiveTelemetryStatePhase.Loaded };
+        _banner.IsOpen = _bannerHasMessage && !(steady && _wide);
+    }
+
+    /// <summary>
+    /// 画面を今の状態に合わせます。
+    /// </summary>
+    /// <remarks>責務: 状態の帯と値の文字を差し替え、PID の組や分類が変わったときだけタイルを差分で入れ替えます。</remarks>
+    private void Update()
+    {
+        var state = _model.State;
+        UpdateStatus(state);
+        var count = NumberText.Integer(state.SupportedPIDCount);
+        _headerCount.SetValue(count);
+        _bandCount.SetValue(count);
+
+        var hasSamples = state.Samples.Count > 0;
+        Retained.SetVisible(_waiting, !hasSamples && state.Phase == LiveTelemetryStatePhase.Idle);
+        Retained.SetVisible(_band, hasSamples);
+        Retained.SetVisible(_categorySection, hasSamples);
+        if (!hasSamples)
+        {
+            Retained.SetVisible(_vehicleSection, false);
+            SyncStructure(state);
+            return;
+        }
+
+        SyncStructure(state);
+        UpdateValues(state);
+
+        // 切断のあとも最後の値は残すが、いま読んでいる値と見分けられるよう薄くする。
+        var stale = state.Phase is not (LiveTelemetryStatePhase.Loaded or LiveTelemetryStatePhase.Reading);
+        var opacity = stale ? 0.55 : 1.0;
+        _band.Opacity = opacity;
+        _vehicleSection.Opacity = opacity;
+        _categoryGrid.Opacity = opacity;
+    }
+
+    /// <summary>取得の状態の帯と印を差し替えます。</summary>
+    /// <remarks>責務: 段階か失敗の鍵が変わったときだけ、帯の重さ・文言・再試行のボタンを直します。</remarks>
+    /// <param name="state">ライブ取得の状態。</param>
+    private void UpdateStatus(LiveTelemetryState state)
+    {
+        var status = (state.Phase, state.FailureKey);
+        if (_shownStatus == status)
+        {
+            return;
+        }
+
+        _shownStatus = status;
         var (key, severity, showsProgress) = state.Phase switch
         {
             LiveTelemetryStatePhase.Reading => ("telemetry.status.reading", InfoBarSeverity.Informational, true),
@@ -214,257 +287,222 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
             LiveTelemetryStatePhase.Failed => (state.FailureKey ?? "telemetry.error.read_failed", InfoBarSeverity.Warning, false),
             _ => (null, InfoBarSeverity.Informational, false),
         };
+        var (pillGlyph, pillTone) = state.Phase switch
+        {
+            LiveTelemetryStatePhase.Reading => (null, Tone.Accent),
+            LiveTelemetryStatePhase.Stopping => (null, Tone.Caution),
+            LiveTelemetryStatePhase.Loaded => (FluentSymbol.Completed, Tone.Success),
+            LiveTelemetryStatePhase.Failed => (FluentSymbol.Warning, Tone.Caution),
+            _ => ((string?)null, Tone.Neutral),
+        };
+        StatusPill.Set(_bandStatus, pillGlyph, LocalizedText.Get(key ?? "telemetry.status.waiting_for_connection"), pillTone);
+
         if (key is null)
         {
-            return null;
+            _bannerHasMessage = false;
+            _banner.IsOpen = false;
+            _banner.Content = null;
+            _bannerProgress.IsIndeterminate = false;
+            return;
         }
 
-        var bar = new InfoBar { IsOpen = true, IsClosable = false, Severity = severity, Message = LocalizedText.Get(key) };
+        _banner.Severity = severity;
+        _banner.Message = LocalizedText.Get(key);
+        _banner.Content = null;
+        _banner.ActionButton = null;
+        _bannerProgress.IsIndeterminate = showsProgress;
         if (showsProgress)
         {
-            bar.Content = new ProgressBar { IsIndeterminate = true, Margin = new Thickness(0, 0, 0, 8) };
+            _banner.Content = _bannerProgress;
         }
         else if (state.Phase == LiveTelemetryStatePhase.Failed)
         {
-            // 失敗のときだけ、報告用の番号を付ける。
-            ErrorReport.AttachTo(bar);
+            // 失敗のときだけ、報告用の番号と再試行の操作を付ける。
+            ErrorReport.AttachTo(_banner);
+            _banner.ActionButton = _retryButton;
         }
 
-        return bar;
+        _bannerHasMessage = true;
+        ApplyBannerVisibility();
     }
 
-    /// <summary>主の値（回転数・車速）の部分を作ります。</summary>
-    /// <remarks>責務: 回転数・車速を優先した最大 2 件の大きな値のカードを並べます。</remarks>
+    /// <summary>
+    /// PID の組と分類が変わったときだけ、タイルと分類のボタンを差分で入れ替えます。
+    /// </summary>
+    /// <remarks>
+    /// 責務: 主・車種専用・選んだ分類のタイルと、分類のボタンを整えます。説明のフライアウトを開いている間などは、
+    /// 出し入れだけを待たせて（値は更新する）、閉じたあとにもう一度試します。分類のボタンを押した直後は待たせません。
+    /// </remarks>
     /// <param name="state">ライブ取得の状態。</param>
-    /// <returns>表示の要素。</returns>
-    private StackPanel PrimaryDashboard(LiveTelemetryState state)
+    private void SyncStructure(LiveTelemetryState state)
+    {
+        var categories = AvailableCategories(state);
+        if (!categories.Contains(_selectedCategory) && categories.Count > 0)
+        {
+            _selectedCategory = categories[0];
+        }
+
+        var structure = new (OBDPIDRequest, bool)[state.Samples.Count];
+        for (var index = 0; index < structure.Length; index++)
+        {
+            var sample = state.Samples[index];
+            structure[index] = (sample.Request, !string.IsNullOrEmpty(sample.VehicleModelCode));
+        }
+
+        if (_structureCategory == _selectedCategory && structure.AsSpan().SequenceEqual(_structure))
+        {
+            return;
+        }
+
+        if (!_forceStructure && _gate.TryDefer(_throttle.Request))
+        {
+            return;
+        }
+
+        _structure = structure;
+        _structureCategory = _selectedCategory;
+
+        var vehicleSpecific = state.Samples.Where(sample => !string.IsNullOrEmpty(sample.VehicleModelCode)).ToList();
+        var modelCode = vehicleSpecific.FirstOrDefault()?.VehicleModelCode;
+        SetBadge(_headerBadge, modelCode);
+        SetBadge(_vehicleBadge, modelCode);
+        Retained.SetVisible(_vehicleSection, vehicleSpecific.Count > 0);
+        _vehicleTiles.Sync(vehicleSpecific);
+        _heroTiles.Sync(PrimarySamples(state));
+        _chipItems.Sync(categories);
+        _categoryTiles.Sync(SamplesIn(state, _selectedCategory));
+    }
+
+    /// <summary>値の文字だけを書き換えます。</summary>
+    /// <remarks>責務: 作りを変えずに、タイルと分類のボタンの値を最新の読み取り結果にします。</remarks>
+    /// <param name="state">ライブ取得の状態。</param>
+    private void UpdateValues(LiveTelemetryState state)
+    {
+        var representative = new OBDPIDSample?[5];
+        var exact = new bool[5];
+        foreach (var sample in state.Samples)
+        {
+            if (_heroTiles.TryGet(sample.Request, out var hero))
+            {
+                hero.SetValue(sample);
+            }
+
+            if (_vehicleTiles.TryGet(sample.Request, out var vehicle))
+            {
+                vehicle.SetValue(sample);
+            }
+
+            if (_categoryTiles.TryGet(sample.Request, out var tile))
+            {
+                tile.SetValue(sample);
+            }
+
+            // 分類のボタンの代表値：代表 PID があればそれ、なければ最初の結果。
+            var category = OBDPIDCategoryExtensions.Category(sample.Request);
+            var slot = (int)category;
+            if (!exact[slot] && (representative[slot] is null || sample.Request == category.RepresentativeRequest()))
+            {
+                representative[slot] = sample;
+                exact[slot] = sample.Request == category.RepresentativeRequest();
+            }
+        }
+
+        foreach (var category in OBDPIDCategoryRawValue.AllCases)
+        {
+            if (_chipItems.TryGet(category, out var chip) && representative[(int)category] is { } sample)
+            {
+                chip.SetValue($"{NumberText.Decimal(sample.Value, 2)} {sample.Unit}");
+            }
+        }
+    }
+
+    /// <summary>分類のボタンを作ります。</summary>
+    /// <remarks>責務: 押すと分類を切り替えるボタンを作ります。押した時点で待たせずにタイルを入れ替えます。</remarks>
+    /// <param name="category">分類。</param>
+    /// <returns>ボタン。</returns>
+    private CategoryChip NewChip(OBDPIDCategory category)
+    {
+        var chip = new CategoryChip(category, CategoryGlyph(category), LocalizedText.Get(category.NameKey()));
+        chip.Click += (_, _) =>
+        {
+            _selectedCategory = category;
+            _forceStructure = true;
+            try
+            {
+                _throttle.FlushNow();
+            }
+            finally
+            {
+                _forceStructure = false;
+            }
+
+            foreach (var other in _chips.Children.OfType<CategoryChip>())
+            {
+                other.SetChecked(_selectedCategory);
+            }
+        };
+        return chip;
+    }
+
+    /// <summary>車種のバッジを出し入れします。</summary>
+    /// <remarks>責務: 型式が変わったときだけバッジを作り直し、なければ消します。</remarks>
+    /// <param name="host">置き場。</param>
+    /// <param name="modelCode">型式。なければ null。</param>
+    private static void SetBadge(ContentControl host, string? modelCode)
+    {
+        if (host.Tag as string == modelCode)
+        {
+            return;
+        }
+
+        host.Tag = modelCode;
+        host.Content = modelCode is null ? null : new VehicleModelBadge(modelCode);
+    }
+
+    /// <summary>主の値（回転数・車速）の読み取り結果を返します。</summary>
+    /// <remarks>責務: 回転数・車速を優先し、足りなければ先頭から補って最大 2 件にします。</remarks>
+    /// <param name="state">ライブ取得の状態。</param>
+    /// <returns>読み取り結果。</returns>
+    private static List<OBDPIDSample> PrimarySamples(LiveTelemetryState state)
     {
         var preferred = PrimaryRequests
             .Select(request => state.Samples.FirstOrDefault(sample => sample.Request == request))
             .OfType<OBDPIDSample>()
             .ToList();
-        var samples = preferred.Concat(state.Samples.Where(sample => !preferred.Contains(sample))).Take(2);
-        var grid = new AdaptiveGrid { MinItemWidth = 300, Spacing = 16 };
-        foreach (var sample in samples)
-        {
-            grid.Children.Add(PrimaryCard(sample));
-        }
-
-        return Section("telemetry.section.now", FluentSymbol.Gauge, grid);
+        return preferred.Concat(state.Samples.Where(sample => !preferred.Contains(sample))).Take(2).ToList();
     }
 
-    /// <summary>主の値のカードを作ります。</summary>
-    /// <remarks>責務: PID の名前・大きな値・単位・説明のボタンを並べます。</remarks>
+    /// <summary>主の値の記号を返します。</summary>
+    /// <remarks>責務: 回転数は計器、車速は車、それ以外は脈拍の記号にします。</remarks>
     /// <param name="sample">読み取り結果。</param>
-    /// <returns>カード。</returns>
-    private Border PrimaryCard(OBDPIDSample sample)
+    /// <returns>記号の文字。</returns>
+    private static string OnHeroGlyph(OBDPIDSample sample) =>
+        sample.Request == PrimaryRequests[0] ? FluentSymbol.Gauge : sample.Request == PrimaryRequests[1] ? FluentSymbol.Car : FluentSymbol.Pulse;
+
+    /// <summary>値の格子を作ります。</summary>
+    /// <remarks>責務: Compact 2 列〜Wide 6 列の値のタイルの格子を作ります。</remarks>
+    /// <returns>格子。</returns>
+    private static AdaptiveGrid TileGrid()
     {
-        var grid = new Grid { ColumnSpacing = 18 };
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var glyph = sample.Request == PrimaryRequests[0] ? FluentSymbol.Gauge : sample.Request == PrimaryRequests[1] ? FluentSymbol.Car : FluentSymbol.Pulse;
-        grid.Children.Add(IconTile.Create(glyph, Tone.Accent, 58));
-        var texts = new StackPanel { Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
-        texts.Children.Add(Typography.Text(LocalizedText.Get(sample.NameKey), "SecondaryCaptionTextStyle"));
-        var valueRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
-        var value = Typography.Text(NumberText.Decimal(sample.Value, 1), "TitleLargeTextBlockStyle", wraps: false);
-        _valueTexts[("primary", sample.Request)] = value;
-        valueRow.Children.Add(value);
-        var unit = Typography.Text(sample.Unit, "MonospaceCaptionTextStyle", DesignTokens.Foreground(Tone.Accent), wraps: false);
-        unit.VerticalAlignment = VerticalAlignment.Bottom;
-        unit.Margin = new Thickness(0, 0, 0, 8);
-        valueRow.Children.Add(unit);
-        texts.Children.Add(valueRow);
-        Grid.SetColumn(texts, 1);
-        grid.Children.Add(texts);
-        var help = HelpButton(sample);
-        Grid.SetColumn(help, 2);
-        grid.Children.Add(help);
-        return SurfaceCard.Create(grid, Tone.Accent, 20, tinted: true);
+        var grid = new AdaptiveGrid { MinItemWidth = 200 };
+        grid.SetMaxColumns(2, 3, 4, 6);
+        return grid;
     }
-
-    /// <summary>車種専用の値の部分を作ります。</summary>
-    /// <remarks>責務: 車種専用 PID の値を、車種のバッジ付きの区画にまとめます。</remarks>
-    /// <param name="samples">車種専用の読み取り結果。</param>
-    /// <returns>区画。</returns>
-    private Border VehicleSpecificSection(IReadOnlyList<OBDPIDSample> samples)
-    {
-        var grid = new AdaptiveGrid { MinItemWidth = 205, Spacing = 12 };
-        foreach (var sample in samples)
-        {
-            grid.Children.Add(SampleCard(sample, "vehicle", Tone.Accent));
-        }
-
-        var head = new Grid();
-        head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        head.Children.Add(new GlyphLabel(FluentSymbol.Car, LocalizedText.Get("telemetry.section.brz"), "SectionTitleTextStyle"));
-        if (samples[0].VehicleModelCode is { } modelCode)
-        {
-            var badge = new VehicleModelBadge(modelCode);
-            Grid.SetColumn(badge, 1);
-            head.Children.Add(badge);
-        }
-
-        var stack = new StackPanel { Spacing = 14 };
-        stack.Children.Add(head);
-        stack.Children.Add(grid);
-        return SurfaceCard.Create(stack, Tone.Accent, 19);
-    }
-
-    /// <summary>分類ごとの値の部分を作ります。</summary>
-    /// <remarks>責務: 分類の切り替えボタン（代表値付き）と、選んだ分類の値のカードを並べます。</remarks>
-    /// <param name="state">ライブ取得の状態。</param>
-    /// <param name="categories">値がある分類。</param>
-    /// <returns>表示の要素。</returns>
-    private StackPanel CategoryWorkspace(LiveTelemetryState state, IReadOnlyList<OBDPIDCategory> categories)
-    {
-        var chips = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
-        foreach (var category in categories)
-        {
-            var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 9 };
-            content.Children.Add(new FontIcon { Glyph = CategoryGlyph(category), FontSize = 14 });
-            content.Children.Add(Typography.Strong(LocalizedText.Get(category.NameKey()), "CaptionTextBlockStyle"));
-            if (Representative(SamplesIn(state, category), category) is { } sample)
-            {
-                var valueText = Typography.Text(Formatted(sample), "MonospaceCaptionTextStyle", wraps: false);
-                _categoryValueTexts[category] = valueText;
-                content.Children.Add(valueText);
-            }
-
-            var chip = new ToggleButton
-            {
-                Content = content,
-                IsChecked = category == _selectedCategory,
-                MinHeight = 40,
-                CornerRadius = new CornerRadius(20),
-                Padding = new Thickness(14, 6, 14, 6),
-            };
-            var selected = category;
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(chip, LocalizedText.Get(category.NameKey()));
-            chip.Click += (_, _) =>
-            {
-                _selectedCategory = selected;
-                _structureKey = null;
-                Render();
-            };
-            chips.Children.Add(chip);
-        }
-
-        var grid = new AdaptiveGrid { MinItemWidth = 210, Spacing = 12 };
-        foreach (var sample in SamplesIn(state, _selectedCategory))
-        {
-            grid.Children.Add(SampleCard(sample, "category", Tone.Accent));
-        }
-
-        var stack = new StackPanel { Spacing = 14 };
-        stack.Children.Add(new ScrollViewer
-        {
-            Content = chips,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
-            HorizontalScrollMode = ScrollMode.Enabled,
-            VerticalScrollMode = ScrollMode.Disabled,
-        });
-        stack.Children.Add(grid);
-        return Section("telemetry.section.all", FluentSymbol.Filter, stack);
-    }
-
-    /// <summary>値のカードを作ります。</summary>
-    /// <remarks>責務: PID の名前・値・単位・説明のボタンを持つ小さなカードを作ります。</remarks>
-    /// <param name="sample">読み取り結果。</param>
-    /// <param name="section">どの部分のカードか（値の書き換えの鍵）。</param>
-    /// <param name="tone">単位の色の役割。</param>
-    /// <returns>カード。</returns>
-    private Border SampleCard(OBDPIDSample sample, string section, Tone tone)
-    {
-        var stack = new StackPanel { Spacing = 10 };
-        var head = new Grid { ColumnSpacing = 4 };
-        head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var name = Typography.Text(LocalizedText.Get(sample.NameKey), "SecondaryCaptionTextStyle");
-        name.MaxLines = 2;
-        head.Children.Add(name);
-        var help = HelpButton(sample);
-        Grid.SetColumn(help, 1);
-        head.Children.Add(help);
-        stack.Children.Add(head);
-        var valueRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
-        var value = Typography.Text(NumberText.Decimal(sample.Value, 2), "SubtitleTextBlockStyle", wraps: false);
-        _valueTexts[(section, sample.Request)] = value;
-        valueRow.Children.Add(value);
-        var unit = Typography.Text(sample.Unit, "MonospaceCaptionTextStyle", DesignTokens.Foreground(tone), wraps: false);
-        unit.VerticalAlignment = VerticalAlignment.Bottom;
-        unit.Margin = new Thickness(0, 0, 0, 4);
-        valueRow.Children.Add(unit);
-        stack.Children.Add(valueRow);
-        stack.MinHeight = 64;
-        return SurfaceCard.Create(stack, padding: 16);
-    }
-
-    /// <summary>PID の説明のボタンを作ります。</summary>
-    /// <remarks>責務: 押すと PID の概要・高いとき・低いとき・相関の説明を出すボタンを作ります。</remarks>
-    /// <param name="sample">読み取り結果。</param>
-    /// <returns>ボタン。</returns>
-    private static Button HelpButton(OBDPIDSample sample)
-    {
-        var body = new StackPanel { Spacing = 12, MaxWidth = 360 };
-        body.Children.Add(Typography.Text(LocalizedText.Get(sample.NameKey), "BodyStrongTextBlockStyle"));
-        foreach (var (title, value) in new[]
-        {
-            ("telemetry.help.summary", sample.SummaryKey),
-            ("telemetry.help.high", sample.HighValueKey),
-            ("telemetry.help.low", sample.LowValueKey),
-            ("telemetry.help.correlation", sample.CorrelationKey),
-        })
-        {
-            var row = new StackPanel { Spacing = 3 };
-            row.Children.Add(Typography.Strong(LocalizedText.Get(title), "SecondaryCaptionTextStyle"));
-            row.Children.Add(Typography.Text(LocalizedText.Get(value), "BodyTextBlockStyle"));
-            body.Children.Add(row);
-        }
-
-        var button = new Button
-        {
-            Content = new FontIcon { Glyph = FluentSymbol.Info, FontSize = 14 },
-            Style = DesignTokens.Style("SubtleButtonStyle"),
-            Padding = new Thickness(6),
-            VerticalAlignment = VerticalAlignment.Top,
-            Flyout = new Flyout { Content = body },
-        };
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, LocalizedText.Get("telemetry.help.open"));
-        ToolTipService.SetToolTip(button, LocalizedText.Get("telemetry.help.open"));
-        return button;
-    }
-
-    /// <summary>見出し付きの区画を作ります。</summary>
-    /// <remarks>責務: 記号と題の見出しの下に中身を置きます。</remarks>
-    /// <param name="titleKey">題のキー。</param>
-    /// <param name="glyph">記号。</param>
-    /// <param name="content">中身。</param>
-    /// <returns>区画。</returns>
-    private static StackPanel Section(string titleKey, string glyph, UIElement content)
-    {
-        var stack = new StackPanel { Spacing = 12 };
-        stack.Children.Add(new GlyphLabel(glyph, LocalizedText.Get(titleKey), "SectionTitleTextStyle"));
-        stack.Children.Add(content);
-        return stack;
-    }
-
-    /// <summary>車種専用の読み取り結果を返します。</summary>
-    /// <remarks>責務: 車種コードがある読み取り結果だけを選びます。</remarks>
-    /// <param name="state">ライブ取得の状態。</param>
-    /// <returns>車種専用の読み取り結果。</returns>
-    private static List<OBDPIDSample> VehicleSpecificSamples(LiveTelemetryState state) =>
-        state.Samples.Where(sample => !string.IsNullOrEmpty(sample.VehicleModelCode)).ToList();
 
     /// <summary>値がある分類を返します。</summary>
     /// <remarks>責務: 分類の宣言順のうち、読み取り結果がある分類を選びます。</remarks>
     /// <param name="state">ライブ取得の状態。</param>
     /// <returns>分類。</returns>
-    private static List<OBDPIDCategory> AvailableCategories(LiveTelemetryState state) =>
-        OBDPIDCategoryRawValue.AllCases.Where(category => SamplesIn(state, category).Count > 0).ToList();
+    private static List<OBDPIDCategory> AvailableCategories(LiveTelemetryState state)
+    {
+        var present = new bool[5];
+        foreach (var sample in state.Samples)
+        {
+            present[(int)OBDPIDCategoryExtensions.Category(sample.Request)] = true;
+        }
+
+        return OBDPIDCategoryRawValue.AllCases.Where(category => present[(int)category]).ToList();
+    }
 
     /// <summary>分類の読み取り結果を返します。</summary>
     /// <remarks>責務: PID の分類が一致する読み取り結果を選びます。</remarks>
@@ -473,20 +511,6 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
     /// <returns>読み取り結果。</returns>
     private static List<OBDPIDSample> SamplesIn(LiveTelemetryState state, OBDPIDCategory category) =>
         state.Samples.Where(sample => OBDPIDCategoryExtensions.Category(sample.Request) == category).ToList();
-
-    /// <summary>分類の代表の読み取り結果を返します。</summary>
-    /// <remarks>責務: 分類の代表 PID があればそれを、なければ最初の結果を返します。</remarks>
-    /// <param name="samples">分類の読み取り結果。</param>
-    /// <param name="category">分類。</param>
-    /// <returns>代表。なければ null。</returns>
-    private static OBDPIDSample? Representative(IReadOnlyList<OBDPIDSample> samples, OBDPIDCategory category) =>
-        samples.FirstOrDefault(sample => sample.Request == category.RepresentativeRequest()) ?? samples.FirstOrDefault();
-
-    /// <summary>値と単位の文字列を返します。</summary>
-    /// <remarks>責務: 小数 2 桁までの値と単位をつなぎます。</remarks>
-    /// <param name="sample">読み取り結果。</param>
-    /// <returns>文字列。</returns>
-    private static string Formatted(OBDPIDSample sample) => $"{NumberText.Decimal(sample.Value, 2)} {sample.Unit}";
 
     /// <summary>分類の記号を返します。</summary>
     /// <remarks>責務: 分類を記号の文字へ変換します。</remarks>
@@ -500,4 +524,188 @@ public sealed partial class WindowsLiveTelemetryView : UserControl
         OBDPIDCategory.Driving => FluentSymbol.Steering,
         _ => FluentSymbol.Diagnostics,
     };
+}
+
+/// <summary>分類の切り替えボタンです（記号・名前・代表値）。一度作ったら値の文字だけ差し替えます。</summary>
+internal sealed class CategoryChip : ToggleButton
+{
+    /// <summary>代表値の文字です。</summary>
+    private readonly TextBlock _value = Typography.Text(string.Empty, TextStyles.Monospace, wraps: false);
+
+    /// <summary>ボタンを作ります。</summary>
+    /// <param name="category">分類。</param>
+    /// <param name="glyph">記号。</param>
+    /// <param name="name">分類の名前。</param>
+    public CategoryChip(OBDPIDCategory category, string glyph, string name)
+    {
+        Category = category;
+        var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = Space.S + 1 };
+        content.Children.Add(new FontIcon { Glyph = glyph, FontSize = 14 });
+        content.Children.Add(Typography.Strong(name, TextStyles.Caption));
+        content.Children.Add(_value);
+        Content = content;
+        MinHeight = Metrics.ControlHeight + Space.XS;
+        CornerRadius = new CornerRadius(Radius.Pill);
+        Padding = new Thickness(Space.M + 2, Space.XS + 2, Space.M + 2, Space.XS + 2);
+        AutomationProperties.SetName(this, name);
+    }
+
+    /// <summary>分類です。</summary>
+    public OBDPIDCategory Category { get; }
+
+    /// <summary>代表値の文字を差し替えます。</summary>
+    /// <remarks>責務: 違うときだけ設定します。</remarks>
+    /// <param name="text">値と単位。</param>
+    public void SetValue(string text) => Retained.SetText(_value, text);
+
+    /// <summary>選んでいるかどうかを合わせます。</summary>
+    /// <remarks>責務: 選んだ分類と同じときだけ押された状態にします（押し直して外れた状態も戻す）。</remarks>
+    /// <param name="selected">選んでいる分類。</param>
+    public void SetChecked(OBDPIDCategory selected)
+    {
+        var isChecked = selected == Category;
+        if (IsChecked != isChecked)
+        {
+            IsChecked = isChecked;
+        }
+    }
+}
+
+/// <summary>1 つの PID の値のタイルです。名前・値・単位・説明のボタンを持ち、値の文字だけを差し替えます。</summary>
+internal sealed class SampleTile : UserControl
+{
+    /// <summary>値の小数の桁です。</summary>
+    private readonly int _decimals;
+
+    /// <summary>名前の文字です。</summary>
+    private readonly TextBlock _name;
+
+    /// <summary>値の文字です。</summary>
+    private readonly TextBlock _value;
+
+    /// <summary>単位の文字です。</summary>
+    private readonly TextBlock _unit;
+
+    /// <summary>説明のフライアウトです（開くときに中身を作る）。</summary>
+    private readonly Flyout _help = new();
+
+    /// <summary>説明に使う読み取り結果です。</summary>
+    private OBDPIDSample _sample;
+
+    /// <summary>タイルを作ります。</summary>
+    /// <param name="sample">読み取り結果。</param>
+    /// <param name="hero">計器帯の大きなタイルなら true。</param>
+    /// <param name="heroGlyph">大きなタイルの記号。</param>
+    public SampleTile(OBDPIDSample sample, bool hero, string? heroGlyph)
+    {
+        _sample = sample;
+        _decimals = hero ? 1 : 2;
+        _name = Typography.Text(string.Empty, TextStyles.SecondaryCaption);
+        _name.MaxLines = 2;
+        _name.TextTrimming = TextTrimming.CharacterEllipsis;
+        _value = Typography.Metric(string.Empty, hero ? TextStyles.MetricHero : TextStyles.MetricValue);
+        _unit = Typography.Text(string.Empty, TextStyles.Monospace, DesignTokens.Foreground(Tone.Accent), wraps: false);
+        _unit.VerticalAlignment = VerticalAlignment.Bottom;
+        _unit.Margin = new Thickness(0, 0, 0, hero ? Space.S : Space.XS);
+
+        var valueRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = hero ? Space.S : Space.XS + 2 };
+        valueRow.Children.Add(_value);
+        valueRow.Children.Add(_unit);
+
+        var help = HelpButton();
+        UIElement content;
+        if (hero)
+        {
+            var grid = new Grid { ColumnSpacing = Space.L };
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.Children.Add(IconTile.Create(heroGlyph ?? FluentSymbol.Pulse, Tone.Accent, Metrics.IconTileLarge));
+            var texts = new StackPanel { Spacing = Space.XS, VerticalAlignment = VerticalAlignment.Center };
+            texts.Children.Add(_name);
+            texts.Children.Add(valueRow);
+            Grid.SetColumn(texts, 1);
+            grid.Children.Add(texts);
+            Grid.SetColumn(help, 2);
+            grid.Children.Add(help);
+            content = grid;
+        }
+        else
+        {
+            var stack = new StackPanel { Spacing = Space.S, MinHeight = 64 };
+            var head = new Grid { ColumnSpacing = Space.XS };
+            head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            head.Children.Add(_name);
+            Grid.SetColumn(help, 1);
+            head.Children.Add(help);
+            stack.Children.Add(head);
+            stack.Children.Add(valueRow);
+            content = stack;
+        }
+
+        Content = SurfaceCard.Create(content, hero ? Tone.Accent : null, hero ? Space.XL : Space.L, tinted: hero);
+        HorizontalContentAlignment = HorizontalAlignment.Stretch;
+        Bind(sample);
+    }
+
+    /// <summary>読み取り結果に合わせて名前と単位を直します。</summary>
+    /// <remarks>責務: 名前・単位・説明の元を最新にします（値の文字は <see cref="SetValue"/>）。</remarks>
+    /// <param name="sample">読み取り結果。</param>
+    public void Bind(OBDPIDSample sample)
+    {
+        _sample = sample;
+        Retained.SetText(_name, LocalizedText.Get(sample.NameKey));
+        Retained.SetText(_unit, sample.Unit);
+        SetValue(sample);
+    }
+
+    /// <summary>値の文字を差し替えます。</summary>
+    /// <remarks>責務: 違うときだけ設定します。</remarks>
+    /// <param name="sample">読み取り結果。</param>
+    public void SetValue(OBDPIDSample sample) => Retained.SetText(_value, NumberText.Decimal(sample.Value, _decimals));
+
+    /// <summary>PID の説明のボタンを作ります。</summary>
+    /// <remarks>責務: 押すと PID の概要・高いとき・低いとき・相関の説明を出すボタンを作ります（中身は開くときに作る）。</remarks>
+    /// <returns>ボタン。</returns>
+    private Button HelpButton()
+    {
+        _help.Opening += (_, _) => _help.Content = HelpBody(_sample);
+        var button = new Button
+        {
+            Content = new FontIcon { Glyph = FluentSymbol.Info, FontSize = 14 },
+            Style = DesignTokens.Style("SubtleButtonStyle"),
+            Padding = new Thickness(Space.S - 2),
+            VerticalAlignment = VerticalAlignment.Top,
+            Flyout = _help,
+        };
+        AutomationProperties.SetName(button, LocalizedText.Get("telemetry.help.open"));
+        ToolTipService.SetToolTip(button, LocalizedText.Get("telemetry.help.open"));
+        return button;
+    }
+
+    /// <summary>説明の中身を作ります。</summary>
+    /// <remarks>責務: PID の名前と、概要・高いとき・低いとき・相関の説明を並べます。</remarks>
+    /// <param name="sample">読み取り結果。</param>
+    /// <returns>中身。</returns>
+    private static StackPanel HelpBody(OBDPIDSample sample)
+    {
+        var body = new StackPanel { Spacing = Space.M, MaxWidth = 360 };
+        body.Children.Add(Typography.Text(LocalizedText.Get(sample.NameKey), TextStyles.BodyStrong));
+        foreach (var (title, value) in new[]
+        {
+            ("telemetry.help.summary", sample.SummaryKey),
+            ("telemetry.help.high", sample.HighValueKey),
+            ("telemetry.help.low", sample.LowValueKey),
+            ("telemetry.help.correlation", sample.CorrelationKey),
+        })
+        {
+            var row = new StackPanel { Spacing = 3 };
+            row.Children.Add(Typography.Strong(LocalizedText.Get(title), TextStyles.SecondaryCaption));
+            row.Children.Add(Typography.Text(LocalizedText.Get(value), TextStyles.Body));
+            body.Children.Add(row);
+        }
+
+        return body;
+    }
 }

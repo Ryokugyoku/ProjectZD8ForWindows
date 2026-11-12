@@ -8,13 +8,10 @@ namespace ProjectZD8ForWindows.Platform.Windows.DesignSystem;
 /// </summary>
 public static class SettingsRow
 {
-    /// <summary>狭いとみなして操作を下の段へ回す幅です。</summary>
-    private const double CompactWidth = 560;
-
     /// <summary>
     /// 設定の行を作ります。
     /// </summary>
-    /// <remarks>責務: 記号・題・説明と右側の操作を、Windows の設定カードの並びに置きます。幅が狭いときは操作を下の段へ回します。</remarks>
+    /// <remarks>責務: 記号・題・説明と右側の操作を、Windows の設定カードの並びに置きます。Compact の幅クラスでは操作を下の段へ回します（作り直さず行・列だけを差し替える）。</remarks>
     /// <param name="glyph">記号。</param>
     /// <param name="title">題。</param>
     /// <param name="description">説明。なければ null。</param>
@@ -53,22 +50,22 @@ public static class SettingsRow
             element.VerticalAlignment = VerticalAlignment.Center;
             Grid.SetColumn(element, 2);
             grid.Children.Add(element);
-            grid.SizeChanged += (_, args) =>
+            ResponsiveLayout.Bind(grid, widthClass =>
             {
-                var compact = args.NewSize.Width < CompactWidth;
+                var compact = widthClass == WidthClass.Compact;
                 Grid.SetRow(element, compact ? 1 : 0);
                 Grid.SetColumn(element, compact ? 1 : 2);
                 element.HorizontalAlignment = compact ? HorizontalAlignment.Left : HorizontalAlignment.Right;
-            };
+            });
         }
 
         var card = new Border
         {
-            Background = tinted ? DesignTokens.SubtleBackground(tone) : (Microsoft.UI.Xaml.Media.Brush)Microsoft.UI.Xaml.Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
-            BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Microsoft.UI.Xaml.Application.Current.Resources["CardStrokeColorDefaultBrush"],
+            Background = tinted ? DesignTokens.SubtleBackground(tone) : DesignTokens.Brush("RevTorqueCardBrush"),
+            BorderBrush = DesignTokens.Brush("RevTorqueCardStrokeBrush"),
             BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(8),
-            Padding = new Thickness(16, 14, 16, 14),
+            CornerRadius = new CornerRadius(Radius.M),
+            Padding = new Thickness(Space.L, 14, Space.L, 14),
             MinHeight = 68,
             Child = grid,
         };

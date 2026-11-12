@@ -3,9 +3,5 @@
     x:Class="ProjectZD8ForWindows.Platform.Windows.Features.Settings.Views.WindowsSettingsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
-    <!-- Windows 11 の「設定」アプリと同じ形：見出しごとに 1 行ずつのカードを縦に並べ、操作は右端に置く。 -->
-    <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto">
-        <StackPanel x:Name="Page" Padding="32,28,32,32" Spacing="4" MaxWidth="1000" HorizontalAlignment="Stretch" />
-    </ScrollViewer>
+    <!-- 中身（PageScaffold）はコードで 1 回だけ組む。 -->
 </UserControl>

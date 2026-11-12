@@ -3802,9 +3802,25 @@ Own the drive.</value>
     <value>Delete this service record?</value>
     <comment>windows.maintenance.delete.title</comment>
   </data>
+  <data name="windows_maintenance_eyebrow" xml:space="preserve">
+    <value>MAINTENANCE LOG</value>
+    <comment>windows.maintenance.eyebrow</comment>
+  </data>
   <data name="windows_maintenance_new" xml:space="preserve">
     <value>New record</value>
     <comment>windows.maintenance.new</comment>
+  </data>
+  <data name="windows_maintenance_records" xml:space="preserve">
+    <value>Records</value>
+    <comment>windows.maintenance.records</comment>
+  </data>
+  <data name="windows_nav_tab_connection_history" xml:space="preserve">
+    <value>History</value>
+    <comment>windows.nav.tab.connection_history</comment>
+  </data>
+  <data name="windows_nav_tab_live_log" xml:space="preserve">
+    <value>Live</value>
+    <comment>windows.nav.tab.live_log</comment>
   </data>
   <data name="windows_settings_group_account" xml:space="preserve">
     <value>Account</value>
@@ -3826,6 +3842,10 @@ Own the drive.</value>
     <value>General</value>
     <comment>windows.settings.group.general</comment>
   </data>
+  <data name="windows_shell_back" xml:space="preserve">
+    <value>Back</value>
+    <comment>windows.shell.back</comment>
+  </data>
   <data name="windows_shell_connection_connected" xml:space="preserve">
     <value>Connected</value>
     <comment>windows.shell.connection.connected</comment>
@@ -3834,8 +3854,20 @@ Own the drive.</value>
     <value>Disconnecting…</value>
     <comment>windows.shell.connection.disconnecting</comment>
   </data>
+  <data name="windows_shell_navigation" xml:space="preserve">
+    <value>Open or close navigation</value>
+    <comment>windows.shell.navigation</comment>
+  </data>
   <data name="windows_shell_open_live" xml:space="preserve">
     <value>Open live view</value>
     <comment>windows.shell.open_live</comment>
+  </data>
+  <data name="windows_toggle_off" xml:space="preserve">
+    <value>Off</value>
+    <comment>windows.toggle.off</comment>
+  </data>
+  <data name="windows_toggle_on" xml:space="preserve">
+    <value>On</value>
+    <comment>windows.toggle.on</comment>
   </data>
 </root>

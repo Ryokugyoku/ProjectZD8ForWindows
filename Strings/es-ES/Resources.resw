@@ -3802,9 +3802,25 @@ Domina la conducción.</value>
     <value>¿Eliminar este registro de mantenimiento?</value>
     <comment>windows.maintenance.delete.title</comment>
   </data>
+  <data name="windows_maintenance_eyebrow" xml:space="preserve">
+    <value>REGISTRO DE MANTENIMIENTO</value>
+    <comment>windows.maintenance.eyebrow</comment>
+  </data>
   <data name="windows_maintenance_new" xml:space="preserve">
     <value>Nuevo registro</value>
     <comment>windows.maintenance.new</comment>
+  </data>
+  <data name="windows_maintenance_records" xml:space="preserve">
+    <value>Registros</value>
+    <comment>windows.maintenance.records</comment>
+  </data>
+  <data name="windows_nav_tab_connection_history" xml:space="preserve">
+    <value>Historial</value>
+    <comment>windows.nav.tab.connection_history</comment>
+  </data>
+  <data name="windows_nav_tab_live_log" xml:space="preserve">
+    <value>En vivo</value>
+    <comment>windows.nav.tab.live_log</comment>
   </data>
   <data name="windows_settings_group_account" xml:space="preserve">
     <value>Cuenta</value>
@@ -3826,6 +3842,10 @@ Domina la conducción.</value>
     <value>General</value>
     <comment>windows.settings.group.general</comment>
   </data>
+  <data name="windows_shell_back" xml:space="preserve">
+    <value>Atrás</value>
+    <comment>windows.shell.back</comment>
+  </data>
   <data name="windows_shell_connection_connected" xml:space="preserve">
     <value>Conectado</value>
     <comment>windows.shell.connection.connected</comment>
@@ -3834,8 +3854,20 @@ Domina la conducción.</value>
     <value>Desconectando…</value>
     <comment>windows.shell.connection.disconnecting</comment>
   </data>
+  <data name="windows_shell_navigation" xml:space="preserve">
+    <value>Abrir o cerrar la navegación</value>
+    <comment>windows.shell.navigation</comment>
+  </data>
   <data name="windows_shell_open_live" xml:space="preserve">
     <value>Ver en directo</value>
     <comment>windows.shell.open_live</comment>
+  </data>
+  <data name="windows_toggle_off" xml:space="preserve">
+    <value>Desactivado</value>
+    <comment>windows.toggle.off</comment>
+  </data>
+  <data name="windows_toggle_on" xml:space="preserve">
+    <value>Activado</value>
+    <comment>windows.toggle.on</comment>
   </data>
 </root>

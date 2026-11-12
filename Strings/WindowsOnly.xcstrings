@@ -156,6 +156,22 @@
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "ライブを表示" } }
       }
     },
+    "windows.shell.back" : {
+      "comment" : "Windows 版だけ。タイトルバーの戻るボタンのツールチップと読み上げ名。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Back" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atrás" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "戻る" } }
+      }
+    },
+    "windows.shell.navigation" : {
+      "comment" : "Windows 版だけ。タイトルバーのナビゲーションを開閉するボタンのツールチップと読み上げ名。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open or close navigation" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrir o cerrar la navegación" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ナビゲーションを開く／閉じる" } }
+      }
+    },
     "windows.maintenance.new" : {
       "comment" : "Windows 版だけ。整備記録の一覧の上の「新規」ボタン（軽整備・重整備を選ぶメニューを開く）。",
       "localizations" : {
@@ -402,6 +418,54 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Copy report number" } },
         "es" : { "stringUnit" : { "state" : "translated", "value" : "Copiar el número de informe" } },
         "ja" : { "stringUnit" : { "state" : "translated", "value" : "報告番号をコピー" } }
+      }
+    },
+    "windows.nav.tab.live_log" : {
+      "comment" : "Windows 版だけ。狭い幅の画面の下のタブ帯に出す、リアルタイムログ出力の短い名前。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Live" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "En vivo" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ライブ" } }
+      }
+    },
+    "windows.nav.tab.connection_history" : {
+      "comment" : "Windows 版だけ。狭い幅の画面の下のタブ帯に出す、接続履歴の短い名前。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "History" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Historial" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "履歴" } }
+      }
+    },
+    "windows.toggle.on" : {
+      "comment" : "Windows 版だけ。設定のスイッチがオンのときの表示（アプリの言語に合わせるため、Windows の既定の文字を使わない）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "On" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Activado" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "オン" } }
+      }
+    },
+    "windows.toggle.off" : {
+      "comment" : "Windows 版だけ。設定のスイッチがオフのときの表示（アプリの言語に合わせるため、Windows の既定の文字を使わない）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Off" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Desactivado" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "オフ" } }
+      }
+    },
+    "windows.maintenance.eyebrow" : {
+      "comment" : "Windows 版だけ。整備の画面の見出しの上の小さな英字（ほかの画面の VEHICLE COLLECTION などと同じ役割）。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "MAINTENANCE LOG" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "REGISTRO DE MANTENIMIENTO" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "MAINTENANCE LOG" } }
+      }
+    },
+    "windows.maintenance.records" : {
+      "comment" : "Windows 版だけ。整備の画面の、記録の一覧の小見出し。",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Records" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Registros" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "記録" } }
       }
     }
   },

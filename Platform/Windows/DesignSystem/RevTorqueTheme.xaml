@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  RevTorque Insight の Windows 版の色と文字の約束（iOS 版 CODING_STANDARDS の「macOS visual and layout contract」に合わせる）。
-  - 主のアクセントはアイコンの回転計と信号の線から来たシアン。選択・フォーカス・主の操作・分析の深さだけに使う。
-  - オレンジは注意や信号のピークなど、小さな強調だけ。接続や正常を表すのには使わない。
+  RevTorque Insight の Windows 版の見た目の約束（docs/UI_GUIDELINES.md の「トークン」）。
+  - 方向：先進的・計器的。アイコンの紺（#04131F〜#06263B）＋シアン（主）＋オレンジ（小さな強調）。
+  - 背景は Mica。面は「薄い層のカード」＝半透明の塗り＋細い境界線＋上辺だけの控えめな発光（グラデーションの線）。
+  - シアンは選択・フォーカス・主の操作・分析の深さだけ。オレンジは注意や信号のピークだけ（接続や正常には使わない）。
+  - 明るい外観・暗い外観・ハイコントラストの 3 つで成立させる。ハイコントラストではシステムの色だけを使う。
+  - 色・余白・角丸・文字・高さ・動きの時間は DesignTokens.cs（Space / Radius / Metrics / Motion）と、ここのキーで引く。画面のコードに直値を書かない。
 -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -23,6 +26,7 @@
             <Color x:Key="RevTorqueDangerColor">#FFC42B1C</Color>
             <Color x:Key="RevTorqueIndigoColor">#FF4B49C9</Color>
             <Color x:Key="RevTorqueBlueColor">#FF0A63D6</Color>
+            <Color x:Key="RevTorqueNavyColor">#FF06263B</Color>
             <SolidColorBrush x:Key="RevTorqueAccentBrush" Color="#FF007DA6" />
             <SolidColorBrush x:Key="RevTorqueAccentSubtleBrush" Color="#1F007DA6" />
             <SolidColorBrush x:Key="RevTorqueAccentStrokeBrush" Color="#38007DA6" />
@@ -35,10 +39,48 @@
             <SolidColorBrush x:Key="RevTorqueIndigoBrush" Color="#FF4B49C9" />
             <SolidColorBrush x:Key="RevTorqueIndigoSubtleBrush" Color="#144B49C9" />
             <SolidColorBrush x:Key="RevTorqueBlueBrush" Color="#FF0A63D6" />
-            <SolidColorBrush x:Key="RevTorqueQuietFillBrush" Color="#0A000000" />
+            <SolidColorBrush x:Key="RevTorqueQuietFillBrush" Color="#0A06263B" />
             <SolidColorBrush x:Key="RevTorqueChartGridBrush" Color="#1A000000" />
             <SolidColorBrush x:Key="RevTorqueNeutralBrush" Color="#9E000000" />
+
+            <!-- 面（層） -->
+            <SolidColorBrush x:Key="RevTorqueContentLayerBrush" Color="#80F7FAFC" />
+            <SolidColorBrush x:Key="RevTorqueContentLayerStrokeBrush" Color="#120B2533" />
+            <SolidColorBrush x:Key="RevTorqueCardBrush" Color="#E6FFFFFF" />
+            <SolidColorBrush x:Key="RevTorqueCardRaisedBrush" Color="#F7FFFFFF" />
+            <SolidColorBrush x:Key="RevTorqueCardStrokeBrush" Color="#170B2533" />
+            <SolidColorBrush x:Key="RevTorqueDividerBrush" Color="#140B2533" />
+            <SolidColorBrush x:Key="RevTorqueTitleBarBrush" Color="#00FFFFFF" />
+            <!-- 上辺の発光：左上のシアンから、境界線の色へ消える -->
+            <LinearGradientBrush x:Key="RevTorqueCardGlowStrokeBrush" StartPoint="0,0" EndPoint="0.6,1">
+                <GradientStop Color="#66007DA6" Offset="0" />
+                <GradientStop Color="#170B2533" Offset="0.45" />
+                <GradientStop Color="#170B2533" Offset="1" />
+            </LinearGradientBrush>
+            <!-- 主役のカード（ヒーロー）の塗り：白から、ごく薄いシアンへ -->
+            <!-- 主役のカードの面は単色（グラデーションは大きな面の伸び縮みで描き直しが重いので、縁の発光だけを残す）。 -->
+            <SolidColorBrush x:Key="RevTorqueHeroBrush" Color="#F4F8FCFE" />
+            <!-- 計器の弧・強調の線：シアン → オレンジ（ピーク） -->
+            <LinearGradientBrush x:Key="RevTorqueSignalBrush" StartPoint="0,0.5" EndPoint="1,0.5">
+                <GradientStop Color="#FF007DA6" Offset="0" />
+                <GradientStop Color="#FF05C7E6" Offset="0.7" />
+                <GradientStop Color="#FFD9730D" Offset="1" />
+            </LinearGradientBrush>
+            <!-- ブランドの紺（ロゴのタイル）。明るい外観でも紺のまま -->
+            <LinearGradientBrush x:Key="RevTorqueBrandTileBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#FF04131F" Offset="0" />
+                <GradientStop Color="#FF06263B" Offset="1" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="RevTorqueBrandGlyphBrush" Color="#FF05C7E6" />
+            <SolidColorBrush x:Key="RevTorqueBrandDotBrush" Color="#FFFF9F2E" />
+
+            <!-- WinUI の NavigationView を Mica に溶かす -->
+            <SolidColorBrush x:Key="NavigationViewContentBackground" Color="#80F7FAFC" />
+            <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="#120B2533" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="Transparent" />
         </ResourceDictionary>
+
         <ResourceDictionary x:Key="Dark">
             <Color x:Key="SystemAccentColor">#FF05C7E6</Color>
             <Color x:Key="SystemAccentColorLight1">#FF2ED3EC</Color>
@@ -53,6 +95,7 @@
             <Color x:Key="RevTorqueDangerColor">#FFFF6B5E</Color>
             <Color x:Key="RevTorqueIndigoColor">#FF8B89FF</Color>
             <Color x:Key="RevTorqueBlueColor">#FF5AA2FF</Color>
+            <Color x:Key="RevTorqueNavyColor">#FF06263B</Color>
             <SolidColorBrush x:Key="RevTorqueAccentBrush" Color="#FF05C7E6" />
             <SolidColorBrush x:Key="RevTorqueAccentSubtleBrush" Color="#2405C7E6" />
             <SolidColorBrush x:Key="RevTorqueAccentStrokeBrush" Color="#4005C7E6" />
@@ -68,22 +111,103 @@
             <SolidColorBrush x:Key="RevTorqueQuietFillBrush" Color="#0FFFFFFF" />
             <SolidColorBrush x:Key="RevTorqueChartGridBrush" Color="#24FFFFFF" />
             <SolidColorBrush x:Key="RevTorqueNeutralBrush" Color="#C5FFFFFF" />
+
+            <SolidColorBrush x:Key="RevTorqueContentLayerBrush" Color="#4D06101A" />
+            <SolidColorBrush x:Key="RevTorqueContentLayerStrokeBrush" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="RevTorqueCardBrush" Color="#B3101C27" />
+            <SolidColorBrush x:Key="RevTorqueCardRaisedBrush" Color="#D9132230" />
+            <SolidColorBrush x:Key="RevTorqueCardStrokeBrush" Color="#1AFFFFFF" />
+            <SolidColorBrush x:Key="RevTorqueDividerBrush" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="RevTorqueTitleBarBrush" Color="#00000000" />
+            <LinearGradientBrush x:Key="RevTorqueCardGlowStrokeBrush" StartPoint="0,0" EndPoint="0.6,1">
+                <GradientStop Color="#8005C7E6" Offset="0" />
+                <GradientStop Color="#1AFFFFFF" Offset="0.45" />
+                <GradientStop Color="#1AFFFFFF" Offset="1" />
+            </LinearGradientBrush>
+            <!-- 主役のカードの面は単色（グラデーションは大きな面の伸び縮みで描き直しが重いので、縁の発光だけを残す）。 -->
+            <SolidColorBrush x:Key="RevTorqueHeroBrush" Color="#DB0A1C2B" />
+            <LinearGradientBrush x:Key="RevTorqueSignalBrush" StartPoint="0,0.5" EndPoint="1,0.5">
+                <GradientStop Color="#FF038AA0" Offset="0" />
+                <GradientStop Color="#FF05C7E6" Offset="0.7" />
+                <GradientStop Color="#FFFF9F2E" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="RevTorqueBrandTileBrush" StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#FF04131F" Offset="0" />
+                <GradientStop Color="#FF06263B" Offset="1" />
+            </LinearGradientBrush>
+            <SolidColorBrush x:Key="RevTorqueBrandGlyphBrush" Color="#FF05C7E6" />
+            <SolidColorBrush x:Key="RevTorqueBrandDotBrush" Color="#FFFF9F2E" />
+
+            <SolidColorBrush x:Key="NavigationViewContentBackground" Color="#4D06101A" />
+            <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent" />
+            <SolidColorBrush x:Key="NavigationViewTopPaneBackground" Color="Transparent" />
+        </ResourceDictionary>
+
+        <!-- ハイコントラスト：システムの色だけ。半透明・グラデーション・発光は使わない。 -->
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="RevTorqueAccentBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="RevTorqueAccentSubtleBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueAccentStrokeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="RevTorqueCautionBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="RevTorqueCautionSubtleBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueSuccessBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="RevTorqueSuccessSubtleBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueDangerBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="RevTorqueDangerSubtleBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueIndigoBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="RevTorqueIndigoSubtleBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueBlueBrush" Color="{ThemeResource SystemColorHotlightColor}" />
+            <SolidColorBrush x:Key="RevTorqueQuietFillBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueChartGridBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+            <SolidColorBrush x:Key="RevTorqueNeutralBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+
+            <SolidColorBrush x:Key="RevTorqueContentLayerBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueContentLayerStrokeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="RevTorqueCardBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueCardRaisedBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueCardStrokeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="RevTorqueDividerBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="RevTorqueTitleBarBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueCardGlowStrokeBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="RevTorqueHeroBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueSignalBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="RevTorqueBrandTileBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="RevTorqueBrandGlyphBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="RevTorqueBrandDotBrush" Color="{ThemeResource SystemColorHighlightColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <!-- 面（カード）。素材感は Mica の上の半透明のカード塗りで出す。 -->
+    <!-- 角丸の段階（コントロール全体）。Radius.cs と同じ値。 -->
+    <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
+    <CornerRadius x:Key="OverlayCornerRadius">12</CornerRadius>
+
+    <!-- 数値の書体：Segoe UI Variable（Display は大きい数値、Text は本文）。数字は等幅にそろえる。 -->
+    <FontFamily x:Key="RevTorqueDisplayFontFamily">Segoe UI Variable Display, Segoe UI</FontFamily>
+    <FontFamily x:Key="RevTorqueMonoFontFamily">Cascadia Mono, Consolas</FontFamily>
+
+    <!-- 面（カード）。素材感は Mica の上の半透明の塗りと細い線で出す。 -->
     <Style x:Key="SurfaceCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="Background" Value="{ThemeResource RevTorqueCardBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource RevTorqueCardStrokeBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="Padding" Value="20" />
     </Style>
 
+    <!-- 主役のカード（各画面に 1 枚まで）。上辺が薄く光る。 -->
+    <Style x:Key="HeroCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource RevTorqueHeroBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource RevTorqueCardGlowStrokeBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="28" />
+    </Style>
+
     <Style x:Key="QuietSurfaceStyle" TargetType="Border">
         <Setter Property="Background" Value="{ThemeResource RevTorqueQuietFillBrush}" />
-        <Setter Property="CornerRadius" Value="10" />
-        <Setter Property="Padding" Value="14" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="16" />
     </Style>
 
     <!-- 取り消せない操作（削除）のボタン -->
@@ -93,14 +217,34 @@
         <Setter Property="Foreground" Value="White" />
     </Style>
 
-    <!-- 文字 -->
+    <!-- タイトルバーやツールバーの、枠のない記号だけのボタン（40×36） -->
+    <Style x:Key="ChromeButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <!-- 文字の段階（Typography.cs の TextStyles と同じ名前） -->
     <Style x:Key="EyebrowTextStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
-        <Setter Property="FontWeight" Value="Bold" />
-        <Setter Property="CharacterSpacing" Value="140" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="CharacterSpacing" Value="160" />
         <Setter Property="Foreground" Value="{ThemeResource AccentTextFillColorPrimaryBrush}" />
     </Style>
 
-    <Style x:Key="PageTitleTextStyle" TargetType="TextBlock" BasedOn="{StaticResource TitleTextBlockStyle}" />
+    <Style x:Key="DisplayTextStyle" TargetType="TextBlock" BasedOn="{StaticResource TitleLargeTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{StaticResource RevTorqueDisplayFontFamily}" />
+        <Setter Property="FontSize" Value="40" />
+        <Setter Property="LineHeight" Value="48" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="PageTitleTextStyle" TargetType="TextBlock" BasedOn="{StaticResource TitleTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{StaticResource RevTorqueDisplayFontFamily}" />
+    </Style>
 
     <Style x:Key="SectionTitleTextStyle" TargetType="TextBlock" BasedOn="{StaticResource SubtitleTextBlockStyle}" />
 
@@ -118,12 +262,37 @@
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
+    <!-- 数値（計器）。等幅数字。Hero 56 / Large 36 / Value 22 / Unit は小さく薄く -->
+    <Style x:Key="MetricHeroTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{StaticResource RevTorqueDisplayFontFamily}" />
+        <Setter Property="FontSize" Value="56" />
+        <Setter Property="LineHeight" Value="60" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="CharacterSpacing" Value="-20" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+
+    <Style x:Key="MetricLargeTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextBlockStyle}">
+        <Setter Property="FontFamily" Value="{StaticResource RevTorqueDisplayFontFamily}" />
+        <Setter Property="FontSize" Value="36" />
+        <Setter Property="LineHeight" Value="42" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+
     <Style x:Key="MetricValueTextStyle" TargetType="TextBlock" BasedOn="{StaticResource SubtitleTextBlockStyle}">
-        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontFamily" Value="{StaticResource RevTorqueDisplayFontFamily}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="MetricUnitTextStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="CharacterSpacing" Value="40" />
     </Style>
 
     <Style x:Key="MonospaceCaptionTextStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
-        <Setter Property="FontFamily" Value="Cascadia Mono, Consolas" />
+        <Setter Property="FontFamily" Value="{StaticResource RevTorqueMonoFontFamily}" />
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
         <Setter Property="IsTextSelectionEnabled" Value="True" />
     </Style>

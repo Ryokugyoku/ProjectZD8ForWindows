@@ -77,6 +77,15 @@ public sealed partial class WindowsAppShellView : UserControl
     /// <summary>タイトルバーの押せる領域の登録を、配置が落ち着くまで待つ時計です。</summary>
     private Microsoft.UI.Dispatching.DispatcherQueueTimer? _titleBarRegionsTimer;
 
+    /// <summary>ナビの形を最後に合わせた幅クラスです（まだなら null）。</summary>
+    private WidthClass? _navigationClass;
+
+    /// <summary>幅を続けて変えている間、待たせているナビの幅クラスです（なければ null）。</summary>
+    private WidthClass? _pendingNavigationClass;
+
+    /// <summary>待たせているナビの切り替えの時計です。</summary>
+    private Microsoft.UI.Dispatching.DispatcherQueueTimer? _navigationTimer;
+
     /// <summary>下のタブ帯の 1 つ分の要素です。</summary>
     /// <param name="Button">押せる面。</param>
     /// <param name="Indicator">選択中の印（シアンの線）。</param>
@@ -406,15 +415,24 @@ public sealed partial class WindowsAppShellView : UserControl
         }
 
         var dotBrush = DesignTokens.Foreground(dotTone);
-        ConnectionDot.Fill = dotBrush;
-        ConnectionHalo.Fill = dotBrush;
+        if (!ReferenceEquals(ConnectionDot.Fill, dotBrush))
+        {
+            ConnectionDot.Fill = dotBrush;
+            ConnectionHalo.Fill = dotBrush;
+        }
+
+        // ライブ取得中はモデルの知らせが 1 秒に何度も来るので、変わったものだけを設定する。
         Retained.SetText(ConnectionStatus, LocalizedText.Get(statusKey));
-        ToolTipService.SetToolTip(ConnectionConsole, $"{ConnectionName.Text}\n{ConnectionStatus.Text}");
+        Retained.SetToolTip(ConnectionConsole, $"{ConnectionName.Text}\n{ConnectionStatus.Text}");
 
         // ホームには大きな操作のカードがあるので、ここでは状態だけを出す。
         Retained.SetVisible(OpenLiveButton, state.IsConnectionActive && SelectedDestination != WindowsSidebarDestination.LiveLog);
         Retained.SetVisible(ConnectionButton, !onHome);
-        ConnectionConsole.Padding = new Thickness(12, 0, onHome && !state.IsConnectionActive ? 14 : 3, 0);
+        var consolePadding = new Thickness(12, 0, onHome && !state.IsConnectionActive ? 14 : 3, 0);
+        if (ConnectionConsole.Padding != consolePadding)
+        {
+            ConnectionConsole.Padding = consolePadding;
+        }
 
         string buttonKey;
         string glyph;
@@ -437,8 +455,8 @@ public sealed partial class WindowsAppShellView : UserControl
         Retained.SetGlyph(ConnectionButtonIcon, glyph);
         Retained.SetStyle(ConnectionButton, styleKey);
         Retained.SetEnabled(ConnectionButton, enabled);
-        ToolTipService.SetToolTip(ConnectionButton, ConnectionButtonText.Text);
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(ConnectionButton, ConnectionButtonText.Text);
+        Retained.SetToolTip(ConnectionButton, ConnectionButtonText.Text);
+        Retained.SetAutomationName(ConnectionButton, ConnectionButtonText.Text);
     }
 
     /// <summary>
@@ -452,24 +470,21 @@ public sealed partial class WindowsAppShellView : UserControl
     private void ApplyWidthClass(WidthClass widthClass)
     {
         _widthClass = widthClass;
-        (Navigation.PaneDisplayMode, Navigation.OpenPaneLength) = widthClass switch
-        {
-            WidthClass.Compact => (NavigationViewPaneDisplayMode.LeftMinimal, 280d),
-            WidthClass.Medium => (NavigationViewPaneDisplayMode.LeftCompact, 248d),
-            WidthClass.Expanded => (NavigationViewPaneDisplayMode.Left, 232d),
-            _ => (NavigationViewPaneDisplayMode.Left, 264d),
-        };
-        Navigation.IsPaneOpen = widthClass >= WidthClass.Expanded;
         var compact = widthClass == WidthClass.Compact;
 
-        if (compact)
+        // ナビの形の切り替え（NavigationView の表示の形・ペインの幅・下のタブ帯）は 1 回で 7〜12ms かかる。
+        // 縁を引っぱって幅を続けて変えている間は、しきい値をまたぐたびに切り替えず、止まってから 1 回だけ切り替える。
+        // 最大化・スナップ・起動のような 1 回きりの変化では、待たずにすぐ切り替える。
+        if (_navigationClass is not null && ResponsiveLayout.IsLiveResizing)
         {
-            EnsureBottomTabs();
+            _pendingNavigationClass = widthClass;
+            RestartNavigationTimer();
+        }
+        else
+        {
+            ApplyNavigation(widthClass);
         }
 
-        // Compact のナビは下のタブ帯。タイトルバーの ≡ は出さず、重ねて開くペインは使わない。
-        Retained.SetVisible(BottomBar, compact);
-        Retained.SetVisible(PaneToggleButton, !compact);
         ScheduleTitleBarRegions();
         Retained.SetVisible(BrandTexts, !compact);
         Retained.SetVisible(BrandTagline, widthClass >= WidthClass.Expanded);
@@ -485,6 +500,74 @@ public sealed partial class WindowsAppShellView : UserControl
         {
             bar.Margin = new Thickness(0, Space.M, 0, 0);
         }
+    }
+
+    /// <summary>
+    /// ナビの形を幅クラスに合わせます。
+    /// </summary>
+    /// <remarks>
+    /// 責務: Wide/Expanded は題つきのペイン、Medium は記号だけのレール、Compact は画面の下のタブ帯にします（重ねて開くペインは使わない）。
+    /// 同じ幅クラスで 2 回目は何もしません。待たせていた切り替えは取り消します。
+    /// </remarks>
+    /// <param name="widthClass">幅クラス。</param>
+    private void ApplyNavigation(WidthClass widthClass)
+    {
+        _pendingNavigationClass = null;
+        _navigationTimer?.Stop();
+        if (_navigationClass == widthClass)
+        {
+            return;
+        }
+
+        _navigationClass = widthClass;
+        (Navigation.PaneDisplayMode, Navigation.OpenPaneLength) = widthClass switch
+        {
+            WidthClass.Compact => (NavigationViewPaneDisplayMode.LeftMinimal, 280d),
+            WidthClass.Medium => (NavigationViewPaneDisplayMode.LeftCompact, 248d),
+            WidthClass.Expanded => (NavigationViewPaneDisplayMode.Left, 232d),
+            _ => (NavigationViewPaneDisplayMode.Left, 264d),
+        };
+        Navigation.IsPaneOpen = widthClass >= WidthClass.Expanded;
+        var compact = widthClass == WidthClass.Compact;
+        if (compact)
+        {
+            EnsureBottomTabs();
+        }
+
+        // Compact のナビは下のタブ帯。タイトルバーの ≡ は出さず、重ねて開くペインは使わない。
+        Retained.SetVisible(BottomBar, compact);
+        Retained.SetVisible(PaneToggleButton, !compact);
+        ScheduleTitleBarRegions();
+    }
+
+    /// <summary>待たせているナビの切り替えを、幅の変化が止まってから行うよう時計を掛け直します。</summary>
+    /// <remarks>責務: 幅が続けて変わっている間は 150ms ごとに見直して待ち続け、止まったら <see cref="ApplyNavigation"/> を 1 回だけ呼びます。</remarks>
+    private void RestartNavigationTimer()
+    {
+        if (_navigationTimer is null)
+        {
+            _navigationTimer = DispatcherQueue.CreateTimer();
+            _navigationTimer.Interval = ResponsiveLayout.SettleDelay;
+            _navigationTimer.IsRepeating = false;
+            _navigationTimer.Tick += (_, _) =>
+            {
+                if (_pendingNavigationClass is not { } pending)
+                {
+                    return;
+                }
+
+                if (ResponsiveLayout.IsLiveResizing)
+                {
+                    RestartNavigationTimer();
+                    return;
+                }
+
+                ApplyNavigation(pending);
+            };
+        }
+
+        _navigationTimer.Stop();
+        _navigationTimer.Start();
     }
 
     /// <summary>

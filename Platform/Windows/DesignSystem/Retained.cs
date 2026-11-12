@@ -98,4 +98,32 @@ public static class Retained
             icon.Glyph = glyph;
         }
     }
+
+    /// <summary>
+    /// 文字だけのツールチップを差し替えます。
+    /// </summary>
+    /// <remarks>責務: 違うときだけ設定します（設定するたびにツールチップの部品が作り直されるので、同じ文字では設定しない）。</remarks>
+    /// <param name="element">ツールチップを付ける要素。</param>
+    /// <param name="text">ツールチップの文字。</param>
+    public static void SetToolTip(DependencyObject element, string text)
+    {
+        if (!(ToolTipService.GetToolTip(element) is string current && string.Equals(current, text, System.StringComparison.Ordinal)))
+        {
+            ToolTipService.SetToolTip(element, text);
+        }
+    }
+
+    /// <summary>
+    /// 読み上げの名前を差し替えます。
+    /// </summary>
+    /// <remarks>責務: 違うときだけ設定します（変わるたびに読み上げソフトへ知らせが飛ぶ）。</remarks>
+    /// <param name="element">要素。</param>
+    /// <param name="name">名前。</param>
+    public static void SetAutomationName(DependencyObject element, string name)
+    {
+        if (!string.Equals(Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(element), name, System.StringComparison.Ordinal))
+        {
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(element, name);
+        }
+    }
 }

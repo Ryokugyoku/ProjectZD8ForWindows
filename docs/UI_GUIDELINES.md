@@ -97,6 +97,7 @@ void Update() { var state = ...; Retained.SetText(_name, state.Name); StatusPill
 - タイトルバーの押せる領域（`InputNonClientPointerSource` の Passthrough）は OS への重い呼び出し。配置が落ち着いてから 250ms 後に 1 回だけ登録する（`ScheduleTitleBarRegions`）。毎回の SizeChanged や起動直後に登録すると、起動が約 100ms、幅を変える間の CPU が数ポイント悪化した（実測）。
 - 最初に見えないもの（Compact の下のタブ帯）は、その幅になったときに初めて作る。
 - **ナビは幅クラスで形が変わる**（`ApplyWidthClass` が切り替わったときだけ値を差し替える。木は作り直さない）。Medium：記号だけのレール、Expanded / Wide：題つきのペイン、**Compact：画面の下のタブ帯**（`BottomBar`、高さ 48）。
+  - ナビの形の切り替え（NavigationView の表示の形・ペインの幅・下のタブ帯）は 1 回で 7〜12ms の配置がかかる（実測。刷新前は形を変えなかった）。縁を引っぱって幅を**続けて**変えている間（`ResponsiveLayout.IsLiveResizing`：150ms 未満の間隔で 3 回以上）は、しきい値をまたぐたびに切り替えず、止まって 150ms 後に 1 回だけ切り替える（`ApplyNavigation`）。最大化・スナップ・起動のような 1 回きりの変化ではすぐ切り替える。タイトルバーの文字の省略と画面の中身は、待たせずにすぐ切り替える。これで、ライブ取得中に幅を往復させたときの UI スレッドの CPU が刷新前と同じになった。
   - タブ帯は行き先すべて（ホーム・ライブ・履歴・整備・ガレージ・設定）を等間隔に並べ、記号＋短い題（切れるときは `…`、ツールチップに Ctrl+n 付きの題）。1 回押すだけで移る。選択中はシアンの印（上辺の細い線が Composition で伸びて現れる。`Motion.IsEnabled` が false なら即時）と色。履歴の中断バッジも出す。
   - 選択中の行き先は 1 つ（`SelectedDestination`）。NavigationView の選択とタブの選択の両方を `Select` / `ShowDestination` が合わせるので、幅クラスが変わってもずれない。Compact では NavigationView のペインは使わない（開かない）。
   - 色は `DesignTokens.Foreground(Tone.…)`（テーマに追従）から引き、`ActualThemeChanged` で引き直す。`SystemBrush` はウインドウだけ明暗を変えたとき追従しないので、シェルのコードでは使わない。

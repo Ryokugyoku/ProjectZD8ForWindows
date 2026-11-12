@@ -134,6 +134,9 @@ public static class ResponsiveLayout
     /// <param name="width">ウインドウの幅（有効ピクセル）。</param>
     private static void Update(double width)
     {
+        var now = Environment.TickCount64;
+        _rapidUpdates = now - _lastUpdateTicks < LiveResizeGapMilliseconds ? _rapidUpdates + 1 : 0;
+        _lastUpdateTicks = now;
         WindowWidth = width;
         var next = Classify(width);
         if (_initialized && next == Current)
@@ -148,4 +151,25 @@ public static class ResponsiveLayout
 
     /// <summary>最初の幅を受け取ったかどうかです。</summary>
     private static bool _initialized;
+
+    /// <summary>幅の変化が「続けて来ている」とみなす間隔の上限（ms）です。</summary>
+    private const long LiveResizeGapMilliseconds = 150;
+
+    /// <summary>続けて来ている幅の変化の数です（間が空いたら 0 に戻す）。</summary>
+    private static int _rapidUpdates;
+
+    /// <summary>最後に幅を受け取った時刻（<see cref="Environment.TickCount64"/>）です。</summary>
+    private static long _lastUpdateTicks;
+
+    /// <summary>
+    /// ウインドウの縁を引っぱるなどして、幅が続けて変わっている最中かどうかです。
+    /// </summary>
+    /// <remarks>
+    /// 幅の変化が 150ms より短い間隔で 3 回以上続いたら true です。最大化・スナップ・起動のような 1 回きりの変化では false のままです。
+    /// 重い切り替え（ナビの形など）は、この間だけ配置が落ち着くまで待たせてよい（<see cref="SettleDelay"/>）。
+    /// </remarks>
+    public static bool IsLiveResizing => _rapidUpdates >= 3 && Environment.TickCount64 - _lastUpdateTicks < LiveResizeGapMilliseconds;
+
+    /// <summary>続けての幅の変化が止まったとみなすまでの時間です。</summary>
+    public static TimeSpan SettleDelay { get; } = TimeSpan.FromMilliseconds(LiveResizeGapMilliseconds);
 }
